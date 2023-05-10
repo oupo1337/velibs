@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"github.com/gin-gonic/gin"
 	"github.com/oupo1337/velibs/postgres"
 	"net/http"
@@ -35,11 +36,12 @@ type featureCollection struct {
 func (s *Statuses) GetStatuses(c *gin.Context) {
 	stations, err := s.db.FetchTimestamp(c.Request.Context())
 	if err != nil {
+		_ = c.Error(fmt.Errorf("db.FetchTimestamp error: %w", err))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	var features []feature
+	features := make([]feature, 0)
 	for _, station := range stations {
 		features = append(features, feature{
 			Type: "Feature",

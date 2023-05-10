@@ -28,7 +28,7 @@
             map.on('load', function() {
                 map.addSource('markers', {
                     type: 'geojson',
-                    data: 'http://localhost:8080/statuses.geojson',
+                    data: '/api/statuses.geojson',
                     cluster: true,
                     clusterMaxZoom: 14,
                     clusterRadius: 50

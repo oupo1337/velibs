@@ -51,8 +51,8 @@ func initApp(deps dependencies) *gin.Engine {
 
 	app.Use(cors.Default())
 
-	app.StaticFile("/index.html", "./static/index.html")
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
+	app.StaticFile("/", "./public/index.html")
 	return app
 }
 
