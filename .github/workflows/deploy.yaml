@@ -28,7 +28,7 @@ jobs:
         with:
           app-name: velibs
           service-name: backend
-          service-env: DATABASE_USERNAME=postgres,DATABASE_PASSWORD=@DATABASE_PASSWORD,DATABASE_ADDRESS=postgres:5432,DATABASE_NAME=postgres
+          service-env: PORT=8000,DATABASE_USERNAME=postgres,DATABASE_PASSWORD=@DATABASE_PASSWORD,DATABASE_ADDRESS=postgres:5432,DATABASE_NAME=postgres
           service-ports: "8000:http"
           service-routes: "/:8000"
           git-run-command: bin/velibs
