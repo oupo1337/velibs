@@ -9,6 +9,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/robfig/cron"
 	"log"
+	"os"
 )
 
 type dependencies struct {
@@ -62,7 +63,7 @@ func main() {
 	app := initApp(deps)
 	deps.cron.Start()
 
-	if err := app.Run(":8080"); err != nil {
+	if err := app.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil {
 		log.Fatalf("app.Run error: %s", err.Error())
 	}
 }
