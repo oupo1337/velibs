@@ -11,18 +11,22 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./database:/docker-entrypoint-initdb.d
+      - ./database_schema:/docker-entrypoint-initdb.d
     ports:
       - 5432:5432
 
   backend:
     build:
-      context: ./backend
+      context: .
     depends_on:
       postgres:
         condition: service_healthy
     environment:
       PORT: 8080
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_ADDRESS: postgres
+      DATABASE_NAME: postgres
     restart: always
     ports:
       - 8080:8080
