@@ -1,0 +1,26 @@
+name: Build and deploy the application to Koyeb
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  deploy:
+    concurrency:
+      group: "${{ github.ref_name }}"
+      cancel-in-progress: true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install and configure the Koyeb CLI
+        uses: koyeb-community/install-koyeb-cli@v2
+        with:
+          api_token: "${{ secrets.KOYEB_TOKEN }}"
+
+      - name: Build and deploy the application
+        uses: koyeb/action-git-deploy@v1
+        with:
+          app-name: velibs-${{ github.ref_name }}
+          service-ports: "8000:http"
+          service-routes: "/:8000"
+          git-run-command: bin/velibs
