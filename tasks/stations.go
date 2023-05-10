@@ -5,6 +5,7 @@ import (
 	"backend/postgres"
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"time"
 )
@@ -43,12 +44,16 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 }
 
 func (s *Stations) UpdateStations() {
+	fmt.Printf("UpdateStations running...\n")
+
 	stations, err := s.fetchStationsInformation(context.Background())
 	if err != nil {
+		fmt.Printf("s.fetchStationsInformation error: %s\n", err.Error())
 		return
 	}
 
 	if err := s.db.InsertStations(context.Background(), stations); err != nil {
+		fmt.Printf("db.InsertStations error: %s\n", err.Error())
 		return
 	}
 }

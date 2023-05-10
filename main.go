@@ -19,10 +19,10 @@ type dependencies struct {
 
 func initDependencies() (dependencies, error) {
 	db, err := postgres.New(postgres.Configuration{
-		Username: "postgres",
-		Password: "password",
-		Address:  "postgres:5432",
-		Name:     "postgres",
+		Username: os.Getenv("DATABASE_USERNAME"),
+		Password: os.Getenv("DATABASE_PASSWORD"),
+		Address:  os.Getenv("DATABASE_ADDRESS"),
+		Name:     os.Getenv("DATABASE_NAME"),
 	})
 	if err != nil {
 		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
