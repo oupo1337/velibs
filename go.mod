@@ -1,4 +1,4 @@
-module velibs
+module github.com/oupo1337/velibs
 
 go 1.20
 

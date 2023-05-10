@@ -1,12 +1,12 @@
 package main
 
 import (
-	"backend/handlers"
-	"backend/postgres"
-	"backend/tasks"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/oupo1337/velibs/handlers"
+	"github.com/oupo1337/velibs/postgres"
+	"github.com/oupo1337/velibs/tasks"
 	"github.com/robfig/cron"
 	"log"
 	"os"

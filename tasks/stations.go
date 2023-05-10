@@ -1,11 +1,11 @@
 package tasks
 
 import (
-	"backend/domain"
-	"backend/postgres"
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/oupo1337/velibs/domain"
+	"github.com/oupo1337/velibs/postgres"
 	"net/http"
 	"time"
 )

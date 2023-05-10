@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"backend/postgres"
 	"github.com/gin-gonic/gin"
+	"github.com/oupo1337/velibs/postgres"
 	"net/http"
 )
 
