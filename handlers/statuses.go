@@ -34,8 +34,18 @@ type featureCollection struct {
 	Features []feature `json:"features"`
 }
 
+func (s *Statuses) GetTimestamp(c *gin.Context) {
+	timestamps, err := s.db.ListTimestamps(c.Request.Context())
+	if err != nil {
+		_ = c.Error(fmt.Errorf("db.ListTimestamps error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, timestamps)
+}
+
 func (s *Statuses) GetStatuses(c *gin.Context) {
-	stations, err := s.db.FetchTimestamp(c.Request.Context())
+	stations, err := s.db.FetchTimestamp(c.Request.Context(), c.Param("timestamp"))
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.FetchTimestamp error: %w", err))
 		c.Status(http.StatusInternalServerError)

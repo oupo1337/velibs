@@ -32,7 +32,7 @@ func (db *Database) InsertStations(ctx context.Context, stationsInformation []do
 }
 
 func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.StationStatus) error {
-	query := `INSERT INTO statuses (timestamp, station_id, mechanical, electric) VALUES ($1, $2, $3, $4)`
+	query := `INSERT INTO statuses (timestamp, station_id, mechanical, electric) VALUES (DATE_TRUNC('minute', $1), $2, $3, $4)`
 
 	now := time.Now()
 	for _, status := range statuses {
@@ -57,7 +57,59 @@ func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.Statio
 	return nil
 }
 
-func (db *Database) FetchTimestamp(ctx context.Context) ([]domain.Station, error) {
+func (db *Database) ListTimestamps(ctx context.Context) ([]time.Time, error) {
+	query := `SELECT DISTINCT timestamp FROM statuses ORDER BY timestamp;`
+
+	rows, err := db.conn.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("conn.Query error: %w", err)
+	}
+
+	var timestamps []time.Time
+	for rows.Next() {
+		var timestamp time.Time
+		if err := rows.Scan(&timestamp); err != nil {
+			return nil, fmt.Errorf("rows.Scan error: %w", err)
+		}
+		timestamps = append(timestamps, timestamp)
+	}
+	return timestamps, nil
+}
+
+func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]domain.Station, error) {
+	if timestamp == "" {
+		return db.FetchMaxTimestamp(ctx)
+	}
+
+	query := `SELECT timestamp, id, name, latitude, longitude, mechanical, electric FROM statuses JOIN stations ON (id = station_id) WHERE timestamp = $1`
+
+	rows, err := db.conn.Query(ctx, query, timestamp)
+	if err != nil {
+		return nil, fmt.Errorf("conn.Query error: %w", err)
+	}
+	defer func() {
+		_ = rows.Close
+	}()
+
+	var stations []domain.Station
+	for rows.Next() {
+		var station domain.Station
+
+		if err := rows.Scan(&station.Timestamp,
+			&station.ID,
+			&station.Name,
+			&station.Latitude,
+			&station.Longitude,
+			&station.Mechanical,
+			&station.Electric); err != nil {
+			return nil, fmt.Errorf("rows.Scan error: %w", err)
+		}
+		stations = append(stations, station)
+	}
+	return stations, nil
+}
+
+func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, error) {
 	query := `WITH 
 			max_timestamp AS (SELECT MAX(timestamp) FROM statuses)
 		SELECT timestamp, id, name, latitude, longitude, mechanical, electric
