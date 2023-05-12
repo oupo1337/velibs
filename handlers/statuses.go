@@ -45,7 +45,7 @@ func (s *Statuses) GetTimestamp(c *gin.Context) {
 }
 
 func (s *Statuses) GetStatuses(c *gin.Context) {
-	stations, err := s.db.FetchTimestamp(c.Request.Context(), c.Param("timestamp"))
+	stations, err := s.db.FetchTimestamp(c.Request.Context(), c.Query("timestamp"))
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.FetchTimestamp error: %w", err))
 		c.Status(http.StatusInternalServerError)
