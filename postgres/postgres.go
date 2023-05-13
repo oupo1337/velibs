@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
-	"github.com/oupo1337/velibs/domain"
 	"time"
+
+	"github.com/jackc/pgx/v4/pgxpool"
+
+	"github.com/oupo1337/velibs/domain"
 )
 
 type Configuration struct {
@@ -16,7 +18,7 @@ type Configuration struct {
 }
 
 type Database struct {
-	conn *pgx.Conn
+	conn *pgxpool.Pool
 }
 
 func (db *Database) InsertStations(ctx context.Context, stationsInformation []domain.StationInformation) error {
@@ -32,7 +34,7 @@ func (db *Database) InsertStations(ctx context.Context, stationsInformation []do
 }
 
 func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.StationStatus) error {
-	query := `INSERT INTO statuses (timestamp, station_id, mechanical, electric) VALUES (DATE_TRUNC('minute', $1), $2, $3, $4)`
+	query := `INSERT INTO statuses (timestamp, station_id, mechanical, electric) VALUES (DATE_TRUNC('minute', $1::timestamp), $2, $3, $4)`
 
 	now := time.Now()
 	for _, status := range statuses {
@@ -64,6 +66,9 @@ func (db *Database) ListTimestamps(ctx context.Context) ([]time.Time, error) {
 	if err != nil {
 		return nil, fmt.Errorf("conn.Query error: %w", err)
 	}
+	defer func() {
+		_ = rows.Close
+	}()
 
 	var timestamps []time.Time
 	for rows.Next() {
@@ -146,7 +151,7 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 func New(conf Configuration) (*Database, error) {
 	url := fmt.Sprintf("postgres://%s:%s@%s/%s", conf.Username, conf.Password, conf.Address, conf.Name)
 
-	conn, err := pgx.Connect(context.Background(), url)
+	conn, err := pgxpool.Connect(context.Background(), url)
 	if err != nil {
 		return nil, fmt.Errorf("pgx.Connect: %w", err)
 	}

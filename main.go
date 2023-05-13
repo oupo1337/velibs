@@ -2,14 +2,16 @@ package main
 
 import (
 	"fmt"
+	"log"
+	"os"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"github.com/robfig/cron"
+
 	"github.com/oupo1337/velibs/handlers"
 	"github.com/oupo1337/velibs/postgres"
 	"github.com/oupo1337/velibs/tasks"
-	"github.com/robfig/cron"
-	"log"
-	"os"
 )
 
 type dependencies struct {
@@ -32,11 +34,11 @@ func initDependencies() (dependencies, error) {
 	statuses := tasks.NewStatuses(db)
 
 	c := cron.New()
-	if err := c.AddFunc("0 */10 * * * *", stations.UpdateStations); err != nil {
+	if err := c.AddFunc("0 */1 * * * *", stations.UpdateStations); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
 
-	if err := c.AddFunc("0 */10 * * * *", statuses.UpdateStatuses); err != nil {
+	if err := c.AddFunc("0 */1 * * * *", statuses.UpdateStatuses); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
 
