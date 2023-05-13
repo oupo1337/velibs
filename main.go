@@ -33,12 +33,13 @@ func initDependencies() (dependencies, error) {
 	stations := tasks.NewStations(db)
 	statuses := tasks.NewStatuses(db)
 
-	c := cron.New()
-	if err := c.AddFunc("0 */1 * * * *", stations.UpdateStations); err != nil {
-		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
+	updateFunc := func() {
+		stations.UpdateStations()
+		statuses.UpdateStatuses()
 	}
 
-	if err := c.AddFunc("0 */1 * * * *", statuses.UpdateStatuses); err != nil {
+	c := cron.New()
+	if err := c.AddFunc("0 */10 * * * *", updateFunc); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
 
