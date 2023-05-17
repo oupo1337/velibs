@@ -27,7 +27,7 @@ func buildBackend(ctx context.Context, client *dagger.Client) error {
 }
 
 func nodeContainer(ctx context.Context, client *dagger.Client) (*dagger.Container, error) {
-	container := client.Container().From("node:20.1-slim")
+	container := client.Container().From("node:20.1.0")
 
 	output, err := container.WithExec([]string{"node", "--version"}).Stdout(ctx)
 	if err != nil {

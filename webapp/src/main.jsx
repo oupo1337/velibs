@@ -52,7 +52,7 @@ moment.locale('fr', {
     isPM : function (input) {
         return input.charAt(0) === 'M';
     },
-    meridiem : function (hours, minutes, isLower) {
+    meridiem : function (hours) {
         return hours < 12 ? 'PD' : 'MD';
     },
     week : {

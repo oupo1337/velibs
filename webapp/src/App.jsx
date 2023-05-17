@@ -1,12 +1,7 @@
-import React, { useRef, useEffect, useState } from 'react';
+import { useRef, useEffect, useState } from 'react';
 
 import mapboxgl from 'mapbox-gl';
 import Slider from '@mui/material/Slider';
-import Radio from '@mui/material/Radio';
-import RadioGroup from '@mui/material/RadioGroup';
-import FormControlLabel from '@mui/material/FormControlLabel';
-import FormControl from '@mui/material/FormControl';
-import FormLabel from '@mui/material/FormLabel';
 import moment from 'moment';
 
 import './App.css';
@@ -16,18 +11,10 @@ mapboxgl.accessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlte
 export default function App() {
     const mapContainer = useRef(null);
     const map = useRef(null);
-    const [lng, setLng] = useState(2.3522);
-    const [lat, setLat] = useState(48.8566);
-    const [zoom, setZoom] = useState(11);
     const [timestamps, setTimestamps] = useState([]);
     const [value, setValue] = useState(0);
-    const [type, setType] = useState('all');
 
-    const handleRadioChange = (e) => {
-        setType(e.target.value);
-    }
-
-    const handleSliderChange = (e, newValue, activeThumb) => {
+    const handleSliderChange = (e, newValue) => {
         const timestamp = timestamps[newValue];
         map.current
             .getSource('bikes')
@@ -59,8 +46,8 @@ export default function App() {
         map.current = new mapboxgl.Map({
             container: mapContainer.current,
             style: 'mapbox://styles/mapbox/dark-v11',
-            center: [lng, lat],
-            zoom: zoom
+            center: [2.3522, 48.8566],
+            zoom: 11
         });
     }, []);
 
@@ -183,15 +170,6 @@ export default function App() {
             <div className="sidebar-container">
                 <div className="sidebar">
                     Date: {displayDate()}
-                </div>
-                <div className="sidebar">
-                    <FormControl>
-                        <RadioGroup row defaultValue={type} onChange={handleRadioChange} aria-labelledby="demo-row-radio-buttons-group-label" name="row-radio-buttons-group">
-                            <FormControlLabel value="all" control={<Radio />} label="Tous" />
-                            <FormControlLabel value="electric" control={<Radio />} label="Éléctriques" />
-                            <FormControlLabel value="mechanic" control={<Radio />} label="Mécaniques" />
-                        </RadioGroup>
-                    </FormControl>
                 </div>
                 <div className="sidebar" style={{flex: 1}}>
                     <Slider

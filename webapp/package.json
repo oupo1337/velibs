@@ -10,6 +10,8 @@
     "preview": "vite preview"
   },
   "dependencies": {
+    "@emotion/css": "^11.11.0",
+    "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.13.0",
     "mapbox-gl": "^2.14.1",
     "moment": "^2.29.4",
