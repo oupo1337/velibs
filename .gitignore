@@ -17,5 +17,5 @@
 # Intellij
 .idea
 
-# binary file
-velibs
+# build folder
+build

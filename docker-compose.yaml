@@ -11,11 +11,11 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./database_schema:/docker-entrypoint-initdb.d
+      - ./backend/database_schema:/docker-entrypoint-initdb.d
 
   backend:
     build:
-      context: .
+      context: ./backend
     depends_on:
       postgres:
         condition: service_healthy
