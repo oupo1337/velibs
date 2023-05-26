@@ -1,12 +1,19 @@
 import { useRef, useEffect, useState } from 'react';
 
 import mapboxgl from 'mapbox-gl';
-import Slider from '@mui/material/Slider';
-import moment from 'moment';
+
+import DateDisplay from "./DateDisplay.jsx";
+import TimeSlider from "./TimeSlider.jsx";
 
 import './App.css';
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
+
+function removeLayer(map) {
+    map.removeSource('clusters');
+    map.removeSource('cluster-count');
+    map.removeSource('clusters');
+}
 
 function addPointsClusterLayer(map) {
     map.addLayer({
@@ -48,8 +55,7 @@ function addPointsClusterLayer(map) {
         }
     });
 
-
-    map.current.addLayer({
+    map.addLayer({
         id: 'unclustered-point',
         type: 'circle',
         source: 'bikes',
@@ -63,16 +69,17 @@ function addPointsClusterLayer(map) {
     });
 
     map.on('click', 'clusters', (e) => {
-        const features = map.current.queryRenderedFeatures(e.point, {
+        const features = map.queryRenderedFeatures(e.point, {
             layers: ['clusters']
         });
         const clusterId = features[0].properties.cluster_id;
-        map.current.getSource('bikes').getClusterExpansionZoom(
-            clusterId,
-            (err, zoom) => {
-                if (err) return;
 
-                map.current.easeTo({
+        map.getSource('bikes').getClusterExpansionZoom(clusterId,
+            (err, zoom) => {
+                if (err)
+                    return;
+
+                map.easeTo({
                     center: features[0].geometry.coordinates,
                     zoom: zoom
                 });
@@ -97,10 +104,10 @@ function addPointsClusterLayer(map) {
     });
 
     map.on('mouseenter', 'clusters', () => {
-        map.current.getCanvas().style.cursor = 'pointer';
+        map.getCanvas().style.cursor = 'pointer';
     });
     map.on('mouseleave', 'clusters', () => {
-        map.current.getCanvas().style.cursor = '';
+        map.getCanvas().style.cursor = '';
     });
 }
 
@@ -109,21 +116,6 @@ export default function App() {
     const map = useRef(null);
     const [timestamps, setTimestamps] = useState([]);
     const [value, setValue] = useState(0);
-
-    const handleSliderChange = (e, newValue) => {
-        const timestamp = timestamps[newValue];
-        map.current
-            .getSource('bikes')
-            .setData(`http://runtheit.com:8080/api/statuses.geojson?timestamp=${timestamp}`);
-        setValue(newValue);
-    }
-
-    const displayDate = () => {
-        moment.locale("fr");
-        const d = moment(timestamps[value]);
-
-        return d.calendar();
-    }
 
     useEffect(() => {
         fetch('http://runtheit.com:8080/api/timestamps')
@@ -172,22 +164,16 @@ export default function App() {
     return (
         <div style={{height: '100%'}}>
             <div className="sidebar-container">
-                <div className="sidebar">
-                    Date: {displayDate()}
-                </div>
-                <div className="sidebar" style={{flex: 1}}>
-                    <Slider
-                        aria-label="Temperature"
-                        valueLabelDisplay="off"
-                        defaultValue={timestamps.length - 1}
-                        value={value}
-                        onChange={handleSliderChange}
-                        step={1}
-                        marks
-                        min={0}
-                        max={timestamps.length - 1}
-                    />
-                </div>
+                <DateDisplay
+                    timestamps={timestamps}
+                    value={value}
+                />
+                <TimeSlider
+                    timestamps={timestamps}
+                    value={value}
+                    setvalue={setValue}
+                    map={map.current}
+                />
             </div>
             <div ref={mapContainer} className="map-container" />
         </div>
