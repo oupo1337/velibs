@@ -22,7 +22,10 @@ type Database struct {
 }
 
 func (db *Database) InsertStations(ctx context.Context, stationsInformation []domain.StationInformation) error {
-	query := `INSERT INTO stations (id, capacity, latitude, longitude, name) VALUES ($1, $2, $3, $4, $5) ON CONFLICT DO NOTHING`
+	query := `
+		INSERT INTO stations (id, capacity, latitude, longitude, name)
+		VALUES ($1, $2, $3, $4, $5)
+		ON CONFLICT DO NOTHING`
 
 	for _, station := range stationsInformation {
 		_, err := db.conn.Exec(ctx, query, station.StationID, station.Capacity, station.Latitude, station.Longitude, station.Name)
@@ -34,7 +37,9 @@ func (db *Database) InsertStations(ctx context.Context, stationsInformation []do
 }
 
 func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.StationStatus) error {
-	query := `INSERT INTO statuses (timestamp, station_id, mechanical, electric) VALUES (DATE_TRUNC('minute', $1::timestamp), $2, $3, $4)`
+	query := `
+		INSERT INTO statuses (timestamp, station_id, mechanical, electric)
+		VALUES (DATE_TRUNC('minute', $1::timestamp), $2, $3, $4)`
 
 	now := time.Now()
 	for _, status := range statuses {
@@ -60,7 +65,10 @@ func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.Statio
 }
 
 func (db *Database) ListTimestamps(ctx context.Context) ([]time.Time, error) {
-	query := `SELECT DISTINCT timestamp FROM statuses ORDER BY timestamp;`
+	query := `
+		SELECT DISTINCT timestamp
+		FROM statuses
+		ORDER BY timestamp;`
 
 	rows, err := db.conn.Query(ctx, query)
 	if err != nil {
@@ -86,7 +94,11 @@ func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]dom
 		return db.FetchMaxTimestamp(ctx)
 	}
 
-	query := `SELECT timestamp, id, name, latitude, longitude, mechanical, electric FROM statuses JOIN stations ON (id = station_id) WHERE timestamp = $1`
+	query := `
+		SELECT timestamp, id, name, latitude, longitude, mechanical, electric
+		FROM statuses
+		JOIN stations ON (id = station_id)
+	  	WHERE timestamp = $1`
 
 	rows, err := db.conn.Query(ctx, query, timestamp)
 	if err != nil {
@@ -115,7 +127,8 @@ func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]dom
 }
 
 func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, error) {
-	query := `WITH 
+	query := `
+		WITH 
 			max_timestamp AS (SELECT MAX(timestamp) FROM statuses)
 		SELECT timestamp, id, name, latitude, longitude, mechanical, electric
 		FROM statuses
@@ -146,6 +159,34 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 		stations = append(stations, station)
 	}
 	return stations, nil
+}
+
+func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) (domain.TimeSeries, error) {
+	query := `
+			SELECT timestamp, mechanical, electric
+			FROM statuses
+			WHERE station_id = $1
+			ORDER BY timestamp;`
+
+	rows, err := db.conn.Query(ctx, query, stationID)
+	if err != nil {
+		return nil, fmt.Errorf("conn.Query error: %w", err)
+	}
+	defer func() {
+		_ = rows.Close
+	}()
+
+	ts := make(domain.TimeSeries)
+	for rows.Next() {
+		var timestamp time.Time
+		var bikes domain.Bikes
+
+		if err := rows.Scan(&timestamp, &bikes.Mechanical, &bikes.Electric); err != nil {
+			return nil, fmt.Errorf("rows.Scan error: %w", err)
+		}
+		ts[timestamp] = bikes
+	}
+	return ts, nil
 }
 
 func New(conf Configuration) (*Database, error) {

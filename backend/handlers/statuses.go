@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+
 	"github.com/oupo1337/velibs/backend/postgres"
 )
 
@@ -33,6 +34,16 @@ type feature struct {
 type featureCollection struct {
 	Type     string    `json:"type"`
 	Features []feature `json:"features"`
+}
+
+func (s *Statuses) GetStationTimeSeries(c *gin.Context) {
+	ts, err := s.db.GetStationTimeSeries(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("db.GetStationTimeSeries error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, ts)
 }
 
 func (s *Statuses) GetTimestamp(c *gin.Context) {
