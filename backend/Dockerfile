@@ -9,6 +9,5 @@ FROM alpine:latest
 
 WORKDIR /app
 COPY --from=build /build/backend /app/backend
-COPY public /app/public
 
 CMD [ "/app/backend" ]
