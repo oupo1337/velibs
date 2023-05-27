@@ -13,9 +13,10 @@ services:
     volumes:
       - ./backend/database_schema:/docker-entrypoint-initdb.d
 
-  backend:
+  api:
     build:
       context: ./backend
+      dockerfile: Dockerfile.api
     depends_on:
       postgres:
         condition: service_healthy
@@ -25,14 +26,29 @@ services:
       DATABASE_PASSWORD: password
       DATABASE_ADDRESS: postgres
       DATABASE_NAME: postgres
+      GIN_MODE: release
     restart: always
     ports:
       - 8080:8080
+
+  data-fetcher:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile.data-fetcher
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_ADDRESS: postgres
+      DATABASE_NAME: postgres
+    restart: always
 
   webapp:
     build:
       context: ./webapp
     depends_on:
-      - backend
+      - api
     ports:
       - 3000:80

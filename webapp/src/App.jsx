@@ -1,21 +1,18 @@
 import { useRef, useEffect, useState } from 'react';
 
+import SwipeableDrawer from '@mui/material/SwipeableDrawer';
+
 import mapboxgl from 'mapbox-gl';
 
 import DateDisplay from "./DateDisplay.jsx";
 import TimeSlider from "./TimeSlider.jsx";
 
 import './App.css';
+import GraphDrawer from "./GraphDrawer.jsx";
 
 mapboxgl.accessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
 
-function removeLayer(map) {
-    map.removeSource('clusters');
-    map.removeSource('cluster-count');
-    map.removeSource('clusters');
-}
-
-function addPointsClusterLayer(map) {
+function addPointsClusterLayer(map, setOpen) {
     map.addLayer({
         id: 'clusters',
         type: 'circle',
@@ -56,7 +53,7 @@ function addPointsClusterLayer(map) {
     });
 
     map.addLayer({
-        id: 'unclustered-point',
+        id: 'un-clustered-point',
         type: 'circle',
         source: 'bikes',
         filter: ['!', ['has', 'point_count']],
@@ -87,25 +84,27 @@ function addPointsClusterLayer(map) {
         );
     });
 
-    map.on('click', 'unclustered-point', (e) => {
-        const coordinates = e.features[0].geometry.coordinates.slice();
-        const name = e.features[0].properties.name;
-        const electric = e.features[0].properties.electric;
-        const mechanical = e.features[0].properties.mechanical;
-
-        while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
-            coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
-        }
-
-        new mapboxgl.Popup()
-            .setLngLat(coordinates)
-            .setHTML(`<strong>${name}</strong><br>mechanical: ${mechanical}<br>electric: ${electric}`)
-            .addTo(map.current);
+    map.on('click', 'un-clustered-point', (e) => {
+        // const coordinates = e.features[0].geometry.coordinates.slice();
+        // const name = e.features[0].properties.name;
+        // const electric = e.features[0].properties.electric;
+        // const mechanical = e.features[0].properties.mechanical;
+        //
+        // while (Math.abs(e.lngLat.lng - coordinates[0]) > 180) {
+        //     coordinates[0] += e.lngLat.lng > coordinates[0] ? 360 : -360;
+        // }
+        //
+        // new mapboxgl.Popup()
+        //     .setLngLat(coordinates)
+        //     .setHTML(`<strong>${name}</strong><br>mechanical: ${mechanical}<br>electric: ${electric}`)
+        //     .addTo(map);
+        setOpen(true);
     });
 
     map.on('mouseenter', 'clusters', () => {
         map.getCanvas().style.cursor = 'pointer';
     });
+
     map.on('mouseleave', 'clusters', () => {
         map.getCanvas().style.cursor = '';
     });
@@ -116,6 +115,7 @@ export default function App() {
     const map = useRef(null);
     const [timestamps, setTimestamps] = useState([]);
     const [value, setValue] = useState(0);
+    const [open, setOpen] = useState(false);
 
     useEffect(() => {
         fetch('http://runtheit.com:8080/api/timestamps')
@@ -157,7 +157,7 @@ export default function App() {
                 }
             });
 
-            addPointsClusterLayer(map.current);
+            addPointsClusterLayer(map.current, setOpen);
         });
     }, []);
 
@@ -171,8 +171,11 @@ export default function App() {
                 <TimeSlider
                     timestamps={timestamps}
                     value={value}
-                    setvalue={setValue}
+                    setValue={setValue}
                     map={map.current}
+                />
+                <GraphDrawer
+                    open={open}
                 />
             </div>
             <div ref={mapContainer} className="map-container" />
