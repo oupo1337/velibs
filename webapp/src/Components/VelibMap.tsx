@@ -9,9 +9,10 @@ const mapboxAccessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMj
 
 interface VelibMapProps {
     data : string
+    velibType : string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, velibType }) => {
     const clusterProperties = {
         bikes: ['+', ['get', 'bikes']],
         mechanical: ['+', ['get', 'mechanical']],
@@ -37,7 +38,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data }) => {
     >
         <Source id="velibs-data" type="geojson" cluster={true} data={data} clusterProperties={clusterProperties}>
             <ClusterLayer />
-            <SymbolCountLayer />
+            <SymbolCountLayer velibType={velibType} />
             <UnClusteredLayer />
         </Source>
     </Map>

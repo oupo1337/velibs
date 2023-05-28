@@ -2,8 +2,6 @@ import mapboxgl from "mapbox-gl";
 import React from "react";
 import {Layer} from "react-map-gl";
 
-
-
 const UnClusteredLayer : React.FC = () => {
     const style : mapboxgl.CircleLayer = {
         id: 'un-clustered-point',

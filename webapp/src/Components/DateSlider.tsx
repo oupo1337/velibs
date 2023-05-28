@@ -11,7 +11,6 @@ interface DateSliderProps {
 }
 
 const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, value, setValue, setData }) => {
-
     useEffect(() => {
         fetch('http://runtheit.com:8080/api/timestamps')
             .then(response => response.json())
