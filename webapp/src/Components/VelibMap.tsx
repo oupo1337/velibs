@@ -1,9 +1,10 @@
 import React, {useRef} from 'react';
 
-import {EventData, MapMouseEvent} from "mapbox-gl";
+import {EventData, MapMouseEvent} from 'mapbox-gl';
 import Map, {GeoJSONSource, MapRef, Source} from 'react-map-gl';
 
 import ClusterLayer from "./ClusterLayer";
+import Station from "./Station";
 import SymbolCountLayer from "./SymbolCountLayer";
 import UnClusteredLayer from "./UnClusteredLayer";
 
@@ -12,11 +13,11 @@ const mapboxAccessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMj
 interface VelibMapProps {
     data : string
     velibType : string
-    setStationId: React.Dispatch<React.SetStateAction<number | null>>
+    setStation: React.Dispatch<React.SetStateAction<Station | null>>
     setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, setStationId, setDrawerOpen,  }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, setStation, setDrawerOpen,  }) => {
     const mapRef = useRef<MapRef>(null);
 
     const clusterProperties = {
@@ -40,7 +41,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, setStationId, setD
                 }
 
                 if (clusterId === undefined) {
-                    setStationId(feature.properties.station_id);
+                    setStation({
+                        name: feature.properties.name,
+                        Id: feature.properties.station_id,
+                    });
                     setDrawerOpen(true);
                 } else {
                     mapRef.current?.easeTo({

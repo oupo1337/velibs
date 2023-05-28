@@ -4,14 +4,15 @@ import {Drawer} from "@mui/material";
 
 import Graph from "./Graph";
 import GraphData from "./GraphData";
+import Station from "./Station";
 
 interface StationDrawerProps {
-    stationId: number | null
+    station: Station | null
     drawerOpen: boolean
     setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen, setDrawerOpen }) => {
+const StationDrawer: React.FC<StationDrawerProps> = ({ station, drawerOpen, setDrawerOpen }) => {
     const [data, setData] = useState<GraphData[] | null>(null);
 
     const handleClose = () => {
@@ -19,18 +20,19 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen, se
     }
 
     useEffect(() => {
-        if (stationId === null) {
+        if (station === null) {
             return
         }
 
-        fetch(`http://runtheit.com:8080/api/stations/${stationId}`)
+        fetch(`http://runtheit.com:8080/api/stations/${station.Id}`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error))
-    }, [stationId]);
+    }, [station]);
 
     return (
         <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
+            <h1 style={{textAlign: 'center'}}>{station?.name}</h1>
             <Graph data={data} />
         </Drawer>
     );
