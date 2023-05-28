@@ -12,9 +12,11 @@ const mapboxAccessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMj
 interface VelibMapProps {
     data : string
     velibType : string
+    setStationId: React.Dispatch<React.SetStateAction<number | null>>
+    setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, velibType }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, setStationId, setDrawerOpen,  }) => {
     const mapRef = useRef<MapRef>(null);
 
     const clusterProperties = {
@@ -38,7 +40,8 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType }) => {
                 }
 
                 if (clusterId === undefined) {
-                    console.log('click on point');
+                    setStationId(feature.properties.station_id);
+                    setDrawerOpen(true);
                 } else {
                     mapRef.current?.easeTo({
                         center: feature.geometry.coordinates,

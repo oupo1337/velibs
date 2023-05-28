@@ -161,7 +161,7 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 	return stations, nil
 }
 
-func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) (domain.TimeSeries, error) {
+func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) ([]domain.TimeSeries, error) {
 	query := `
 			SELECT timestamp, mechanical, electric
 			FROM statuses
@@ -176,15 +176,13 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 		_ = rows.Close
 	}()
 
-	ts := make(domain.TimeSeries)
+	var ts []domain.TimeSeries
 	for rows.Next() {
-		var timestamp time.Time
-		var bikes domain.Bikes
-
-		if err := rows.Scan(&timestamp, &bikes.Mechanical, &bikes.Electric); err != nil {
+		var current domain.TimeSeries
+		if err := rows.Scan(&current.Date, &current.Mechanical, &current.Electric); err != nil {
 			return nil, fmt.Errorf("rows.Scan error: %w", err)
 		}
-		ts[timestamp] = bikes
+		ts = append(ts, current)
 	}
 	return ts, nil
 }
