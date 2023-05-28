@@ -20,6 +20,7 @@ type geometry struct {
 
 type properties struct {
 	Name       string `json:"name"`
+	StationID  int64  `json:"station_id"`
 	Bikes      int64  `json:"bikes"`
 	Mechanical int64  `json:"mechanical"`
 	Electric   int64  `json:"electric"`
@@ -77,6 +78,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 			},
 			Properties: properties{
 				Name:       station.Name,
+				StationID:  station.ID,
 				Bikes:      station.Mechanical + station.Electric,
 				Mechanical: station.Mechanical,
 				Electric:   station.Electric,
