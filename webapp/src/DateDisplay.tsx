@@ -1,4 +1,5 @@
-import moment from 'moment';
+import React from "react";
+import moment from "moment";
 
 moment.locale('fr', {
     months : ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'],
@@ -56,17 +57,18 @@ moment.locale('fr', {
     }
 });
 
-export default function DateDisplay(props) {
-    const displayDate = () => {
-        moment.locale("fr");
-        const d = moment(props.timestamps[props.value]);
+interface DateDisplayProps {
+    date : string
+}
 
-        return d.calendar();
-    }
+const DateDisplay : React.FC<DateDisplayProps> = ({ date }) => {
+    const displayDate = () : string => moment(date).calendar();
 
     return (
         <div className="sidebar">
-            Date: {displayDate()}
+            {displayDate()}
         </div>
     );
 }
+
+export default DateDisplay;
