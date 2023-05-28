@@ -24,7 +24,7 @@ function App() {
                 <DateSlider timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
             </div>
             <VelibMap data={data} velibType={velibType} setStationId={setStationId} setDrawerOpen={setDrawerOpen}/>
-            <StationDrawer stationId={stationId} drawerOpen={drawerOpen} />
+            <StationDrawer stationId={stationId} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
         </div>
     );
 }

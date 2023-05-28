@@ -7,6 +7,7 @@ import * as d3 from 'd3';
 interface StationDrawerProps {
     stationId: number | null
     drawerOpen: boolean
+    setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 interface GraphData {
@@ -15,7 +16,7 @@ interface GraphData {
     electric: number
 }
 
-const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen }) => {
+const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen, setDrawerOpen }) => {
     const svgRef = useRef<SVGSVGElement | null>(null);
 
     const setGraphData = (data: GraphData[]) => {
@@ -31,29 +32,44 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen }) 
         const y = d3.scaleLinear().range([height, 0]);
 
         // Set up the line generator
-        const line = d3
-            .line<GraphData>()
-            .x((d) => x(d.date))
-            .y((d) => y(d.mechanical));
+        const lines = [
+            {
+                color: '#00561b',
+                line: d3.line<GraphData>()
+                    .x((d) => x(d.date))
+                    .y((d) => y(d.mechanical))
+                    .curve(d3.curveBasis)
+            },
+            {
+                color: '#87CEEB',
+                line: d3.line<GraphData>()
+                    .x((d) => x(d.date))
+                    .y((d) => y(d.electric))
+                    .curve(d3.curveBasis)
+            }
+        ]
 
         // Format the data
         data.forEach((d) => {
             d.date = new Date(d.date);
             d.mechanical = +d.mechanical;
+            d.electric = +d.electric;
         });
 
         // Set the domains of the scales
         const dateExtent = d3.extent(data, (d) => d.date) as [Date, Date];
         x.domain(dateExtent);
-        y.domain([0, d3.max(data, (d) => d.mechanical) || 0]);
+        y.domain([0, d3.max(data, (d) => d.mechanical + d.electric) || 0]);
 
         // Append the line
-        g.append('path')
-            .datum(data)
-            .attr('fill', 'none')
-            .attr('stroke', 'steelblue')
-            .attr('stroke-width', 1.5)
-            .attr('d', line);
+        lines.forEach((line) => {
+            g.append('path')
+                .datum(data)
+                .attr('fill', 'none')
+                .attr('stroke', line.color)
+                .attr('stroke-width', 1.5)
+                .attr('d', line.line);
+        })
 
         // Append the x-axis
         g.append('g')
@@ -62,6 +78,10 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen }) 
 
         // Append the y-axis
         g.append('g').call(d3.axisLeft(y));
+    }
+
+    const handleClose = () => {
+        setDrawerOpen(false);
     }
 
     useEffect(() => {
@@ -76,8 +96,7 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ stationId, drawerOpen }) 
     }, [stationId]);
 
     return (
-        <Drawer anchor='right' open={drawerOpen}>
-            STATION: {stationId}
+        <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
             <svg ref={svgRef} width={800} height={600}></svg>
         </Drawer>
     );
