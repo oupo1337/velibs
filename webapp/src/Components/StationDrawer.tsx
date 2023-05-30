@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 
 import {Drawer} from "@mui/material";
 
-import {GraphData, Station} from "./Domain";
+import {GraphData, Station} from "../Domain/Domain";
 import Graph from "./Graph";
 
 interface StationDrawerProps {

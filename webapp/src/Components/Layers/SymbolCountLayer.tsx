@@ -1,5 +1,6 @@
-import mapboxgl from "mapbox-gl";
 import React from "react";
+
+import mapboxgl from "mapbox-gl";
 import {Layer} from "react-map-gl";
 
 interface SymbolCountLayerProps {

@@ -1,8 +1,9 @@
 import React, {useState} from 'react';
 
+import {Station} from "./Domain/Domain";
+
 import DateDisplay from "./Components/DateDisplay";
 import DateSlider from './Components/DateSlider';
-import {Station} from "./Components/Domain";
 import StationDrawer from "./Components/StationDrawer";
 import VelibMap from './Components/VelibMap';
 import VelibTypeRadio from "./Components/VelibTypeRadio";

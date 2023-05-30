@@ -1,7 +1,7 @@
 import React, {useEffect} from "react";
 import * as d3 from "d3";
 
-import {GraphData, TimeSeries} from "./Domain";
+import {GraphData, TimeSeries} from "../Domain/Domain";
 
 interface GraphProps {
     data : GraphData | null

@@ -3,7 +3,7 @@ import React, {useEffect} from "react";
 import Slider from "@mui/material/Slider";
 
 interface DateSliderProps {
-    setTimestamps : (timestamps : string[]) => void
+    setTimestamps : React.Dispatch<React.SetStateAction<string[]>>
     timestamps : string[]
     value : number
     setValue : React.Dispatch<React.SetStateAction<number>>

@@ -3,10 +3,10 @@ import React, {useRef} from 'react';
 import {EventData, MapMouseEvent} from 'mapbox-gl';
 import Map, {GeoJSONSource, MapRef, Source} from 'react-map-gl';
 
-import {Station} from "./Domain";
-import ClusterLayer from "./ClusterLayer";
-import SymbolCountLayer from "./SymbolCountLayer";
-import UnClusteredLayer from "./UnClusteredLayer";
+import {Station} from "../Domain/Domain";
+import ClusterLayer from "./Layers/ClusterLayer";
+import SymbolCountLayer from "./Layers/SymbolCountLayer";
+import UnClusteredLayer from "./Layers/UnClusteredLayer";
 
 const mapboxAccessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
 
