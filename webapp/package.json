@@ -7,8 +7,8 @@
     "@emotion/styled": "^11.11.0",
     "@mui/material": "^5.13.2",
     "d3": "^7.8.4",
+    "dayjs": "^1.11.7",
     "mapbox-gl": "^2.15.0",
-    "moment": "^2.29.4",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-map-gl": "^7.0.25",
@@ -42,12 +42,12 @@
     "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
+    "@types/d3": "^7.4.0",
     "@types/jest": "^27.5.2",
     "@types/mapbox-gl": "^2.7.11",
     "@types/node": "^16.18.34",
     "@types/react": "^18.2.7",
     "@types/react-dom": "^18.2.4",
-    "@types/d3": "^7.4.0",
     "typescript": "^4.9.5"
   }
 }
