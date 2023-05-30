@@ -24,7 +24,7 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ station, drawerOpen, setD
             return
         }
 
-        fetch(`http://runtheit.com:8080/api/stations/${station.Id}`)
+        fetch(`http://runtheit.com:8080/api/stations/${station.id}`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error))

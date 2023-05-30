@@ -43,7 +43,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, setStation, setDra
                 if (clusterId === undefined) {
                     setStation({
                         name: feature.properties.name,
-                        Id: feature.properties.station_id,
+                        id: feature.properties.station_id,
                     });
                     setDrawerOpen(true);
                 } else {

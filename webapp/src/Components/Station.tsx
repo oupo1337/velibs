@@ -1,6 +1,6 @@
 interface Station {
     name: string
-    Id: number
+    id: number
 }
 
 export default Station;
