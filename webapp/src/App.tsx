@@ -19,7 +19,7 @@ function App() {
     const [drawerOpen, setDrawerOpen] = useState(false);
 
     return (
-        <div>
+        <React.Fragment>
             <div className="sidebar-container">
                 <DateDisplay date={timestamps[value]}/>
                 <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
@@ -27,7 +27,7 @@ function App() {
             </div>
             <VelibMap data={data} velibType={velibType} setStation={setStation} setDrawerOpen={setDrawerOpen}/>
             <StationDrawer station={station} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
-        </div>
+        </React.Fragment>
     );
 }
 

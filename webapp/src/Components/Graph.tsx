@@ -57,7 +57,7 @@ const drawGraph = (data : GraphData) => {
     });
 
     x.domain(d3.extent(timeSeries, (d) => d.date) as [Date, Date]);
-    y.domain([0, data.capacity]);
+    y.domain([0, data.capacity + 5]);
 
     lines.forEach((line) => {
         g.append('path')
@@ -68,6 +68,15 @@ const drawGraph = (data : GraphData) => {
             .attr('stroke-width', 1.2)
             .attr('d', line.data);
     })
+
+    g.append('line')
+        .style("stroke-dasharray", ("10, 10"))
+        .style("stroke", "red")
+        .attr('stroke-width', 3)
+        .attr('x1', x(x.domain()[0]))
+        .attr('y1', y(data.capacity))
+        .attr('x2', x(x.domain()[1]))
+        .attr('y2', y(data.capacity));
 
     g.append('g').attr('transform', `translate(0, ${height})`).call(d3.axisBottom(x));
     g.append('g').call(d3.axisLeft(y));
