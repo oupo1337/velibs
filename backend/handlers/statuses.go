@@ -21,7 +21,7 @@ type geometry struct {
 type properties struct {
 	Name       string `json:"name"`
 	StationID  int64  `json:"station_id"`
-	Bikes      int64  `json:"bikes"`
+	Capacity   int64  `json:"capacity"`
 	Mechanical int64  `json:"mechanical"`
 	Electric   int64  `json:"electric"`
 }
@@ -38,13 +38,13 @@ type featureCollection struct {
 }
 
 func (s *Statuses) GetStationTimeSeries(c *gin.Context) {
-	ts, err := s.db.GetStationTimeSeries(c.Request.Context(), c.Param("id"))
+	sts, err := s.db.GetStationTimeSeries(c.Request.Context(), c.Param("id"))
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.GetStationTimeSeries error: %w", err))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, ts)
+	c.JSON(http.StatusOK, sts)
 }
 
 func (s *Statuses) GetTimestamp(c *gin.Context) {
@@ -79,7 +79,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 			Properties: properties{
 				Name:       station.Name,
 				StationID:  station.ID,
-				Bikes:      station.Mechanical + station.Electric,
+				Capacity:   station.Capacity,
 				Mechanical: station.Mechanical,
 				Electric:   station.Electric,
 			},

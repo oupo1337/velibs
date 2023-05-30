@@ -1,10 +1,16 @@
 import React, {useEffect} from "react";
 import * as d3 from "d3";
 
-import GraphData from "./GraphData";
+import {GraphData, TimeSeries} from "./Domain";
 
 interface GraphProps {
-    data : GraphData[] | null
+    data : GraphData | null
+}
+
+interface Line {
+    class : string
+    color : string
+    data : d3.Line<TimeSeries>
 }
 
 const mechanical = {label: "Mécaniques", color:'#00561b', class: 'mechanical'};
@@ -12,7 +18,8 @@ const electric = {label: "Électriques", color:'#87CEEB', class: 'electric'};
 const margin = {top: 20, right: 20, bottom: 30, left: 50};
 const graph = {width: 800, height:600};
 
-const drawGraph = (data : GraphData[]) => {
+const drawGraph = (data : GraphData) => {
+    const timeSeries = data.time_series;
     const width = graph.width - margin.left - margin.right;
     const height = graph.height - margin.top - margin.bottom;
     const svg = d3.select("#graph-container")
@@ -24,11 +31,11 @@ const drawGraph = (data : GraphData[]) => {
     const y = d3.scaleLinear().range([height, 0]);
     const g = svg.append('g').attr('transform', `translate(${margin.left},${margin.top})`);
 
-    const lines = [
+    const lines : Line[] = [
         {
             class: mechanical.class,
             color: mechanical.color,
-            data: d3.line<GraphData>()
+            data: d3.line<TimeSeries>()
                 .x((d) => x(d.date))
                 .y((d) => y(d.mechanical))
                 .curve(d3.curveBasis)
@@ -36,25 +43,25 @@ const drawGraph = (data : GraphData[]) => {
         {
             class: electric.class,
             color: electric.color,
-            data: d3.line<GraphData>()
+            data: d3.line<TimeSeries>()
                 .x((d) => x(d.date))
                 .y((d) => y(d.electric))
                 .curve(d3.curveBasis)
         }
     ]
 
-    data.forEach((d) => {
+    timeSeries.forEach((d) => {
         d.date = new Date(d.date);
         d.mechanical = +d.mechanical;
         d.electric = +d.electric;
     });
 
-    x.domain(d3.extent(data, (d) => d.date) as [Date, Date]);
-    y.domain([0, d3.max(data, (d) => d.mechanical + d.electric) || 0]);
+    x.domain(d3.extent(timeSeries, (d) => d.date) as [Date, Date]);
+    y.domain([0, data.capacity]);
 
     lines.forEach((line) => {
         g.append('path')
-            .datum(data)
+            .datum(data.time_series)
             .attr('class', line.class)
             .attr('fill', 'none')
             .attr('stroke', line.color)

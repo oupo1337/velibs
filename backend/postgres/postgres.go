@@ -95,7 +95,7 @@ func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]dom
 	}
 
 	query := `
-		SELECT timestamp, id, name, latitude, longitude, mechanical, electric
+		SELECT timestamp, id, name, capacity, latitude, longitude, mechanical, electric
 		FROM statuses
 		JOIN stations ON (id = station_id)
 	  	WHERE timestamp = $1`
@@ -115,6 +115,7 @@ func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]dom
 		if err := rows.Scan(&station.Timestamp,
 			&station.ID,
 			&station.Name,
+			&station.Capacity,
 			&station.Latitude,
 			&station.Longitude,
 			&station.Mechanical,
@@ -130,7 +131,7 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 	query := `
 		WITH 
 			max_timestamp AS (SELECT MAX(timestamp) FROM statuses)
-		SELECT timestamp, id, name, latitude, longitude, mechanical, electric
+		SELECT timestamp, id, name, capacity, latitude, longitude, mechanical, electric
 		FROM statuses
 		JOIN stations ON (id = station_id)
 		WHERE timestamp = (SELECT max FROM max_timestamp)`
@@ -150,6 +151,7 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 		if err := rows.Scan(&station.Timestamp,
 			&station.ID,
 			&station.Name,
+			&station.Capacity,
 			&station.Latitude,
 			&station.Longitude,
 			&station.Mechanical,
@@ -161,7 +163,12 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 	return stations, nil
 }
 
-func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) ([]domain.TimeSeries, error) {
+func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) (domain.StationTimeSeries, error) {
+	var capacity int64
+	if err := db.conn.QueryRow(ctx, `SELECT capacity FROM stations WHERE id = $1`, stationID).Scan(&capacity); err != nil {
+		return domain.StationTimeSeries{}, fmt.Errorf("conn.QueryRow.Scan error: %w", err)
+	}
+
 	query := `
 			SELECT timestamp, mechanical, electric
 			FROM statuses
@@ -170,7 +177,7 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 
 	rows, err := db.conn.Query(ctx, query, stationID)
 	if err != nil {
-		return nil, fmt.Errorf("conn.Query error: %w", err)
+		return domain.StationTimeSeries{}, fmt.Errorf("conn.Query error: %w", err)
 	}
 	defer func() {
 		_ = rows.Close
@@ -180,11 +187,15 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 	for rows.Next() {
 		var current domain.TimeSeries
 		if err := rows.Scan(&current.Date, &current.Mechanical, &current.Electric); err != nil {
-			return nil, fmt.Errorf("rows.Scan error: %w", err)
+			return domain.StationTimeSeries{}, fmt.Errorf("rows.Scan error: %w", err)
 		}
 		ts = append(ts, current)
 	}
-	return ts, nil
+
+	return domain.StationTimeSeries{
+		TimeSeries: ts,
+		Capacity:   capacity,
+	}, nil
 }
 
 func New(conf Configuration) (*Database, error) {

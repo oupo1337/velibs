@@ -3,8 +3,8 @@ import React, {useRef} from 'react';
 import {EventData, MapMouseEvent} from 'mapbox-gl';
 import Map, {GeoJSONSource, MapRef, Source} from 'react-map-gl';
 
+import {Station} from "./Domain";
 import ClusterLayer from "./ClusterLayer";
-import Station from "./Station";
 import SymbolCountLayer from "./SymbolCountLayer";
 import UnClusteredLayer from "./UnClusteredLayer";
 

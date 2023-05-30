@@ -14,6 +14,7 @@ type Station struct {
 	Timestamp  time.Time
 	ID         int64
 	Name       string
+	Capacity   int64
 	Latitude   float64
 	Longitude  float64
 	Mechanical int64

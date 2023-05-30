@@ -2,9 +2,8 @@ import React, {useEffect, useState} from "react";
 
 import {Drawer} from "@mui/material";
 
+import {GraphData, Station} from "./Domain";
 import Graph from "./Graph";
-import GraphData from "./GraphData";
-import Station from "./Station";
 
 interface StationDrawerProps {
     station: Station | null
@@ -13,7 +12,7 @@ interface StationDrawerProps {
 }
 
 const StationDrawer: React.FC<StationDrawerProps> = ({ station, drawerOpen, setDrawerOpen }) => {
-    const [data, setData] = useState<GraphData[] | null>(null);
+    const [data, setData] = useState<GraphData | null>(null);
 
     const handleClose = () => {
         setDrawerOpen(false);

@@ -7,3 +7,8 @@ type TimeSeries struct {
 	Mechanical int64     `json:"mechanical"`
 	Electric   int64     `json:"electric"`
 }
+
+type StationTimeSeries struct {
+	TimeSeries []TimeSeries `json:"time_series"`
+	Capacity   int64        `json:"capacity"`
+}
