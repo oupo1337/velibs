@@ -7,11 +7,9 @@ interface DateDisplayProps {
 }
 
 const DateDisplay : React.FC<DateDisplayProps> = ({ date }) => {
-    const displayDate = () : string => dayjs(date).format('D MMMM YYYY hh:mm')
-
     return (
         <div className="sidebar">
-            {displayDate()}
+            {dayjs(date).format('D MMMM hh:mm')}
         </div>
     );
 }
