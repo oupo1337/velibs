@@ -1,9 +1,9 @@
 import React, {useEffect, useState} from "react";
 
-import {Drawer} from "@mui/material";
+import { Drawer } from "@mui/material";
 
-import {GraphData, Station} from "../Domain/Domain";
-import Graph from "./Graph";
+import { GraphData, Station } from "../Domain/Domain";
+import StackedAreaChart from "./StackedAreaChart";
 
 interface StationDrawerProps {
     station: Station | null
@@ -32,7 +32,7 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ station, drawerOpen, setD
     return (
         <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
             <h1 style={{textAlign: 'center'}}>{station?.name}</h1>
-            <Graph data={data} />
+            <StackedAreaChart data={data} />
         </Drawer>
     );
 }

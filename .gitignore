@@ -17,5 +17,8 @@
 # Intellij
 .idea
 
+# VSCode
+.vscode
+
 # build folder
 build
