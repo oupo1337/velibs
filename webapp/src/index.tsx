@@ -1,10 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import 'dayjs/locale/fr'
+import dayjs from 'dayjs'
 
 import App from './App';
 import reportWebVitals from './reportWebVitals';
 
 import './index.css';
+
+dayjs.locale('fr')
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
