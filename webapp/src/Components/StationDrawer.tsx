@@ -31,10 +31,10 @@ const StationDrawer: React.FC<StationDrawerProps> = ({ station, drawerOpen, setD
 
     return (
         <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
-            <Box sx={{p: '2rem'}}>
-                <Typography variant="h3" component="h1" sx={{textAlign: 'center'}}>
+            <Box sx={{p: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+                <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
                     {station?.name}
-                </Typography>;
+                </Typography>
                 <StackedAreaChart data={data} />
             </Box>
         </Drawer>

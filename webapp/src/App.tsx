@@ -9,6 +9,7 @@ import VelibMap from './Components/VelibMap';
 import VelibTypeRadio from "./Components/VelibTypeRadio";
 
 import './App.css';
+import { Box, Paper, Typography } from '@mui/material';
 
 function App() {
     const [data, setData] = useState("http://runtheit.com:8080/api/statuses.geojson");
@@ -20,11 +21,22 @@ function App() {
 
     return (
         <React.Fragment>
-            <div className="sidebar-container">
-                <DateDisplay date={timestamps[value]}/>
+            <Paper elevation={3} className="sidebar-container">
+                <Box sx={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    flexDirection: 'column',
+                }}>
+                    <img src="https://i.imgur.com/d0VNuqq.png" alt='logo' style={{maxHeight: '5rem', width: '5rem'}} />
+                    <Typography variant="h4" component="h1">
+                        Paname Velibs
+                    </Typography>
+                </Box>
                 <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
+                <DateDisplay date={timestamps[value]}/>
                 <DateSlider timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
-            </div>
+            </Paper>
             <VelibMap data={data} velibType={velibType} setStation={setStation} setDrawerOpen={setDrawerOpen}/>
             <StationDrawer station={station} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
         </React.Fragment>
