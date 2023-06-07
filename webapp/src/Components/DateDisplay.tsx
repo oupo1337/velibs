@@ -1,6 +1,7 @@
 import React from "react";
 
 import dayjs from 'dayjs'
+import { Typography } from "@mui/material";
 
 interface DateDisplayProps {
     date : string
@@ -9,7 +10,7 @@ interface DateDisplayProps {
 const DateDisplay : React.FC<DateDisplayProps> = ({ date }) => {
     return (
         <div className="sidebar">
-            {dayjs(date).format('D MMMM hh:mm')}
+            <Typography>{dayjs(date).format('D MMMM hh:mm')}</Typography>
         </div>
     );
 }
