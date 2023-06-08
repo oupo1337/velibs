@@ -1,31 +1,13 @@
 import React, { useEffect, useRef } from "react";
+
 import * as echarts from 'echarts/core';
-import {
-    BarChart,
-    LineChart,
-} from 'echarts/charts';
-import {
-    TitleComponent,
-    TooltipComponent,
-    GridComponent,
-    DatasetComponent,
-    TransformComponent
-} from 'echarts/components';
+import { BarChart, LineChart } from 'echarts/charts';
+import { TitleComponent, TooltipComponent, GridComponent, DatasetComponent, TransformComponent } from 'echarts/components';
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
-import type {
-    BarSeriesOption,
-    LineSeriesOption,
-} from 'echarts/charts';
-import type {
-    TitleComponentOption,
-    TooltipComponentOption,
-    GridComponentOption,
-    DatasetComponentOption
-} from 'echarts/components';
-import type {
-    ComposeOption,
-} from 'echarts/core';
+import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
+import type { TitleComponentOption, TooltipComponentOption, GridComponentOption, DatasetComponentOption } from 'echarts/components';
+import type { ComposeOption } from 'echarts/core';
 
 import { GraphData } from "../Domain/Domain";
 
@@ -72,107 +54,71 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
 
         const chart = echarts.init(chartRef.current);
         const option: ECOption = {
-            legend: {
-                data: ['Mécaniques', 'Éléctriques']
-            },
             tooltip: {
                 trigger: 'axis',
                 axisPointer: {
-                    type: 'cross',
-                    label: {
-                        backgroundColor: '#6a7985'
-                    }
+                    type: 'shadow'
                 }
             },
-            dataset: {
-                source: cleanData,
-            },
+            legend: {},
             grid: {
                 left: '3%',
                 right: '4%',
                 bottom: '3%',
                 containLabel: true
             },
+            dataset: {
+                source: cleanData,
+            },
             xAxis: [
                 {
                     type: 'category',
-                    boundaryGap: false,
                 }
             ],
             yAxis: [
                 {
+                    max: data.capacity,
                     type: 'value'
                 }
             ],
-            dataZoom: {
-                type: 'inside',
-                filterMode: 'filter',
-            },
             series: [
                 {
-                    name: 'Mécaniques',
-                    type: 'line',
-                    stack: 'Total',
-                    smooth: true,
-                    showSymbol: false,
-                    lineStyle: {
-                        width: 0.5,
-                        color: '#07FF70',
-
-                    },
-                    areaStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            {
-                                offset: 0,
-                                color: 'rgba(58,233,77,0.8)'
-                            },
-                            {
-                                offset: 1,
-                                color: 'rgba(58,233,77,0.3)'
-                            }
-                        ])
-                    },
+                    name: 'Mécanique',
+                    type: 'bar',
+                    stack: 'bikes',
+                    color: '#779F5F',
                     emphasis: {
                         focus: 'series'
                     },
                     encode: {
-                        x: 'date',
-                        y: 'mechanical'
-                    }
+                      x: 'date',
+                      y: 'mechanical',
+                    },
                 },
                 {
                     name: 'Éléctriques',
-                    type: 'line',
-                    stack: 'Total',
-                    smooth: true,
-                    showSymbol: false,
-                    lineStyle: {
-                        width: 0.5,
-                        color: '#0770FF',
-                    },
-                    areaStyle: {
-                        color: new echarts.graphic.LinearGradient(0, 0, 0, 1, [
-                            {
-                                offset: 0,
-                                color: 'rgba(58,77,233,0.8)'
-                            },
-                            {
-                                offset: 1,
-                                color: 'rgba(58,77,233,0.3)'
-                            }
-                        ])
-                    },
+                    type: 'bar',
+                    stack: 'bikes',
+                    color: '#529EAE',
                     emphasis: {
                         focus: 'series'
                     },
                     encode: {
                         x: 'date',
-                        y: 'electric'
-                    }
+                        y: 'electric',
+                    },
                 },
             ],
         };
 
+        chart.dispatchAction({
+            type: 'takeGlobalCursor',
+            key: 'brush',
+            brushOption: {
+                brushType: 'lineX',
+                brushMode: 'single'
+            }
+        });
         chart.setOption(option);
     }, [data]);
 

@@ -15,16 +15,17 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 
 dayjs.locale('fr')
 
-const darkTheme = createTheme({
-  palette: { mode: 'dark' },
-});
+const lightTheme = createTheme({
+    palette: { mode: 'light' },
+})
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
+
 root.render(
   <React.StrictMode>
-    <ThemeProvider theme={darkTheme}>
+    <ThemeProvider theme={lightTheme}>
       <CssBaseline />
       <App />
     </ThemeProvider>
