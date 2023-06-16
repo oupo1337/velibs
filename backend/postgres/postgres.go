@@ -172,7 +172,7 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 	query := `
 			SELECT timestamp, mechanical, electric
 			FROM statuses
-			WHERE station_id = $1 AND timestamp > NOW() - INTERVAL '1 week'
+			WHERE station_id = $1
 			ORDER BY timestamp;`
 
 	rows, err := db.conn.Query(ctx, query, stationID)

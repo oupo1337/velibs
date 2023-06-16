@@ -2,9 +2,10 @@ import React, { useEffect, useRef } from "react";
 
 import * as echarts from 'echarts/core';
 import { BarChart, LineChart } from 'echarts/charts';
-import { TitleComponent, TooltipComponent, GridComponent, DatasetComponent, TransformComponent } from 'echarts/components';
+import { LegendComponent, DataZoomComponent, TitleComponent, TooltipComponent, GridComponent, DatasetComponent, TransformComponent } from 'echarts/components';
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
+
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
 import type { TitleComponentOption, TooltipComponentOption, GridComponentOption, DatasetComponentOption } from 'echarts/components';
 import type { ComposeOption } from 'echarts/core';
@@ -21,6 +22,8 @@ type ECOption = ComposeOption<
 >;
 
 echarts.use([
+    LegendComponent,
+    DataZoomComponent,
     TitleComponent,
     TooltipComponent,
     GridComponent,
@@ -45,18 +48,22 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             return
         }
 
+        console.log(data.time_series);
         const cleanData = data.time_series.map(d => ({
             date: new Date(d.date),
             mechanical: +d.mechanical,
             electric: +d.electric,
         }));
+        console.log(cleanData);
 
         const chart = echarts.init(chartRef.current);
         const option: ECOption = {
-            legend: {},
+            legend: {
+                data: ['Éléctriques', 'Mécaniques']
+            },
             tooltip: {
                 trigger: 'axis',
-                showContent: false
+                showContent: true
             },
             grid: {
                 left: '3%',
@@ -77,6 +84,17 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     type: 'value'
                 }
             ],
+            dataZoom: [
+                {
+                    type: 'inside',
+                    start: 0,
+                    end: 10
+                },
+                {
+                    start: 0,
+                    end: 10
+                }
+            ],
             series: [
                 {
                     name: 'Éléctriques',
@@ -86,6 +104,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     emphasis: {
                         focus: 'series'
                     },
+                    smooth: true,
                     encode: {
                         x: 'date',
                         y: 'electric',
@@ -99,6 +118,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     emphasis: {
                         focus: 'series'
                     },
+                    smooth: true,
                     encode: {
                         x: 'date',
                         y: 'mechanical',
