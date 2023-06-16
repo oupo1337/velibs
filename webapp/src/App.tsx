@@ -1,12 +1,12 @@
 import React, {useState} from 'react';
 
-import {Station} from "./Domain/Domain";
+import {Station} from "./domain/Domain";
 
-import DateDisplay from "./Components/DateDisplay";
-import DateSlider from './Components/DateSlider';
-import StationDrawer from "./Components/StationDrawer";
-import VelibMap from './Components/VelibMap';
-import VelibTypeRadio from "./Components/VelibTypeRadio";
+import DateDisplay from "./components/DateDisplay";
+import DateSlider from './components/DateSlider';
+import StationDrawer from "./components/StationDrawer";
+import VelibMap from './components/VelibMap';
+import VelibTypeRadio from "./components/VelibTypeRadio";
 
 import './App.css';
 import { Box, Paper, Typography } from '@mui/material';

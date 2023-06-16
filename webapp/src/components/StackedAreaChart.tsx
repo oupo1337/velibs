@@ -9,8 +9,7 @@ import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
 import type { TitleComponentOption, TooltipComponentOption, GridComponentOption, DatasetComponentOption } from 'echarts/components';
 import type { ComposeOption } from 'echarts/core';
 
-import { GraphData } from "../Domain/Domain";
-
+import { GraphData } from "../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption
@@ -54,13 +53,11 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
 
         const chart = echarts.init(chartRef.current);
         const option: ECOption = {
+            legend: {},
             tooltip: {
                 trigger: 'axis',
-                axisPointer: {
-                    type: 'shadow'
-                }
+                showContent: false
             },
-            legend: {},
             grid: {
                 left: '3%',
                 right: '4%',
@@ -77,29 +74,15 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             ],
             yAxis: [
                 {
-                    max: data.capacity,
                     type: 'value'
                 }
             ],
             series: [
                 {
-                    name: 'Mécanique',
-                    type: 'bar',
-                    stack: 'bikes',
-                    color: '#779F5F',
-                    emphasis: {
-                        focus: 'series'
-                    },
-                    encode: {
-                      x: 'date',
-                      y: 'mechanical',
-                    },
-                },
-                {
                     name: 'Éléctriques',
-                    type: 'bar',
-                    stack: 'bikes',
-                    color: '#529EAE',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
                     emphasis: {
                         focus: 'series'
                     },
@@ -108,17 +91,22 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                         y: 'electric',
                     },
                 },
+                {
+                    name: 'Mécaniques',
+                    type: 'line',
+                    stack: 'Total',
+                    areaStyle: {},
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    encode: {
+                        x: 'date',
+                        y: 'mechanical',
+                    },
+                }
             ],
         };
 
-        chart.dispatchAction({
-            type: 'takeGlobalCursor',
-            key: 'brush',
-            brushOption: {
-                brushType: 'lineX',
-                brushMode: 'single'
-            }
-        });
         chart.setOption(option);
     }, [data]);
 

@@ -2,7 +2,7 @@ import React, {useEffect, useState} from "react";
 
 import { Box, Drawer, Typography } from "@mui/material";
 
-import { GraphData, Station } from "../Domain/Domain";
+import { GraphData, Station } from "../domain/Domain";
 import StackedAreaChart from "./StackedAreaChart";
 
 interface StationDrawerProps {
