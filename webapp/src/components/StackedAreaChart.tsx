@@ -2,15 +2,32 @@ import React, { useEffect, useRef } from "react";
 
 import * as echarts from 'echarts/core';
 import { BarChart, LineChart } from 'echarts/charts';
-import { LegendComponent, DataZoomComponent, TitleComponent, TooltipComponent, GridComponent, DatasetComponent, TransformComponent } from 'echarts/components';
+import {
+    DatasetComponent,
+    DataZoomComponent,
+    GridComponent,
+    LegendComponent,
+    MarkLineComponent,
+    TitleComponent,
+    TooltipComponent,
+    TransformComponent
+} from 'echarts/components';
+
+import type {
+    DatasetComponentOption,
+    GridComponentOption,
+    MarkLineComponentOption,
+    TitleComponentOption,
+    TooltipComponentOption,
+} from 'echarts/components';
+
 import { LabelLayout, UniversalTransition } from 'echarts/features';
 import { CanvasRenderer } from 'echarts/renderers';
 
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
-import type { TitleComponentOption, TooltipComponentOption, GridComponentOption, DatasetComponentOption } from 'echarts/components';
 import type { ComposeOption } from 'echarts/core';
 
-import { GraphData } from "../domain/Domain";
+import {GraphData, TimeSeries} from "../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption
@@ -19,9 +36,11 @@ type ECOption = ComposeOption<
     | TooltipComponentOption
     | GridComponentOption
     | DatasetComponentOption
+    | MarkLineComponentOption
 >;
 
 echarts.use([
+    MarkLineComponent,
     LegendComponent,
     DataZoomComponent,
     TitleComponent,
@@ -40,6 +59,14 @@ interface GraphProps {
     data : GraphData | null
 }
 
+function cleanTimeSeries(data: TimeSeries[]) {
+    return data.map(d => ({
+        date: new Date(d.date),
+        mechanical: +d.mechanical,
+        electric: +d.electric,
+    }));
+}
+
 const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
     const chartRef = useRef<HTMLDivElement>(null);
 
@@ -48,15 +75,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             return
         }
 
-        console.log(data.time_series);
-        const cleanData = data.time_series.map(d => ({
-            date: new Date(d.date),
-            mechanical: +d.mechanical,
-            electric: +d.electric,
-        }));
-        console.log(cleanData);
-
-        const chart = echarts.init(chartRef.current);
+        const cleanData = cleanTimeSeries(data.time_series);
         const option: ECOption = {
             legend: {
                 data: ['Éléctriques', 'Mécaniques']
@@ -76,23 +95,24 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             },
             xAxis: [
                 {
-                    type: 'category',
-                }
+                    type: 'time',
+                },
             ],
             yAxis: [
                 {
-                    type: 'value'
+                    type: 'value',
+                    max: data.capacity + 10,
                 }
             ],
             dataZoom: [
                 {
                     type: 'inside',
                     start: 0,
-                    end: 10
+                    end: 27
                 },
                 {
                     start: 0,
-                    end: 10
+                    end: 27
                 }
             ],
             series: [
@@ -109,6 +129,15 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                         x: 'date',
                         y: 'electric',
                     },
+                    markLine: {
+                        data: [{
+                            type: "average",
+                            label: {
+                                show: false,
+                            },
+
+                        }]
+                    }
                 },
                 {
                     name: 'Mécaniques',
@@ -123,9 +152,31 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                         x: 'date',
                         y: 'mechanical',
                     },
-                }
+                    markLine: {
+                        data: [{
+                            type: "average",
+                            symbol: "none",
+                            label: {
+                                show: false,
+                            },
+                        },
+                        {
+                            name: "Capacité",
+                            yAxis: data.capacity,
+                            label: {
+                                position: "insideEndTop",
+                                formatter: params => "Capacité"
+                            },
+                            lineStyle: {
+                                color: "red",
+                            }
+                        }]
+                    }
+                },
             ],
         };
+
+        const chart = echarts.init(chartRef.current);
 
         chart.setOption(option);
     }, [data]);
