@@ -164,8 +164,11 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, er
 }
 
 func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) (domain.StationTimeSeries, error) {
+	var ID int64
+	var name string
 	var capacity int64
-	if err := db.conn.QueryRow(ctx, `SELECT capacity FROM stations WHERE id = $1`, stationID).Scan(&capacity); err != nil {
+	if err := db.conn.QueryRow(ctx, `SELECT id, name, capacity FROM stations WHERE id = $1`, stationID).
+		Scan(&ID, &name, &capacity); err != nil {
 		return domain.StationTimeSeries{}, fmt.Errorf("conn.QueryRow.Scan error: %w", err)
 	}
 
@@ -193,8 +196,10 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 	}
 
 	return domain.StationTimeSeries{
-		TimeSeries: ts,
+		ID:         ID,
+		Name:       name,
 		Capacity:   capacity,
+		TimeSeries: ts,
 	}, nil
 }
 
