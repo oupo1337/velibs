@@ -1,43 +1,35 @@
-import React, { useEffect, useState } from "react";
+import { Box, Typography } from "@mui/material";
 
-import { Box, Drawer, Typography } from "@mui/material";
-
-import { GraphData, Station } from "../domain/Domain";
+import { GraphData } from "../domain/Domain";
 import StackedAreaChart from "./StackedAreaChart";
+import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom";
 
-interface StationDrawerProps {
-    station: Station | null
-    drawerOpen: boolean
-    setDrawerOpen: React.Dispatch<React.SetStateAction<boolean>>
+export type LoaderData = {
+    station: GraphData
+};
+
+export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
+    const { stationId } = params;
+    if (!stationId) {
+        return redirect("/");
+    }
+    const station = await fetch(`http://runtheit.com:8080/api/stations/${stationId}`)
+        .then(response => response.json())
+        .catch(() => redirect("/"))
+
+    return { station } satisfies LoaderData;
 }
 
-const StationDrawer: React.FC<StationDrawerProps> = ({ station, drawerOpen, setDrawerOpen }) => {
-    const [data, setData] = useState<GraphData | null>(null);
-
-    const handleClose = () => {
-        setDrawerOpen(false);
-    }
-
-    useEffect(() => {
-        if (station === null) {
-            return
-        }
-
-        fetch(`http://runtheit.com:8080/api/stations/${station.id}`)
-            .then(response => response.json())
-            .then(data => setData(data))
-            .catch(error => console.error(error))
-    }, [station]);
+const StationDrawer = () => {
+    const { station } = useLoaderData() as LoaderData;
 
     return (
-        <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
-            <Box sx={{p: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-                <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
-                    {station?.name}
-                </Typography>
-                <StackedAreaChart data={data} />
-            </Box>
-        </Drawer>
+        <Box sx={{p: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
+            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
+                TEMP
+            </Typography>
+            <StackedAreaChart data={station} />
+        </Box>
     );
 }
 

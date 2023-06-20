@@ -12,6 +12,8 @@ import '@fontsource/roboto/400.css';
 import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
+import { RouterProvider, createBrowserRouter } from 'react-router-dom';
+import StationDrawer, { stationLoader } from './components/StationDrawer';
 
 dayjs.locale('fr')
 
@@ -23,11 +25,25 @@ const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
 );
 
+const router = createBrowserRouter([
+  {
+    path: "/",
+    element: <App />,
+    children: [
+      {
+        path: ":stationId",
+        element: <StationDrawer  />,
+        loader: stationLoader,
+      }
+    ]
+  },
+]);
+
 root.render(
   <React.StrictMode>
     <ThemeProvider theme={lightTheme}>
       <CssBaseline />
-      <App />
+      <RouterProvider router={router} />
     </ThemeProvider>
   </React.StrictMode>
 );

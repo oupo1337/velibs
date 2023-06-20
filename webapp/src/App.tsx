@@ -1,23 +1,27 @@
 import React, {useState} from 'react';
 
-import {Station} from "./domain/Domain";
-
 import DateDisplay from "./components/DateDisplay";
 import DateSlider from './components/DateSlider';
-import StationDrawer from "./components/StationDrawer";
 import VelibMap from './components/VelibMap';
 import VelibTypeRadio from "./components/VelibTypeRadio";
 
 import './App.css';
-import { Box, Paper, Typography } from '@mui/material';
+import { Box, Drawer, Paper, Typography } from '@mui/material';
+import { Outlet, useMatch, useNavigate } from 'react-router-dom';
 
 function App() {
+    const navigate = useNavigate();
+    const match = useMatch('/:stationId');
     const [data, setData] = useState("http://runtheit.com:8080/api/statuses.geojson");
     const [timestamps, setTimestamps] = useState<string[]>([]);
     const [value, setValue] = useState(0);
     const [velibType, setVelibType] = useState('bikes');
-    const [station, setStation] = useState<Station|null>(null);
-    const [drawerOpen, setDrawerOpen] = useState(false);
+
+    const drawerOpen = Boolean(match);
+
+    const handleClose = () => {
+        navigate('/');
+    }
 
     return (
         <React.Fragment>
@@ -37,8 +41,11 @@ function App() {
                 <DateDisplay date={timestamps[value]}/>
                 <DateSlider timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
             </Paper>
-            <VelibMap data={data} velibType={velibType} setStation={setStation} setDrawerOpen={setDrawerOpen}/>
-            <StationDrawer station={station} drawerOpen={drawerOpen} setDrawerOpen={setDrawerOpen}/>
+            <VelibMap data={data} velibType={velibType} />
+
+            <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
+                <Outlet />
+            </Drawer>
         </React.Fragment>
     );
 }
