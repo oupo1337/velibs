@@ -77,6 +77,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
 
         const cleanData = cleanTimeSeries(data.time_series);
         const option: ECOption = {
+            responsive: true,
             legend: {
                 data: ['Éléctriques', 'Mécaniques']
             },
@@ -110,10 +111,6 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     start: 0,
                     end: 27
                 },
-                {
-                    start: 0,
-                    end: 27
-                }
             ],
             series: [
                 {
@@ -131,11 +128,15 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     },
                     markLine: {
                         data: [{
-                            type: "average",
+                            name: "Capacité",
+                            yAxis: data.capacity,
                             label: {
-                                show: false,
+                                position: "insideEndTop",
+                                formatter: params => "Capacité"
                             },
-
+                            lineStyle: {
+                                color: "red",
+                            }
                         }]
                     }
                 },
@@ -152,26 +153,6 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                         x: 'date',
                         y: 'mechanical',
                     },
-                    markLine: {
-                        data: [{
-                            type: "average",
-                            symbol: "none",
-                            label: {
-                                show: false,
-                            },
-                        },
-                        {
-                            name: "Capacité",
-                            yAxis: data.capacity,
-                            label: {
-                                position: "insideEndTop",
-                                formatter: params => "Capacité"
-                            },
-                            lineStyle: {
-                                color: "red",
-                            }
-                        }]
-                    }
                 },
             ],
         };
@@ -181,7 +162,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
         chart.setOption(option);
     }, [data]);
 
-    return <div ref={chartRef} style={{ width: '800px', height: '600px' }} />;
+    return <div ref={chartRef} style={{ width: '80vw', height: '80vh' }} />;
 }
 
 export default StackedAreaChart;

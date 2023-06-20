@@ -1,7 +1,7 @@
 import React from "react";
 
 import mapboxgl from "mapbox-gl";
-import {Layer} from "react-map-gl";
+import { Layer } from "react-map-gl";
 
 const ClusterLayer: React.FC = () => {
     const style : mapboxgl.CircleLayer = {
