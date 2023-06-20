@@ -4,12 +4,9 @@ export interface TimeSeries {
     electric: number
 }
 
-export interface GraphData {
-    time_series: TimeSeries[]
-    capacity: number
-}
-
 export interface Station {
-    name: string
     id: number
+    name: string
+    capacity: number
+    time_series: TimeSeries[]
 }

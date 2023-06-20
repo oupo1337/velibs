@@ -27,7 +27,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
 import type { ComposeOption } from 'echarts/core';
 
-import {GraphData, TimeSeries} from "../domain/Domain";
+import {Station, TimeSeries} from "../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption
@@ -56,7 +56,7 @@ echarts.use([
 ]);
 
 interface GraphProps {
-    data : GraphData | null
+    data : Station | null
 }
 
 function cleanTimeSeries(data: TimeSeries[]) {

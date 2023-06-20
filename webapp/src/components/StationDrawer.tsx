@@ -1,11 +1,11 @@
 import { Box, Typography } from "@mui/material";
 
-import { GraphData } from "../domain/Domain";
+import { Station } from "../domain/Domain";
 import StackedAreaChart from "./StackedAreaChart";
 import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom";
 
 export type LoaderData = {
-    station: GraphData
+    station: Station
 };
 
 export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
@@ -26,7 +26,7 @@ const StationDrawer = () => {
     return (
         <Box sx={{p: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
             <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
-                TEMP
+                { station.name }
             </Typography>
             <StackedAreaChart data={station} />
         </Box>
