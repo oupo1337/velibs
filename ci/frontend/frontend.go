@@ -40,6 +40,6 @@ func (b *Builder) Build(ctx context.Context) error {
 
 func New(client *dagger.Client) *Builder {
 	return &Builder{
-		client: client,
+		client: client.Pipeline("frontend"),
 	}
 }

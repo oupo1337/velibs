@@ -1,13 +1,15 @@
-import React, {useState} from 'react';
+import React, { useState } from 'react';
 
 import DateDisplay from "./components/DateDisplay";
 import DateSlider from './components/DateSlider';
+import MenuTitle from './components/MenuTitle';
 import VelibMap from './components/VelibMap';
 import VelibTypeRadio from "./components/VelibTypeRadio";
 
-import './App.css';
 import { Box, Drawer, Paper, Typography } from '@mui/material';
 import { Outlet, useMatch, useNavigate } from 'react-router-dom';
+
+import './App.css';
 
 function App() {
     const navigate = useNavigate();
@@ -26,17 +28,7 @@ function App() {
     return (
         <React.Fragment>
             <Paper elevation={3} className="sidebar-container">
-                <Box sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    flexDirection: 'column',
-                }}>
-                    <img src="https://i.imgur.com/d0VNuqq.png" alt='logo' style={{maxHeight: '5rem', width: '5rem'}} />
-                    <Typography variant="h4" component="h1">
-                        Paname Velibs
-                    </Typography>
-                </Box>
+                <MenuTitle />
                 <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
                 <DateDisplay date={timestamps[value]}/>
                 <DateSlider timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />

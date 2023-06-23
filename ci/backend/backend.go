@@ -13,7 +13,10 @@ type Builder struct {
 func (b *Builder) buildApplication() *dagger.Directory {
 	src := b.client.Host().Directory("./backend")
 	directoryOptions := dagger.ContainerWithDirectoryOpts{
-		Exclude: []string{"backend"},
+		Exclude: []string{
+			"./cmd/api/api",
+			"./cmd/data-fetcher/data-fetcher",
+		},
 	}
 
 	return b.client.Container().
@@ -28,7 +31,7 @@ func (b *Builder) buildImageWithDirectory(ctx context.Context, dir *dagger.Direc
 	_, err := b.client.Container().
 		From("alpine:3.18.0").
 		WithDirectory("/application", dir).
-		Export(ctx, "/tmp/backend.tar")
+		Export(ctx, "build/backend.tar")
 	return err
 }
 
@@ -39,6 +42,6 @@ func (b *Builder) Build(ctx context.Context) error {
 
 func New(client *dagger.Client) *Builder {
 	return &Builder{
-		client: client,
+		client: client.Pipeline("backend"),
 	}
 }

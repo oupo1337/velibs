@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"os"
+	"sync"
 
 	"dagger.io/dagger"
 
@@ -19,13 +20,22 @@ func main() {
 	}
 	defer func() { _ = client.Close() }()
 
-	if err := frontend.New(client).Build(context.Background()); err != nil {
-		log.Fatalf("frontend.Build error: %s", err.Error())
-		return
-	}
+	wg := new(sync.WaitGroup)
+	wg.Add(2)
+	go func() {
+		defer wg.Done()
+		if err := frontend.New(client).Build(context.Background()); err != nil {
+			log.Fatalf("frontend.Build error: %s", err.Error())
+			return
+		}
+	}()
 
-	if err := backend.New(client).Build(context.Background()); err != nil {
-		log.Fatalf("backend.Build error: %s", err.Error())
-		return
-	}
+	go func() {
+		defer wg.Done()
+		if err := backend.New(client).Build(context.Background()); err != nil {
+			log.Fatalf("backend.Build error: %s", err.Error())
+			return
+		}
+	}()
+	wg.Wait()
 }
