@@ -1,11 +1,12 @@
 import { Box, Typography } from "@mui/material";
+import * as React from "react";
 
 import { Station } from "../domain/Domain";
 import StackedAreaChart from "./StackedAreaChart";
-import { LoaderFunctionArgs, redirect, useLoaderData } from "react-router-dom";
+import { LoaderFunctionArgs, redirect, useLoaderData, defer, Await } from "react-router-dom";
 
 export type LoaderData = {
-    station: Station
+    station: Promise<Station>
 };
 
 export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
@@ -13,11 +14,11 @@ export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
     if (!stationId) {
         return redirect("/");
     }
-    const station = await fetch(`http://runtheit.com:8080/api/stations/${stationId}`)
+    const station = fetch(`http://runtheit.com:8080/api/stations/${stationId}`)
         .then(response => response.json())
         .catch(() => redirect("/"))
 
-    return { station } satisfies LoaderData;
+    return defer({ station } satisfies LoaderData);
 }
 
 const StationDrawer = () => {
@@ -25,10 +26,18 @@ const StationDrawer = () => {
 
     return (
         <Box sx={{p: '2rem', display: 'flex', flexDirection: 'column', gap: '1rem'}}>
-            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
-                { station.name }
-            </Typography>
-            <StackedAreaChart data={station} />
+            <React.Suspense fallback={<p>Loading package location...</p>}>
+                <Await resolve={station} errorElement={<p>Error loading package location!</p>}>
+                    {(resolvedStation: Station) => (
+                        <>
+                            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
+                                { resolvedStation.name }
+                            </Typography>
+                            <StackedAreaChart data={resolvedStation} />
+                        </>
+                    )}
+                </Await>
+            </React.Suspense>  
         </Box>
     );
 }
