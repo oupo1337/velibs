@@ -6,7 +6,7 @@ import MenuTitle from './components/MenuTitle';
 import VelibMap from './components/VelibMap';
 import VelibTypeRadio from "./components/VelibTypeRadio";
 
-import { Box, Drawer, Paper, Typography } from '@mui/material';
+import { Drawer, Paper } from '@mui/material';
 import { Outlet, useMatch, useNavigate } from 'react-router-dom';
 
 import './App.css';
