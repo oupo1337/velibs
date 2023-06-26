@@ -26,8 +26,18 @@ func initDependencies() (dependencies, error) {
 		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
 	}
 
-	stations := tasks.NewStations(db)
-	statuses := tasks.NewStatuses(db)
+	timescale, err := postgres.New(postgres.Configuration{
+		Username: os.Getenv("TIMESCALE_USERNAME"),
+		Password: os.Getenv("TIMESCALE_PASSWORD"),
+		Address:  os.Getenv("TIMESCALE_ADDRESS"),
+		Name:     os.Getenv("TIMESCALE_NAME"),
+	})
+	if err != nil {
+		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
+	}
+
+	stations := tasks.NewStations(db, timescale)
+	statuses := tasks.NewStatuses(db, timescale)
 
 	c := cron.New()
 	if err := c.AddFunc("0 */10 * * * *", func() {

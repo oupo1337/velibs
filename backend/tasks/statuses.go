@@ -12,8 +12,9 @@ import (
 )
 
 type Statuses struct {
-	db     *postgres.Database
-	client *http.Client
+	db        *postgres.Database
+	timescale *postgres.Database
+	client    *http.Client
 }
 
 type StationStatusResponse struct {
@@ -57,11 +58,17 @@ func (s *Statuses) UpdateStatuses() {
 		fmt.Printf("db.InsertStatuses error: %s\n", err.Error())
 		return
 	}
+
+	if err := s.timescale.InsertStatuses(context.Background(), statuses); err != nil {
+		fmt.Printf("db.InsertStatuses error (timescale): %s\n", err.Error())
+		return
+	}
 }
 
-func NewStatuses(db *postgres.Database) *Statuses {
+func NewStatuses(db *postgres.Database, timescale *postgres.Database) *Statuses {
 	return &Statuses{
-		db: db,
+		db:        db,
+		timescale: timescale,
 		client: &http.Client{
 			Timeout: 10 * time.Second,
 		},

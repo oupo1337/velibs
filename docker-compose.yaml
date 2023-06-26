@@ -11,7 +11,21 @@ services:
       timeout: 5s
       retries: 5
     volumes:
-      - ./backend/database_schema:/docker-entrypoint-initdb.d
+      - ./backend/database_schema/postgres:/docker-entrypoint-initdb.d
+
+  timescale:
+    image: timescale/timescaledb:latest-pg15
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+    restart: always
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - ./backend/database_schema/timescale:/docker-entrypoint-initdb.d
 
   api:
     build:
@@ -19,6 +33,8 @@ services:
       dockerfile: Dockerfile.api
     depends_on:
       postgres:
+        condition: service_healthy
+      timescale:
         condition: service_healthy
     environment:
       PORT: 8080
@@ -38,11 +54,17 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      timescale:
+        condition: service_healthy
     environment:
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: password
       DATABASE_ADDRESS: postgres
       DATABASE_NAME: postgres
+      TIMESCALE_USERNAME: postgres
+      TIMESCALE_PASSWORD: password
+      TIMESCALE_ADDRESS: timescale
+      TIMESCALE_NAME: postgres
     restart: always
 
   webapp:

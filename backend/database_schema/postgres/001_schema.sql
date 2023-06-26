@@ -1,3 +1,5 @@
+BEGIN;
+
 CREATE TABLE stations (
     id          BIGINT PRIMARY KEY,
     capacity    INTEGER NOT NULL,
@@ -12,3 +14,5 @@ CREATE TABLE statuses (
     mechanical  INTEGER NOT NULL,
     electric    INTEGER NOT NULL
 );
+
+COMMIT;
