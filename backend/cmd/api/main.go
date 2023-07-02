@@ -38,6 +38,7 @@ func initApp(deps dependencies) *gin.Engine {
 	app.Use(cors.Default())
 
 	app.GET("/api/timestamps", deps.statuses.GetTimestamp)
+	app.GET("/api/v2/timestamps", deps.statuses.GetMinMaxTimestamps)
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
 	app.GET("/api/stations/:id", deps.statuses.GetStationTimeSeries)
 	return app

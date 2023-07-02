@@ -64,6 +64,19 @@ func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.Statio
 	return nil
 }
 
+func (db *Database) GetMinMaxTimestamps(ctx context.Context) (time.Time, time.Time, error) {
+	query := `
+		SELECT MIN(timestamp), MAX(timestamp)
+		FROM statuses;
+	`
+
+	var min, max time.Time
+	if err := db.conn.QueryRow(ctx, query).Scan(&min, &max); err != nil {
+		return time.Time{}, time.Time{}, fmt.Errorf("conn.QueryRow.Scan error: %w", err)
+	}
+	return min, max, nil
+}
+
 func (db *Database) ListTimestamps(ctx context.Context) ([]time.Time, error) {
 	query := `
 		SELECT DISTINCT timestamp

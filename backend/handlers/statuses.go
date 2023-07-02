@@ -3,6 +3,7 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 
@@ -58,6 +59,24 @@ func (s *Statuses) GetTimestamp(c *gin.Context) {
 	c.JSON(http.StatusOK, timestamps)
 }
 
+type minMaxTimestampResponse struct {
+	Min time.Time `json:"min"`
+	Max time.Time `json:"max"`
+}
+
+func (s *Statuses) GetMinMaxTimestamps(c *gin.Context) {
+	min, max, err := s.db.GetMinMaxTimestamps(c.Request.Context())
+	if err != nil {
+		_ = c.Error(fmt.Errorf("db.GetMinMaxTimestamps error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, minMaxTimestampResponse{
+		Min: min,
+		Max: max,
+	})
+}
+
 func (s *Statuses) GetStatuses(c *gin.Context) {
 	stations, err := s.db.FetchTimestamp(c.Request.Context(), c.Query("timestamp"))
 	if err != nil {
@@ -66,7 +85,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		return
 	}
 
-	features := make([]feature, 0)
+	features := make([]feature, len(stations))
 	for _, station := range stations {
 		features = append(features, feature{
 			Type: "Feature",
