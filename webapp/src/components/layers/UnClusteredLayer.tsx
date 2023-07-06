@@ -1,10 +1,9 @@
 import React from "react";
 
-import mapboxgl from "mapbox-gl";
-import { Layer } from "react-map-gl";
+import { Layer, LayerProps } from "react-map-gl";
 
 const UnClusteredLayer : React.FC = () => {
-    const style : mapboxgl.CircleLayer = {
+    const style : LayerProps = {
         id: 'un-clustered-point',
         type: 'circle',
         source: 'velibs-data',

@@ -1,16 +1,15 @@
 import React from "react";
 
-import mapboxgl from "mapbox-gl";
-import { Layer } from "react-map-gl";
+import { Layer, LayerProps } from "react-map-gl";
 
 const HeatmapLayer: React.FC = () => {
-    const style : mapboxgl.HeatmapLayer = {
+    const props : LayerProps = {
         id: 'velibs-heat',
         type: 'heatmap',
     }
 
     return (
-        <Layer {...style} />
+        <Layer {...props} />
     );
 }
 

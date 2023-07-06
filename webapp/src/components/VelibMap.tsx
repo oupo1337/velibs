@@ -1,7 +1,8 @@
 import React, {useRef} from 'react';
 
-import { EventData, MapMouseEvent } from 'mapbox-gl';
-import Map, { GeoJSONSource, MapRef, Source } from 'react-map-gl';
+import mapbox from 'mapbox-gl';
+
+import Map, { MapRef, Source } from 'react-map-gl';
 
 import ClusterLayer from "./layers/ClusterLayer";
 import SymbolCountLayer from "./layers/SymbolCountLayer";
@@ -25,32 +26,32 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType,  }) => {
         electric: ['+', ['get', 'electric']]
     }
 
-    const handleClick = (event: MapMouseEvent & EventData) => {
-        if (event.features && event.features.length > 0) {
-            const feature = event.features[0];
-            if (feature.properties === null || mapRef.current === null) {
-                return
-            }
-
-            const clusterId = feature.properties.cluster_id;
-            const mapboxSource = mapRef.current.getSource('velibs-data') as GeoJSONSource;
-            mapboxSource.getClusterExpansionZoom(clusterId, (err, zoom) => {
-                if (err) {
-                    return;
-                }
-
-                if (clusterId === undefined) {
-                    navigate(`/${feature.properties.station_id}`);
-                } else {
-                    mapRef.current?.easeTo({
-                        center: feature.geometry.coordinates,
-                        zoom: zoom,
-                        duration: 500
-                    });
-                }
-            });
-        }
-    }
+    // const handleClick = (event: mapbox.MapLayerMouseEvent) => {
+    //     if (event.features && event.features.length > 0) {
+    //         const feature = event.features[0];
+    //         if (feature.properties === null || mapRef.current === null) {
+    //             return
+    //         }
+    //
+    //         const clusterId = feature.properties.cluster_id;
+    //         const mapboxSource = mapRef.current.getSource('velibs-data') as mapbox.GeoJSONSource;
+    //         mapboxSource.getClusterExpansionZoom(clusterId, (err, zoom) => {
+    //             if (err) {
+    //                 return;
+    //             }
+    //
+    //             if (clusterId === undefined && feature.properties) {
+    //                 navigate(`/${feature.properties.station_id}`);
+    //             } else {
+    //                 mapRef.current?.easeTo({
+    //                     center: feature.geometry.coordinates,
+    //                     zoom: zoom,
+    //                     duration: 500
+    //                 });
+    //             }
+    //         });
+    //     }
+    // }
 
     return <Map
         initialViewState={{longitude: 2.3522, latitude: 48.8566, zoom: 11}}
@@ -58,7 +59,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType,  }) => {
         mapStyle="mapbox://styles/mapbox/dark-v11"
         mapboxAccessToken={mapboxAccessToken}
         interactiveLayerIds={['clusters', 'un-clustered-point']}
-        onClick={handleClick}
+        // onClick={handleClick}
         ref={mapRef}
     >
         <Source id="velibs-data" type="geojson" cluster={true} data={data} clusterProperties={clusterProperties}>

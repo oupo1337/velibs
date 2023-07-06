@@ -1,14 +1,13 @@
 import React from "react";
 
-import mapboxgl from "mapbox-gl";
-import { Layer } from "react-map-gl";
+import { Layer, LayerProps } from "react-map-gl";
 
 interface SymbolCountLayerProps {
     velibType : string
 }
 
 const SymbolCountLayer: React.FC<SymbolCountLayerProps> = ({ velibType }) => {
-    const style : mapboxgl.SymbolLayer = {
+    const props : LayerProps = {
         id: 'cluster-count',
         type: 'symbol',
         source: 'velibs-data',
@@ -21,7 +20,7 @@ const SymbolCountLayer: React.FC<SymbolCountLayerProps> = ({ velibType }) => {
     }
 
     return (
-        <Layer {...style} />
+        <Layer {...props} />
     );
 }
 
