@@ -85,7 +85,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		return
 	}
 
-	features := make([]feature, len(stations))
+	features := make([]feature, 0, len(stations))
 	for _, station := range stations {
 		features = append(features, feature{
 			Type: "Feature",
