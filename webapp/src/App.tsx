@@ -15,7 +15,7 @@ function App() {
     const navigate = useNavigate();
     const match = useMatch('/:stationId');
     const [data, setData] = useState("http://runtheit.com:8080/api/statuses.geojson");
-    const [timestamps, setTimestamps] = useState<string[]>([]);
+    const [timestamps, setTimestamps] = useState<Date[]>([]);
     const [value, setValue] = useState(0);
     const [velibType, setVelibType] = useState('bikes');
 

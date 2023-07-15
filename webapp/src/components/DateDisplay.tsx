@@ -4,7 +4,7 @@ import dayjs from 'dayjs'
 import { Typography } from "@mui/material";
 
 interface DateDisplayProps {
-    date : string
+    date : Date
 }
 
 const DateDisplay : React.FC<DateDisplayProps> = ({ date }) => {
