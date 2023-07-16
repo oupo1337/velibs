@@ -216,6 +216,37 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 	}, nil
 }
 
+func (db *Database) GetStationDistribution(ctx context.Context, stationID string) ([]domain.DistributionData, error) {
+	query := `
+		SELECT
+		    EXTRACT(HOUR FROM timestamp),
+		    EXTRACT(MINUTE FROM timestamp),
+			AVG(mechanical) as mechanical,
+		    AVG(electric) electric
+		FROM statuses
+		WHERE station_id = $1
+		GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)
+		ORDER BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)`
+
+	rows, err := db.conn.Query(ctx, query, stationID)
+	if err != nil {
+		return nil, fmt.Errorf("conn.Query error: %w", err)
+	}
+	defer func() {
+		_ = rows.Close
+	}()
+
+	var distribution []domain.DistributionData
+	for rows.Next() {
+		var data domain.DistributionData
+		if err := rows.Scan(&data.Hour, &data.Minute, &data.Mechanical, &data.Electric); err != nil {
+			return nil, fmt.Errorf("rows.Scan error: %w", err)
+		}
+		distribution = append(distribution, data)
+	}
+	return distribution, nil
+}
+
 func New(conf Configuration) (*Database, error) {
 	url := fmt.Sprintf("postgres://%s:%s@%s/%s", conf.Username, conf.Password, conf.Address, conf.Name)
 

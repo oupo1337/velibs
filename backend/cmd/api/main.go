@@ -41,6 +41,7 @@ func initApp(deps dependencies) *gin.Engine {
 	app.GET("/api/v2/timestamps", deps.statuses.GetMinMaxTimestamps)
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
 	app.GET("/api/stations/:id", deps.statuses.GetStationTimeSeries)
+	app.GET("/api/v1/distributions/:id", deps.statuses.GetStationDistribution)
 	return app
 }
 

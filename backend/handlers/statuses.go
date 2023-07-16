@@ -39,6 +39,16 @@ type featureCollection struct {
 	Features []feature `json:"features"`
 }
 
+func (s *Statuses) GetStationDistribution(c *gin.Context) {
+	distribution, err := s.db.GetStationDistribution(c.Request.Context(), c.Param("id"))
+	if err != nil {
+		_ = c.Error(fmt.Errorf("db.GetStationDistribution error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, distribution)
+}
+
 func (s *Statuses) GetStationTimeSeries(c *gin.Context) {
 	sts, err := s.db.GetStationTimeSeries(c.Request.Context(), c.Param("id"))
 	if err != nil {

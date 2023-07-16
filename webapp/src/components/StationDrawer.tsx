@@ -26,8 +26,8 @@ export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
 
 const DrawerLoader = () => {
     return (
-        <Box style={{ width: '80vw', height: '80vh' }}>
-            <CircularProgress />
+        <Box style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center' }}>
+            <CircularProgress size={100}/>
         </Box>
     );
 }

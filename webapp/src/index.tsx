@@ -15,11 +15,11 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 import StationDrawer, { stationLoader } from './components/StationDrawer';
 
-dayjs.locale('fr')
+dayjs.locale('fr');
 
 const lightTheme = createTheme({
     palette: { mode: 'light' },
-})
+});
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
