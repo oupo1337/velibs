@@ -221,8 +221,8 @@ func (db *Database) GetStationDistribution(ctx context.Context, stationID string
 		SELECT
 		    EXTRACT(HOUR FROM timestamp),
 		    EXTRACT(MINUTE FROM timestamp),
-			AVG(mechanical) as mechanical,
-		    AVG(electric) electric
+			AVG(mechanical) AS mechanical,
+		    AVG(electric) AS electric
 		FROM statuses
 		WHERE station_id = $1
 		GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)
