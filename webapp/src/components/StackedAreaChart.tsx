@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from "react";
 
 import * as echarts from 'echarts/core';
-import { BarChart, LineChart } from 'echarts/charts';
+import { LineChart } from 'echarts/charts';
 import {
     DatasetComponent,
     DataZoomComponent,
@@ -48,7 +48,6 @@ echarts.use([
     GridComponent,
     DatasetComponent,
     TransformComponent,
-    BarChart,
     LineChart,
     LabelLayout,
     UniversalTransition,
@@ -71,7 +70,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
     const chartRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
-        if (!chartRef.current || !data) {
+        if (!chartRef.current) {
             return
         }
 
@@ -107,7 +106,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             ],
             dataZoom: [
                 {
-                    type: 'slider',
+                    type: 'inside',
                     start: 90,
                     end: 100
                 },
@@ -162,7 +161,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
         chart.setOption(option);
     }, [data]);
 
-    return <div ref={chartRef} style={{ width: '80vw', height: '80vh' }} />;
+    return <div ref={chartRef} style={{ width: '80vw', height: '45vh' }} />;
 }
 
 export default StackedAreaChart;

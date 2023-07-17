@@ -12,8 +12,7 @@ export interface Station {
 }
 
 export interface Distribution {
-    hour: number
-    minute: number
+    time: string
     mechanical: number
     electric: number
 }
