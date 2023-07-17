@@ -56,7 +56,7 @@ echarts.use([
 ]);
 
 interface GraphProps {
-    data : Station | null
+    data : Station
 }
 
 function cleanTimeSeries(data: TimeSeries[]) {
@@ -107,9 +107,9 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             ],
             dataZoom: [
                 {
-                    type: 'inside',
-                    start: 0,
-                    end: 27
+                    type: 'slider',
+                    start: 90,
+                    end: 100
                 },
             ],
             series: [

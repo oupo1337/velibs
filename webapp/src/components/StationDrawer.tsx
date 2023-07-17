@@ -5,11 +5,13 @@ import { LoaderFunctionArgs, redirect, useLoaderData, defer, Await } from "react
 import { Box, Typography } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 
-import { Station } from "../domain/Domain";
+import {Distribution, Station} from "../domain/Domain";
 import StackedAreaChart from "./StackedAreaChart";
+import DistributionChart from "./DistributionChart";
 
 export type LoaderData = {
     station: Promise<Station>
+    distribution: Promise<Distribution[]>
 };
 
 export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
@@ -21,7 +23,12 @@ export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
     const station = fetch(`http://runtheit.com:8080/api/stations/${stationId}`)
         .then(response => response.json())
         .catch(() => redirect("/"))
-    return defer({ station } satisfies LoaderData);
+
+    const distribution = fetch(`http://runtheit.com:8080/api/v1/distributions/${stationId}`)
+        .then(response => response.json())
+        .catch(() => redirect("/"))
+
+    return defer({ station, distribution } satisfies LoaderData);
 }
 
 const DrawerLoader = () => {
@@ -39,7 +46,7 @@ const DrawerError = () => {
 }
 
 const StationDrawer = () => {
-    const { station } = useLoaderData() as LoaderData;
+    const { station, distribution } = useLoaderData() as LoaderData;
 
     return (
         <Box style={{ width: '80vw', height: '80vh' }}>
@@ -54,7 +61,16 @@ const StationDrawer = () => {
                         </React.Fragment>
                     )}
                 </Await>
-            </React.Suspense>  
+            </React.Suspense>
+            <React.Suspense fallback={<DrawerLoader />}>
+                <Await resolve={distribution} errorElement={<DrawerError />}>
+                    {(resolvedDistribution: Distribution[]) => (
+                        <React.Fragment>
+                            <DistributionChart data={resolvedDistribution} />
+                        </React.Fragment>
+                    )}
+                </Await>
+            </React.Suspense>
         </Box>
     );
 }

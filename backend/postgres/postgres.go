@@ -219,10 +219,10 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 func (db *Database) GetStationDistribution(ctx context.Context, stationID string) ([]domain.DistributionData, error) {
 	query := `
 		SELECT
-		    EXTRACT(HOUR FROM timestamp),
-		    EXTRACT(MINUTE FROM timestamp),
+			EXTRACT(HOUR FROM timestamp),
+			EXTRACT(MINUTE FROM timestamp),
 			AVG(mechanical) AS mechanical,
-		    AVG(electric) AS electric
+			AVG(electric) AS electric
 		FROM statuses
 		WHERE station_id = $1
 		GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)
@@ -238,10 +238,13 @@ func (db *Database) GetStationDistribution(ctx context.Context, stationID string
 
 	var distribution []domain.DistributionData
 	for rows.Next() {
+		var hour int
+		var minute int
 		var data domain.DistributionData
-		if err := rows.Scan(&data.Hour, &data.Minute, &data.Mechanical, &data.Electric); err != nil {
+		if err := rows.Scan(&hour, &minute, &data.Mechanical, &data.Electric); err != nil {
 			return nil, fmt.Errorf("rows.Scan error: %w", err)
 		}
+		data.Time = fmt.Sprintf("%02d:%02d", hour, minute)
 		distribution = append(distribution, data)
 	}
 	return distribution, nil

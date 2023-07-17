@@ -10,3 +10,10 @@ export interface Station {
     capacity: number
     time_series: TimeSeries[]
 }
+
+export interface Distribution {
+    hour: number
+    minute: number
+    mechanical: number
+    electric: number
+}
