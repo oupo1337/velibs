@@ -66,7 +66,6 @@ const DistributionChart: React.FC<DistributionChartProps> = ({ data }) => {
             bikes: item.electric + item.mechanical,
         }));
 
-        console.log(cleanData);
         const option: ECOption = {
             responsive: true,
             tooltip: {
