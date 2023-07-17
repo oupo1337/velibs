@@ -63,11 +63,16 @@ const DistributionChart: React.FC<DistributionChartProps> = ({ data }) => {
 
         const cleanData = data.map(item => ({
             time: item.time,
-            bikes: item.electric + item.mechanical,
+            electric: item.electric,
+            mechanical: item.mechanical,
         }));
 
+        console.log(cleanData);
         const option: ECOption = {
             responsive: true,
+            legend: {
+                data: ['Éléctriques', 'Mécaniques']
+            },
             tooltip: {
                 trigger: 'axis',
                 showContent: true
@@ -93,14 +98,27 @@ const DistributionChart: React.FC<DistributionChartProps> = ({ data }) => {
             ],
             series: [
                 {
-                    name: 'Vélos',
+                    name: 'Éléctriques',
                     type: 'bar',
+                    stack: 'Total',
                     emphasis: {
                         focus: 'series'
                     },
                     encode: {
                         x: 'time',
-                        y: 'bikes',
+                        y: 'electric',
+                    },
+                },
+                {
+                    name: 'Mécaniques',
+                    type: 'bar',
+                    stack: 'Total',
+                    emphasis: {
+                        focus: 'series'
+                    },
+                    encode: {
+                        x: 'time',
+                        y: 'mechanical',
                     },
                 },
             ],
