@@ -67,7 +67,6 @@ const DistributionChart: React.FC<DistributionChartProps> = ({ data }) => {
             mechanical: item.mechanical,
         }));
 
-        console.log(cleanData);
         const option: ECOption = {
             responsive: true,
             legend: {
