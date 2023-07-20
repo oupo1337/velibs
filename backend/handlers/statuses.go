@@ -84,7 +84,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 	resQuery := c.DefaultQuery("resolution", "9")
 	resolution, err := strconv.Atoi(resQuery)
 	if err != nil {
-		_ = c.Error(fmt.Errorf("strconv.Atoi( error: %w", err))
+		_ = c.Error(fmt.Errorf("strconv.Atoi error: %w", err))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
