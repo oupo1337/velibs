@@ -3,7 +3,7 @@ FROM golang:1.20 AS build
 ADD . /build
 WORKDIR /build/cmd/api
 
-RUN CGO_ENABLED=0 go build -o api
+RUN go build -o api
 
 FROM alpine:latest
 
