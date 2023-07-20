@@ -77,31 +77,6 @@ func (db *Database) GetMinMaxTimestamps(ctx context.Context) (time.Time, time.Ti
 	return min, max, nil
 }
 
-func (db *Database) ListTimestamps(ctx context.Context) ([]time.Time, error) {
-	query := `
-		SELECT DISTINCT timestamp
-		FROM statuses
-		ORDER BY timestamp;`
-
-	rows, err := db.conn.Query(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("conn.Query error: %w", err)
-	}
-	defer func() {
-		_ = rows.Close
-	}()
-
-	var timestamps []time.Time
-	for rows.Next() {
-		var timestamp time.Time
-		if err := rows.Scan(&timestamp); err != nil {
-			return nil, fmt.Errorf("rows.Scan error: %w", err)
-		}
-		timestamps = append(timestamps, timestamp)
-	}
-	return timestamps, nil
-}
-
 func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]domain.Station, error) {
 	if timestamp == "" {
 		return db.FetchMaxTimestamp(ctx)

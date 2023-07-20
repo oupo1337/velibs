@@ -7,6 +7,7 @@ require (
 	github.com/gin-gonic/gin v1.9.0
 	github.com/jackc/pgx/v4 v4.18.1
 	github.com/robfig/cron v1.2.0
+	github.com/uber/h3-go/v4 v4.1.0
 )
 
 require (

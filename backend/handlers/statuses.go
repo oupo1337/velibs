@@ -3,9 +3,11 @@ package handlers
 import (
 	"fmt"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/uber/h3-go/v4"
 
 	"github.com/oupo1337/velibs/backend/postgres"
 )
@@ -26,6 +28,7 @@ type properties struct {
 	Bikes      int64  `json:"bikes"`
 	Mechanical int64  `json:"mechanical"`
 	Electric   int64  `json:"electric"`
+	Hexagon    string `json:"hexagon"`
 }
 
 type feature struct {
@@ -59,16 +62,6 @@ func (s *Statuses) GetStationTimeSeries(c *gin.Context) {
 	c.JSON(http.StatusOK, sts)
 }
 
-func (s *Statuses) GetTimestamp(c *gin.Context) {
-	timestamps, err := s.db.ListTimestamps(c.Request.Context())
-	if err != nil {
-		_ = c.Error(fmt.Errorf("db.ListTimestamps error: %w", err))
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-	c.JSON(http.StatusOK, timestamps)
-}
-
 type minMaxTimestampResponse struct {
 	Min time.Time `json:"min"`
 	Max time.Time `json:"max"`
@@ -88,6 +81,14 @@ func (s *Statuses) GetMinMaxTimestamps(c *gin.Context) {
 }
 
 func (s *Statuses) GetStatuses(c *gin.Context) {
+	resQuery := c.DefaultQuery("resolution", "9")
+	resolution, err := strconv.Atoi(resQuery)
+	if err != nil {
+		_ = c.Error(fmt.Errorf("strconv.Atoi( error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
 	stations, err := s.db.FetchTimestamp(c.Request.Context(), c.Query("timestamp"))
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.FetchTimestamp error: %w", err))
@@ -97,6 +98,8 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 
 	features := make([]feature, 0, len(stations))
 	for _, station := range stations {
+		latLng := h3.NewLatLng(station.Latitude, station.Longitude)
+
 		features = append(features, feature{
 			Type: "Feature",
 			Geometry: geometry{
@@ -113,6 +116,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 				Bikes:      station.Mechanical + station.Electric,
 				Mechanical: station.Mechanical,
 				Electric:   station.Electric,
+				Hexagon:    h3.LatLngToCell(latLng, resolution).String(),
 			},
 		})
 	}
