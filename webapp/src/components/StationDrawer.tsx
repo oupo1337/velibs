@@ -53,21 +53,19 @@ const StationDrawer = () => {
             <React.Suspense fallback={<DrawerLoader />}>
                 <Await resolve={station} errorElement={<DrawerError />}>
                     {(resolvedStation: Station) => (
-                        <React.Fragment>
+                        <>
                             <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
                                 { resolvedStation.name }
                             </Typography>
                             <StackedAreaChart data={resolvedStation} />
-                        </React.Fragment>
+                        </>
                     )}
                 </Await>
             </React.Suspense>
             <React.Suspense fallback={<DrawerLoader />}>
                 <Await resolve={distribution} errorElement={<DrawerError />}>
                     {(resolvedDistribution: Distribution[]) => (
-                        <React.Fragment>
-                            <DistributionChart data={resolvedDistribution} />
-                        </React.Fragment>
+                        <DistributionChart data={resolvedDistribution} />
                     )}
                 </Await>
             </React.Suspense>

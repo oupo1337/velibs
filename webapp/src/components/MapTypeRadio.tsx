@@ -2,27 +2,27 @@ import React, {ChangeEvent} from "react";
 
 import {FormControl, FormControlLabel, Radio, RadioGroup} from "@mui/material";
 
-interface VelibTypeRadioProps {
-    velibType : string
-    setVelibType : React.Dispatch<React.SetStateAction<string>>
+interface MapTypeRadioProps {
+    mapType : string
+    setMapType : React.Dispatch<React.SetStateAction<string>>
 }
 
-const VelibTypeRadio : React.FC<VelibTypeRadioProps> = ({ velibType, setVelibType }) => {
+const MapTypeRadio : React.FC<MapTypeRadioProps> = ({ mapType, setMapType }) => {
     const handleChange = (event : ChangeEvent<HTMLElement>, value : string) => {
-        setVelibType(value);
+        setMapType(value);
     }
 
     return (
         <div className="sidebar">
             <FormControl>
-                <RadioGroup row value={velibType} onChange={handleChange}>
-                    <FormControlLabel value="bikes" control={<Radio />} label="Tous" />
-                    <FormControlLabel value="mechanical" control={<Radio />} label="Mécaniques" />
-                    <FormControlLabel value="electric" control={<Radio />} label="Éléctriques" />
+                <RadioGroup row value={mapType} onChange={handleChange}>
+                    <FormControlLabel value="points" control={<Radio />} label="Points" />
+                    <FormControlLabel value="heatmap" control={<Radio />} label="Heatmap" />
+                    <FormControlLabel value="h3" control={<Radio />} label="H3" />
                 </RadioGroup>
             </FormControl>
         </div>
     );
 }
 
-export default VelibTypeRadio;
+export default MapTypeRadio;

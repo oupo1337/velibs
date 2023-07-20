@@ -1,73 +1,94 @@
-import React, {useRef} from 'react';
+import React from 'react';
+import {useNavigate} from 'react-router-dom';
 
-import mapbox from 'mapbox-gl';
+import Map from 'react-map-gl';
 
-import Map, { MapRef, Source } from 'react-map-gl';
+import DeckGL from '@deck.gl/react/typed';
+import {Layer} from '@deck.gl/core/typed';
+import {ScatterplotLayer} from '@deck.gl/layers/typed';
+import {HeatmapLayer} from '@deck.gl/aggregation-layers/typed';
+import {H3HexagonLayer} from '@deck.gl/geo-layers/typed';
 
-import ClusterLayer from "./layers/ClusterLayer";
-import SymbolCountLayer from "./layers/SymbolCountLayer";
-import UnClusteredLayer from "./layers/UnClusteredLayer";
-import { useNavigate } from 'react-router-dom';
+const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
 
-const mapboxAccessToken = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
+const INITIAL_VIEW_STATE = {
+    longitude: 2.3522,
+    latitude: 48.8566,
+    zoom: 11,
+    pitch: 0,
+    bearing: 0
+};
 
 interface VelibMapProps {
-    data : string
+    data : any
     velibType : string
+    mapType : string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, velibType,  }) => {
-    const mapRef = useRef<MapRef>(null);
+const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
     const navigate = useNavigate();
 
-    const clusterProperties = {
-        bikes: ['+', ['get', 'bikes']],
-        mechanical: ['+', ['get', 'mechanical']],
-        electric: ['+', ['get', 'electric']]
-    }
+    const scatterPlotLayer = new ScatterplotLayer({
+        id: 'scatter-plot-layer',
+        pickable: true,
+        data: data.features,
+        getPosition: d => d.geometry.coordinates,
+        getRadius: 50,
+        getFillColor: [255, 0, 0],
+        getLineColor: [0, 0, 0],
+        radiusMaxPixels: 100,
+        lineWidthMinPixels: 1,
+        onClick: info => navigate(`/${info.object.properties.station_id}`),
+        onError: error => console.error(error),
+    });
 
-    const handleClick = (event: any) => {
-        if (event.features && event.features.length > 0) {
-            const feature = event.features[0];
-            if (feature.properties === null || mapRef.current === null) {
-                return
+    const heatmapLayer = new HeatmapLayer({
+        id: 'heatmap-layer',
+        pickable: false,
+        data: data.features,
+        getPosition: d => d.geometry.coordinates,
+        getWeight: d => {
+            switch (velibType) {
+            case 'mechanical':
+                return d.properties.mechanical * 10;
+            case 'electric':
+                return d.properties.electric * 10;
+            default:
+                return d.properties.bikes * 10;
             }
+        },
+        radiusPixels: 30,
+        intensity: 1,
+        threshold: 0.05,
+    })
 
-            const clusterId = feature.properties.cluster_id;
-            const mapboxSource = mapRef.current.getSource('velibs-data') as mapbox.GeoJSONSource;
-            mapboxSource.getClusterExpansionZoom(clusterId, (err, zoom) => {
-                if (err) {
-                    return;
-                }
+    const h3Layer = new H3HexagonLayer({
+        id: 'h3-hexagon-layer',
+        data: data.features,
+        pickable: true,
+        wireframe: false,
+        filled: true,
+        extruded: true,
+        elevationScale: 20,
+        getHexagon: d => d.properties.hexagon,
+        getFillColor: d => [d.properties.bikes * 5, 0, 255],
+        getElevation: d => d.properties.bikes
+    });
 
-                if (clusterId === undefined && feature.properties) {
-                    navigate(`/${feature.properties.station_id}`);
-                } else {
-                    mapRef.current?.easeTo({
-                        center: feature.geometry.coordinates,
-                        zoom: zoom,
-                        duration: 500
-                    });
-                }
-            });
-        }
+    const layers: Layer[] = [];
+    if (mapType === 'points') {
+        layers.push(scatterPlotLayer);
+    } else if (mapType === 'heatmap') {
+        layers.push(heatmapLayer);
+    } else {
+        layers.push(h3Layer);
     }
 
-    return <Map
-        initialViewState={{longitude: 2.3522, latitude: 48.8566, zoom: 11}}
-        style={{width: '100vw', height: '100vh'}}
-        mapStyle="mapbox://styles/mapbox/dark-v11"
-        mapboxAccessToken={mapboxAccessToken}
-        interactiveLayerIds={['clusters', 'un-clustered-point']}
-        onClick={handleClick}
-        ref={mapRef}
-    >
-        <Source id="velibs-data" type="geojson" cluster={true} data={data} clusterProperties={clusterProperties}>
-            <ClusterLayer />
-            <SymbolCountLayer velibType={velibType} />
-            <UnClusteredLayer />
-        </Source>
-    </Map>
+    return (
+        <DeckGL initialViewState={INITIAL_VIEW_STATE} controller={true} layers={layers}>
+            <Map mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle="mapbox://styles/mapbox/dark-v11"/>
+        </DeckGL>
+    );
 };
 
 export default VelibMap;

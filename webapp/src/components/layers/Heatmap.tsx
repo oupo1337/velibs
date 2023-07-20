@@ -4,8 +4,9 @@ import { Layer, LayerProps } from "react-map-gl";
 
 const HeatmapLayer: React.FC = () => {
     const props : LayerProps = {
-        id: 'velibs-heat',
+        id: 'heatmap',
         type: 'heatmap',
+        source: 'velibs-data',
     }
 
     return (

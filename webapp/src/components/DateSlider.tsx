@@ -36,7 +36,10 @@ const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, valu
         const timestamp = timestamps[newValue].toISOString();
 
         setValue(newValue);
-        setData(`http://runtheit.com:8080/api/statuses.geojson?timestamp=${timestamp}`);
+        fetch(`http://runtheit.com:8080/api/statuses.geojson?timestamp=${timestamp}`)
+            .then(response => response.json())
+            .then(data => setData(data))
+            .catch(error => console.error(error));
     }
 
     return (
