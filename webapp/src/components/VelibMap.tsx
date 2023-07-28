@@ -1,62 +1,52 @@
-import React from 'react';
+import React, {useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
 import Map from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react/typed';
-import {Layer} from '@deck.gl/core/typed';
-import {ScatterplotLayer} from '@deck.gl/layers/typed';
 import {HeatmapLayer} from '@deck.gl/aggregation-layers/typed';
 import {H3HexagonLayer} from '@deck.gl/geo-layers/typed';
 
+import ClusterLayer from "./layers/ClusterLayer";
+
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
 
-const INITIAL_VIEW_STATE = {
-    longitude: 2.3522,
-    latitude: 48.8566,
-    zoom: 11,
-    pitch: 0,
-    bearing: 0
-};
+interface ViewState {
+    latitude: number;
+    longitude: number;
+    zoom: number;
+    bearing?: number;
+    pitch?: number;
+}
 
 interface VelibMapProps {
-    data : any
-    velibType : string
-    mapType : string
+    data: any
+    velibType: string
+    mapType: string
 }
 
 const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
     const navigate = useNavigate();
-
-    const scatterPlotLayer = new ScatterplotLayer({
-        id: 'scatter-plot-layer',
-        pickable: true,
-        data: data.features,
-        getPosition: d => d.geometry.coordinates,
-        getRadius: 50,
-        getFillColor: [255, 0, 0],
-        getLineColor: [0, 0, 0],
-        radiusMaxPixels: 100,
-        lineWidthMinPixels: 1,
-        onClick: info => navigate(`/${info.object.properties.station_id}`),
-        onError: error => console.error(error),
+    const [viewport, setViewport] = useState<ViewState>({
+        longitude: 2.3522,
+        latitude: 48.8566,
+        zoom: 11,
+        pitch: 0,
+        bearing: 0
     });
+
+    const handleViewStateChange = ({viewState}: any) => {
+        setViewport(viewState);
+        return viewState;
+    };
 
     const heatmapLayer = new HeatmapLayer({
         id: 'heatmap-layer',
-        pickable: false,
+        visible: mapType === 'heatmap',
         data: data.features,
+        pickable: false,
         getPosition: d => d.geometry.coordinates,
-        getWeight: d => {
-            switch (velibType) {
-            case 'mechanical':
-                return d.properties.mechanical * 10;
-            case 'electric':
-                return d.properties.electric * 10;
-            default:
-                return d.properties.bikes * 10;
-            }
-        },
+        getWeight: d => d.properties.bikes * 10,
         radiusPixels: 30,
         intensity: 1,
         threshold: 0.05,
@@ -64,6 +54,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
 
     const h3Layer = new H3HexagonLayer({
         id: 'h3-hexagon-layer',
+        visible: mapType === 'h3',
         data: data.features,
         pickable: true,
         wireframe: false,
@@ -75,17 +66,28 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
         getElevation: d => d.properties.bikes
     });
 
-    const layers: Layer[] = [];
-    if (mapType === 'points') {
-        layers.push(scatterPlotLayer);
-    } else if (mapType === 'heatmap') {
-        layers.push(heatmapLayer);
-    } else {
-        layers.push(h3Layer);
-    }
+    const clusterLayer = new ClusterLayer({
+        visible: mapType === 'points',
+        data: data.features,
+        zoom: viewport.zoom,
+        onClick: (info: any) => {
+            if (info.object.properties.cluster) {
+                return
+            }
+            navigate(`/${info.object.properties.station_id}`);
+        },
+        onHover: (info: any) => {
+            console.log(info);
+        }
+    })
 
     return (
-        <DeckGL initialViewState={INITIAL_VIEW_STATE} controller={true} layers={layers}>
+        <DeckGL
+            viewState={viewport}
+            onViewStateChange={handleViewStateChange}
+            controller={true}
+            layers={[clusterLayer, heatmapLayer, h3Layer]}
+        >
             <Map mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle="mapbox://styles/mapbox/dark-v11"/>
         </DeckGL>
     );
