@@ -13,7 +13,7 @@ import '@fontsource/roboto/500.css';
 import '@fontsource/roboto/700.css';
 import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
-import StationDrawer, { stationLoader } from './components/StationDrawer';
+import StationDrawer, { stationLoader } from './components/drawer/StationDrawer';
 
 dayjs.locale('fr');
 

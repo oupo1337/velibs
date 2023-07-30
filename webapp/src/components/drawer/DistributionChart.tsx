@@ -25,7 +25,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { BarSeriesOption } from 'echarts/charts';
 import type { ComposeOption } from 'echarts/core';
 
-import {Distribution} from "../domain/Domain";
+import {Distribution} from "../../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption

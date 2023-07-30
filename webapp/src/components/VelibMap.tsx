@@ -25,7 +25,7 @@ interface VelibMapProps {
     mapType: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType  }) => {
     const navigate = useNavigate();
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
@@ -57,7 +57,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
         visible: mapType === 'h3',
         data: data.features,
         pickable: true,
-        wireframe: false,
+        wireframe: true,
         filled: true,
         extruded: true,
         elevationScale: 20,
@@ -76,10 +76,8 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType,  }) => {
             }
             navigate(`/${info.object.properties.station_id}`);
         },
-        onHover: (info: any) => {
-            console.log(info);
-        }
-    })
+        // onHover: (info: any) => console.log(info),
+    });
 
     return (
         <DeckGL

@@ -5,7 +5,8 @@ import { LoaderFunctionArgs, redirect, useLoaderData, defer, Await } from "react
 import { Box, Typography } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
 
-import {Distribution, Station} from "../domain/Domain";
+import {Distribution, Station} from "../../domain/Domain";
+
 import StackedAreaChart from "./StackedAreaChart";
 import DistributionChart from "./DistributionChart";
 

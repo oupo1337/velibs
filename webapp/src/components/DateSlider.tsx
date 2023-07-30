@@ -22,7 +22,7 @@ const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, valu
                 const timestamps : Date[] = [];
                 while (timestamp <= max) {
                     timestamps.push(timestamp);
-                    timestamp = new Date(timestamp.getTime() + minutes*60000);
+                    timestamp = new Date(timestamp.getTime() + minutes*60*1000);
                 }
 
                 setTimestamps(timestamps);

@@ -27,7 +27,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
 import type { ComposeOption } from 'echarts/core';
 
-import {Station, TimeSeries} from "../domain/Domain";
+import {Station, TimeSeries} from "../../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption

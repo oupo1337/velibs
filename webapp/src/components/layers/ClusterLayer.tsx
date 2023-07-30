@@ -22,21 +22,25 @@ interface ClusterData {
     }
 }
 
+function getTextSize(d: ClusterData): number {
+    if (d.properties.cluster)
+        return 20;
+    return 10;
+}
+
 function getSize(d: ClusterData): number {
     if (!d.properties.cluster)
         return 10;
-
     if (d.properties.sum < 30)
-        return 20;
-    if (d.properties.sum < 100)
         return 30;
-    return 40;
+    if (d.properties.sum < 100)
+        return 60;
+    return 80;
 }
 
 function getScatterPlotColor(d: ClusterData): [number, number, number] {
     if (!d.properties.cluster)
         return [17, 68, 225];
-
     if (d.properties.sum < 30)
         return [81, 187, 214];
     if (d.properties.sum < 100)
@@ -60,8 +64,8 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
         return changeFlags.somethingChanged;
     }
 
-    updateState({props, oldProps, changeFlags}: any) {
-        if (changeFlags.somethingChanged && props.zoom !== oldProps.zoom) {
+    updateState({changeFlags}: any) {
+        if (changeFlags.somethingChanged) {
             const cluster = new Supercluster({
                 radius: 50,
                 maxZoom: 14,
@@ -69,13 +73,16 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                     accumulated.sum += props.sum;
                 },
                 map: (props) => {
-                    return {sum: props.bikes}
+                    return {
+                        sum: props.bikes
+                    }
                 },
             });
 
             cluster.load(this.props.data as any);
+            const clusteredData = cluster.getClusters(bounds, this.props.zoom);
             this.setState({
-                data: cluster.getClusters(bounds, this.props.zoom),
+                data: clusteredData,
             });
         }
     }
@@ -104,7 +111,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 pickable: true,
                 getPosition: (d: ClusterData) => d.geometry.coordinates,
                 getText: getText,
-                getSize: getSize,
+                getSize: getTextSize,
                 getAngle: 0,
                 getTextAnchor: 'middle',
                 getAlignmentBaseline: 'center',
