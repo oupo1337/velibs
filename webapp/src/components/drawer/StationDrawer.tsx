@@ -10,9 +10,12 @@ import {Distribution, Station} from "../../domain/Domain";
 import StackedAreaChart from "./StackedAreaChart";
 import DistributionChart from "./DistributionChart";
 
+type StationData = [
+    station: Station,
+    distribution: Distribution[]
+]
 export type LoaderData = {
-    station: Promise<Station>
-    distribution: Promise<Distribution[]>
+    stationData: Promise<StationData>
 };
 
 export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
@@ -29,13 +32,15 @@ export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
         .then(response => response.json())
         .catch(() => redirect("/"))
 
-    return defer({ station, distribution } satisfies LoaderData);
+    const stationData = Promise.all([station, distribution]);
+
+    return defer({ stationData } satisfies LoaderData);
 }
 
 const DrawerLoader = () => {
     return (
-        <Box style={{ width: '100vw', height: '100vh', display: 'flex', justifyContent: 'center' }}>
-            <CircularProgress size={100}/>
+        <Box style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <CircularProgress size={200}/>
         </Box>
     );
 }
@@ -47,26 +52,20 @@ const DrawerError = () => {
 }
 
 const StationDrawer = () => {
-    const { station, distribution } = useLoaderData() as LoaderData;
+    const { stationData } = useLoaderData() as LoaderData;
 
     return (
-        <Box style={{ width: '80vw', height: '80vh' }}>
+        <Box style={{ flex: 1, width: '80vw', paddingTop: '4rem', paddingBottom: '4rem', display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'space-between' }}>
             <React.Suspense fallback={<DrawerLoader />}>
-                <Await resolve={station} errorElement={<DrawerError />}>
-                    {(resolvedStation: Station) => (
+                <Await resolve={stationData} errorElement={<DrawerError />}>
+                    {([station, distribution]: StationData) => (
                         <>
                             <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
-                                { resolvedStation.name }
+                                { station.name }
                             </Typography>
-                            <StackedAreaChart data={resolvedStation} />
+                            <StackedAreaChart data={station} />
+                            <DistributionChart data={distribution} />
                         </>
-                    )}
-                </Await>
-            </React.Suspense>
-            <React.Suspense fallback={<DrawerLoader />}>
-                <Await resolve={distribution} errorElement={<DrawerError />}>
-                    {(resolvedDistribution: Distribution[]) => (
-                        <DistributionChart data={resolvedDistribution} />
                     )}
                 </Await>
             </React.Suspense>

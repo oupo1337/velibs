@@ -128,7 +128,7 @@ const DistributionChart: React.FC<DistributionChartProps> = ({ data }) => {
         chart.setOption(option);
     }, [data]);
 
-    return <div ref={chartRef} style={{ width: '80vw', height: '45vh' }} />;
+    return <div ref={chartRef} style={{ width: '80vw', height: '450px' }} />;
 }
 
 export default DistributionChart;
