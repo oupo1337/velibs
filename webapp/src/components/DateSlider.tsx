@@ -12,7 +12,7 @@ interface DateSliderProps {
 
 const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, value, setValue, setData }) => {
     useEffect(() => {
-        fetch('http://runtheit.com:8080/api/v2/timestamps')
+        fetch('https://api.velib.runtheit.com/api/v2/timestamps')
             .then(response => response.json())
             .then(data => {
                 const minutes = 10;
@@ -36,7 +36,7 @@ const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, valu
         const timestamp = timestamps[newValue].toISOString();
 
         setValue(newValue);
-        fetch(`http://runtheit.com:8080/api/statuses.geojson?timestamp=${timestamp}`)
+        fetch(`https://api.velib.runtheit.com/api/statuses.geojson?timestamp=${timestamp}`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error));

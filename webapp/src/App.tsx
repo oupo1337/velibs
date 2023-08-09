@@ -28,7 +28,7 @@ function App() {
     }
 
     useEffect(() => {
-        fetch(`http://runtheit.com:8080/api/statuses.geojson`)
+        fetch(`https://api.velib.runtheit.com/api/statuses.geojson`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error));
