@@ -155,7 +155,7 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 	var ID int64
 	var name string
 	var capacity int64
-	if err := db.conn.QueryRow(ctx, `SELECT id, name, capacity FROM stations WHERE id = $1 AND timestamp > interval`, stationID).
+	if err := db.conn.QueryRow(ctx, `SELECT id, name, capacity FROM stations WHERE id = $1`, stationID).
 		Scan(&ID, &name, &capacity); err != nil {
 		return domain.StationTimeSeries{}, fmt.Errorf("conn.QueryRow.Scan error: %w", err)
 	}

@@ -47,7 +47,9 @@ const DrawerLoader = () => {
 
 const DrawerError = () => {
     return (
-        <p>Error loading package location!</p>
+        <Box style={{ flex: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+            <p>Impossible de charger les données.</p>
+        </Box>
     );
 }
 
