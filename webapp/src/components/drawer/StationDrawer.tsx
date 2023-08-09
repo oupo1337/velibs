@@ -21,11 +21,11 @@ export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
         return redirect("/");
     }
 
-    const station = fetch(`http://runtheit.com:8080/api/stations/${stationId}`)
+    const station = fetch(`https://api.velib.runtheit.com/api/stations/${stationId}`)
         .then(response => response.json())
         .catch(() => redirect("/"))
 
-    const distribution = fetch(`http://runtheit.com:8080/api/v1/distributions/${stationId}`)
+    const distribution = fetch(`https://api.velib.runtheit.com/api/v1/distributions/${stationId}`)
         .then(response => response.json())
         .catch(() => redirect("/"))
 
