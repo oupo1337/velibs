@@ -234,9 +234,10 @@ func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) e
 	`
 
 	for _, way := range ways {
-		date, err := time.Parse("2006-01-02", way.Date)
-		if err != nil {
-			return fmt.Errorf("time.Parse error: %w", err)
+		var value *time.Time
+		date, err := time.Parse(time.DateOnly, way.Date)
+		if err == nil {
+			value = &date
 		}
 
 		args := pgx.NamedArgs{
@@ -255,7 +256,7 @@ func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) e
 			"bus_lane":              way.BusLane,
 			"type_continuity":       way.TypeContinuity,
 			"network":               way.Network,
-			"date":                  date,
+			"date":                  value,
 			"geo_shape":             way.GeoShape,
 		}
 
