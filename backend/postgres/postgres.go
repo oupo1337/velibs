@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/jackc/pgx/v4/pgxpool"
+	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgxpool"
 
 	"github.com/oupo1337/velibs/backend/domain"
 )
@@ -226,10 +227,49 @@ func (db *Database) GetStationDistribution(ctx context.Context, stationID string
 	return distribution, nil
 }
 
+func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) error {
+	query := `
+		INSERT INTO bike_ways (typology, bidirectional, speed_regime, direction, route, arrondissement, forest, length, length_kilometers, position, forbidden_circulation, piste, bus_lane, type_continuity, network, date, geo_shape)
+		VALUES (@typology, @bidirectional, @speed_regime, @direction, @route, @arrondissement, @forest, @length, @length_kilometers, @position, @forbidden_circulation, @piste, @bus_lane, @type_continuity, @network, @date, @geo_shape)
+	`
+
+	for _, way := range ways {
+		date, err := time.Parse("2006-01-02", way.Date)
+		if err != nil {
+			return fmt.Errorf("time.Parse error: %w", err)
+		}
+
+		args := pgx.NamedArgs{
+			"typology":              way.Typology,
+			"bidirectional":         way.Bidirectional == "Oui",
+			"speed_regime":          way.SpeedRegime,
+			"direction":             way.Direction,
+			"route":                 way.Route,
+			"arrondissement":        way.Arrondissement,
+			"forest":                way.Forest == "Oui",
+			"length":                way.Length,
+			"length_kilometers":     way.LengthKilometers,
+			"position":              way.Position,
+			"forbidden_circulation": way.ForbiddenCirculation,
+			"piste":                 way.Piste,
+			"bus_lane":              way.BusLane,
+			"type_continuity":       way.TypeContinuity,
+			"network":               way.Network,
+			"date":                  date,
+			"geo_shape":             way.GeoShape,
+		}
+
+		if _, err := db.conn.Exec(ctx, query, args); err != nil {
+			return fmt.Errorf("conn.Exec error: %w", err)
+		}
+	}
+	return nil
+}
+
 func New(conf Configuration) (*Database, error) {
 	url := fmt.Sprintf("postgres://%s:%s@%s/%s", conf.Username, conf.Password, conf.Address, conf.Name)
 
-	conn, err := pgxpool.Connect(context.Background(), url)
+	conn, err := pgxpool.New(context.Background(), url)
 	if err != nil {
 		return nil, fmt.Errorf("pgx.Connect: %w", err)
 	}
