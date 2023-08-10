@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"context"
 	"log/slog"
 	"net/http"
 
@@ -22,11 +23,11 @@ func (b *BikeWays) AddBikeWays(c *gin.Context) {
 		return
 	}
 
-	if err := b.db.InsertBikeWays(c.Request.Context(), ways); err != nil {
-		slog.ErrorContext(c.Request.Context(), "db.InsertBikeWays error", slog.String("error", err.Error()))
-		c.Status(http.StatusInternalServerError)
-		return
-	}
+	go func() {
+		if err := b.db.InsertBikeWays(context.Background(), ways); err != nil {
+			slog.ErrorContext(context.Background(), "db.InsertBikeWays error", slog.String("error", err.Error()))
+		}
+	}()
 	c.Status(http.StatusOK)
 }
 

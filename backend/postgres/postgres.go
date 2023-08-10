@@ -234,6 +234,10 @@ func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) e
 	`
 
 	for _, way := range ways {
+		if way.GeoShape == nil {
+			continue
+		}
+		
 		var value *time.Time
 		date, err := time.Parse(time.DateOnly, way.Date)
 		if err == nil {
