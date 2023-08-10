@@ -61,6 +61,7 @@ func (b *BikeWays) FetchBikeWays(c *gin.Context) {
 		b := []byte(way)
 		if err := json.Unmarshal(b, &f); err != nil {
 			slog.ErrorContext(c.Request.Context(), "db.FetchBikeWays error", slog.String("error", err.Error()))
+			c.Status(http.StatusInternalServerError)
 			return
 		}
 		features = append(features, f)

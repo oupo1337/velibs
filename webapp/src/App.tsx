@@ -1,7 +1,7 @@
 import React, {useEffect, useState} from 'react';
 import {Outlet, useMatch, useNavigate} from 'react-router-dom';
 
-import {Drawer, Paper} from '@mui/material';
+import {Checkbox, Drawer, FormControlLabel, Paper} from '@mui/material';
 
 import DateDisplay from "./components/DateDisplay";
 import DateSlider from './components/DateSlider';
@@ -12,14 +12,35 @@ import VelibTypeRadio from "./components/VelibTypeRadio";
 
 import './App.css';
 
+interface CheckProps {
+    checked : boolean
+    setChecked : React.Dispatch<React.SetStateAction<boolean>>
+}
+
+const Check: React.FC<CheckProps> = ({checked, setChecked}) => {
+    const handleChange = (event: any) => {
+        setChecked(event.target.checked);
+    };
+    return (
+        <div className="sidebar" style={{flex: 1}}>
+            <FormControlLabel
+                control={<Checkbox checked={checked} onChange={handleChange} />}
+                label="Pistes cyclables"
+            />
+        </div>
+    );
+}
+
 function App() {
     const navigate = useNavigate();
     const match = useMatch('/:stationId');
     const [data, setData] = useState({});
+    const [bikeWays, setBikeWays] = useState({});
     const [timestamps, setTimestamps] = useState<Date[]>([]);
     const [value, setValue] = useState(0);
     const [velibType, setVelibType] = useState('bikes');
     const [mapType, setMapType] = useState('points');
+    const [displayBikeWays, setDisplayBikeWays] = React.useState(true);
 
     const drawerOpen = Boolean(match);
 
@@ -34,17 +55,25 @@ function App() {
             .catch(error => console.error(error));
     }, [])
 
+    useEffect(() => {
+        fetch(`https://api.velib.runtheit.com/api/v1/bikeways`)
+            .then(response => response.json())
+            .then(data => setBikeWays(data))
+            .catch(error => console.error(error))
+    }, []);
+
     return (
         <>
             <Paper elevation={3} className="sidebar-container">
                 <MenuTitle />
                 <MapTypeRadio mapType={mapType} setMapType={setMapType} />
                 <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
+                <Check checked={displayBikeWays} setChecked={setDisplayBikeWays} />
                 <DateDisplay date={timestamps[value]}/>
                 <DateSlider timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
             </Paper>
 
-            <VelibMap data={data} velibType={velibType} mapType={mapType}/>
+            <VelibMap data={data} bikeWays={bikeWays} displayBikeWays={displayBikeWays} velibType={velibType} mapType={mapType}/>
 
             <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
                 <Outlet />

@@ -4,6 +4,7 @@ import {useNavigate} from 'react-router-dom';
 import Map from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react/typed';
+import {GeoJsonLayer} from '@deck.gl/layers/typed';
 import {HeatmapLayer} from '@deck.gl/aggregation-layers/typed';
 import {H3HexagonLayer} from '@deck.gl/geo-layers/typed';
 
@@ -21,11 +22,13 @@ interface ViewState {
 
 interface VelibMapProps {
     data: any
+    bikeWays: any
+    displayBikeWays: boolean
     velibType: string
     mapType: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType  }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, velibType, mapType  }) => {
     const navigate = useNavigate();
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
@@ -76,15 +79,31 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, velibType, mapType  }) => {
             }
             navigate(`/${info.object.properties.station_id}`);
         },
-        // onHover: (info: any) => console.log(info),
     });
+
+    const bikeWaysLayer = new GeoJsonLayer({
+        visible: displayBikeWays,
+        id: 'bike-ways-layer',
+        data: bikeWays.features,
+        pickable: true,
+        stroked: false,
+        filled: true,
+        extruded: true,
+        pointType: 'circle',
+        lineWidthScale: 10,
+        lineWidthMinPixels: 1,
+        getFillColor: [160, 160, 180, 200],
+        getLineColor: d => [8, 166, 56],
+        getPointRadius: 100,
+        getLineWidth: 1,
+    })
 
     return (
         <DeckGL
             viewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[clusterLayer, heatmapLayer, h3Layer]}
+            layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer]}
         >
             <Map mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle="mapbox://styles/mapbox/dark-v11"/>
         </DeckGL>
