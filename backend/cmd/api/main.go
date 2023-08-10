@@ -43,6 +43,7 @@ func initApp(deps dependencies) *gin.Engine {
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
 	app.GET("/api/stations/:id", deps.statuses.GetStationTimeSeries)
 	app.GET("/api/v1/distributions/:id", deps.statuses.GetStationDistribution)
+	app.GET("/api/v1/bikeways", deps.ways.FetchBikeWays)
 	app.POST("/api/v1/bikeways", deps.ways.AddBikeWays)
 	return app
 }

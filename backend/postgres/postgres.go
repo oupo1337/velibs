@@ -237,7 +237,7 @@ func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) e
 		if way.GeoShape == nil {
 			continue
 		}
-		
+
 		var value *time.Time
 		date, err := time.Parse(time.DateOnly, way.Date)
 		if err == nil {
@@ -269,6 +269,31 @@ func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) e
 		}
 	}
 	return nil
+}
+
+func (db *Database) FetchBikeWays(ctx context.Context) ([]string, error) {
+	query := `
+		SELECT geo_shape FROM bike_ways
+	`
+
+	rows, err := db.conn.Query(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("conn.Query error: %w", err)
+	}
+	defer func() {
+		_ = rows.Close
+	}()
+
+	var ways []string
+	for rows.Next() {
+		var way string
+
+		if err := rows.Scan(&way); err != nil {
+			return nil, fmt.Errorf("rows.Scan error: %w", err)
+		}
+		ways = append(ways, way)
+	}
+	return ways, nil
 }
 
 func New(conf Configuration) (*Database, error) {
