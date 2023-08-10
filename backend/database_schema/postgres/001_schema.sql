@@ -16,23 +16,23 @@ CREATE TABLE statuses (
 );
 
 CREATE TABLE bike_ways (
-    typology                TEXT NOT NULL;
-    bidirectional           BOOLEAN;
-    speed_regime            TEXT;
-    direction               TEXT;
-    route                   TEXT;
-    arrondissement          INTEGER;
-    forest                  BOOLEAN;
-    length                  DECIMAL NOT NULL;
-    length_kilometers       DECIMAL NOT NULL
-    position                TEXT;
-    forbidden_circulation   TEXT;
-    piste                   TEXT;
-    bus_lane                TEXT;
-    type_continuity         TEXT;
-    network                 TEXT;
-    date                    DATE;
-    geo_shape               JSONB NOT NULL;
+    typology                TEXT NOT NULL,
+    bidirectional           BOOLEAN,
+    speed_regime            TEXT,
+    direction               TEXT,
+    route                   TEXT,
+    arrondissement          INTEGER,
+    forest                  BOOLEAN,
+    length                  DECIMAL NOT NULL,
+    length_kilometers       DECIMAL NOT NULL,
+    position                TEXT,
+    forbidden_circulation   TEXT,
+    piste                   TEXT,
+    bus_lane                TEXT,
+    type_continuity         TEXT,
+    network                 TEXT,
+    date                    DATE,
+    geo_shape               JSONB NOT NULL
 );
 
 CREATE INDEX statuses_station_id_timestamp_idx ON statuses (station_id, timestamp DESC);
