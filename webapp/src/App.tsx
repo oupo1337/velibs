@@ -40,7 +40,7 @@ function App() {
     const [value, setValue] = useState(0);
     const [velibType, setVelibType] = useState('bikes');
     const [mapType, setMapType] = useState('points');
-    const [displayBikeWays, setDisplayBikeWays] = React.useState(true);
+    const [displayBikeWays, setDisplayBikeWays] = React.useState(false);
 
     const drawerOpen = Boolean(match);
 
