@@ -100,7 +100,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
 
     return (
         <DeckGL
-            viewState={viewport}
+            initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
             layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer]}
