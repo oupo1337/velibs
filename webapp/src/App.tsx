@@ -8,7 +8,6 @@ import DateSlider from './components/DateSlider';
 import MenuTitle from './components/MenuTitle';
 import VelibMap from './components/VelibMap';
 import MapTypeRadio from "./components/MapTypeRadio";
-import VelibTypeRadio from "./components/VelibTypeRadio";
 
 import './App.css';
 
@@ -33,12 +32,11 @@ const Check: React.FC<CheckProps> = ({checked, setChecked}) => {
 
 function App() {
     const navigate = useNavigate();
-    const match = useMatch('/:stationId');
+    const match = useMatch('/stations/:stationId');
     const [data, setData] = useState({});
     const [bikeWays, setBikeWays] = useState({});
     const [timestamps, setTimestamps] = useState<Date[]>([]);
     const [value, setValue] = useState(0);
-    const [velibType, setVelibType] = useState('bikes');
     const [mapType, setMapType] = useState('points');
     const [displayBikeWays, setDisplayBikeWays] = React.useState(false);
 
@@ -53,27 +51,24 @@ function App() {
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error));
-    }, [])
 
-    useEffect(() => {
         fetch(`https://api.velib.runtheit.com/api/v1/bikeways`)
             .then(response => response.json())
             .then(data => setBikeWays(data))
             .catch(error => console.error(error))
-    }, []);
+    }, [])
 
     return (
         <>
             <Paper elevation={3} className="sidebar-container">
                 <MenuTitle />
                 <MapTypeRadio mapType={mapType} setMapType={setMapType} />
-                <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
                 <Check checked={displayBikeWays} setChecked={setDisplayBikeWays} />
                 <DateDisplay date={timestamps[value]}/>
                 <DateSlider timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
             </Paper>
 
-            <VelibMap data={data} bikeWays={bikeWays} displayBikeWays={displayBikeWays} velibType={velibType} mapType={mapType}/>
+            <VelibMap data={data} bikeWays={bikeWays} displayBikeWays={displayBikeWays} mapType={mapType}/>
 
             <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
                 <Outlet />

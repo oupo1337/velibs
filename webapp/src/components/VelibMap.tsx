@@ -24,11 +24,10 @@ interface VelibMapProps {
     data: any
     bikeWays: any
     displayBikeWays: boolean
-    velibType: string
     mapType: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, velibType, mapType  }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, mapType  }) => {
     const navigate = useNavigate();
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
@@ -77,7 +76,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
             if (info.object.properties.cluster) {
                 return
             }
-            navigate(`/${info.object.properties.station_id}`);
+            navigate(`/stations/${info.object.properties.station_id}`);
         },
     });
 
@@ -100,12 +99,12 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
 
     return (
         <DeckGL
-            viewState={viewport}
+            initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
             layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer]}
         >
-            <Map mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle="mapbox://styles/mapbox/dark-v11"/>
+            <Map mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle={"mapbox://styles/mapbox/standard-beta"} />
         </DeckGL>
     );
 };
