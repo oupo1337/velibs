@@ -31,7 +31,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "/stations/:stationId",
+        path: "/:stationId",
         element: <StationDrawer  />,
         loader: stationLoader,
       }
