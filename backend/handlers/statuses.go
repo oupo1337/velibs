@@ -1,6 +1,8 @@
 package handlers
 
 import (
+	"crypto/md5"
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -68,15 +70,15 @@ type minMaxTimestampResponse struct {
 }
 
 func (s *Statuses) GetMinMaxTimestamps(c *gin.Context) {
-	min, max, err := s.db.GetMinMaxTimestamps(c.Request.Context())
+	minTimestamp, maxTimestamp, err := s.db.GetMinMaxTimestamps(c.Request.Context())
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.GetMinMaxTimestamps error: %w", err))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 	c.JSON(http.StatusOK, minMaxTimestampResponse{
-		Min: min,
-		Max: max,
+		Min: minTimestamp,
+		Max: maxTimestamp,
 	})
 }
 
@@ -121,11 +123,24 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		})
 	}
 
-	collection := featureCollection{
+	data, err := json.Marshal(featureCollection{
 		Type:     "FeatureCollection",
 		Features: features,
+	})
+	if err != nil {
+		_ = c.Error(fmt.Errorf("json.Marshal error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
 	}
-	c.JSON(http.StatusOK, collection)
+
+	h := md5.New()
+	etag := h.Sum(data)
+	c.Header("E-Tag", string(etag))
+	if c.Request.Header.Get("If-None-Match") == string(etag) {
+		c.Status(http.StatusNotModified)
+		return
+	}
+	c.JSON(http.StatusOK, data)
 }
 
 func NewStatuses(db *postgres.Database) *Statuses {

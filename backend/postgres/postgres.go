@@ -71,11 +71,11 @@ func (db *Database) GetMinMaxTimestamps(ctx context.Context) (time.Time, time.Ti
 		FROM statuses;
 	`
 
-	var min, max time.Time
-	if err := db.conn.QueryRow(ctx, query).Scan(&min, &max); err != nil {
+	var minTimestamp, maxTimestamp time.Time
+	if err := db.conn.QueryRow(ctx, query).Scan(&minTimestamp, &maxTimestamp); err != nil {
 		return time.Time{}, time.Time{}, fmt.Errorf("conn.QueryRow.Scan error: %w", err)
 	}
-	return min, max, nil
+	return minTimestamp, maxTimestamp, nil
 }
 
 func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]domain.Station, error) {
