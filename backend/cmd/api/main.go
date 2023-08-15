@@ -40,7 +40,7 @@ func initApp(deps dependencies) *gin.Engine {
 
 	app.Use(cors.New(
 		cors.Config{
-			AllowOrigins:  []string{"https://velib.runtheit.com"},
+			AllowOrigins:  []string{"https://velib.runtheit.com", "http://localhost:3000"},
 			AllowMethods:  []string{http.MethodHead, http.MethodOptions, http.MethodGet},
 			AllowHeaders:  []string{"E-Tag", "If-None-Match"},
 			ExposeHeaders: []string{"E-Tag"},
