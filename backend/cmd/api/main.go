@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net/http"
 	"os"
 
 	"github.com/gin-contrib/cors"
@@ -37,7 +38,14 @@ func initDependencies() (dependencies, error) {
 func initApp(deps dependencies) *gin.Engine {
 	app := gin.Default()
 
-	app.Use(cors.Default())
+	app.Use(cors.New(
+		cors.Config{
+			AllowOrigins:  []string{"https://*.runtheit.com"},
+			AllowWildcard: true,
+			AllowMethods:  []string{http.MethodHead, http.MethodOptions, http.MethodGet},
+			AllowHeaders:  []string{"E-Tag", "If-None-Match"},
+			ExposeHeaders: []string{"E-Tag"},
+		}))
 
 	app.GET("/api/v2/timestamps", deps.statuses.GetMinMaxTimestamps)
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
