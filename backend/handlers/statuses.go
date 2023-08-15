@@ -135,13 +135,12 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 
 	h := md5.New()
 	etag := h.Sum(data)
-	fmt.Println("ETAG:", string(etag))
-	// c.Header("E-Tag", string(etag))
-	// if c.Request.Header.Get("If-None-Match") == string(etag) {
-	// 	c.Status(http.StatusNotModified)
-	// 	return
-	// }
-	c.JSON(http.StatusOK, data)
+	c.Header("E-Tag", string(etag))
+	if c.Request.Header.Get("If-None-Match") == string(etag) {
+		c.Status(http.StatusNotModified)
+		return
+	}
+	c.Data(http.StatusOK, "application/json", data)
 }
 
 func NewStatuses(db *postgres.Database) *Statuses {
