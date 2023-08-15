@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"crypto/md5"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -123,24 +121,11 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		})
 	}
 
-	data, err := json.Marshal(featureCollection{
+	collection := featureCollection{
 		Type:     "FeatureCollection",
 		Features: features,
-	})
-	if err != nil {
-		_ = c.Error(fmt.Errorf("json.Marshal error: %w", err))
-		c.Status(http.StatusInternalServerError)
-		return
 	}
-
-	h := md5.New()
-	etag := h.Sum(data)
-	c.Header("E-Tag", string(etag))
-	if c.Request.Header.Get("If-None-Match") == string(etag) {
-		c.Status(http.StatusNotModified)
-		return
-	}
-	c.Data(http.StatusOK, "application/json", data)
+	c.JSON(http.StatusOK, collection)
 }
 
 func NewStatuses(db *postgres.Database) *Statuses {
