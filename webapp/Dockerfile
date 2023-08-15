@@ -3,7 +3,7 @@ FROM node:20.1.0 AS build
 ADD . /build
 WORKDIR /build
 
-RUN npm install
+RUN npm install --legacy-peer-deps
 RUN npm run build
 
 FROM nginx:1.23.4

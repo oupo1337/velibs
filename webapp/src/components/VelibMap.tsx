@@ -105,7 +105,14 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
             controller={true}
             layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer]}
         >
-            <Map mapboxAccessToken={MAPBOX_ACCESS_TOKEN} mapStyle="mapbox://styles/mapbox/dark-v11"/>
+            <Map
+                mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
+                mapStyle="mapbox://styles/mapbox/standard-beta"
+                onLoad={(e) => {
+                    // @ts-ignore
+                    e.target.setConfigProperty("basemap", "lightPreset", "dusk");
+                }}
+            />
         </DeckGL>
     );
 };
