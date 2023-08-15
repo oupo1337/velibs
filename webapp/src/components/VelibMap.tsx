@@ -77,7 +77,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
             if (info.object.properties.cluster) {
                 return
             }
-            navigate(`/${info.object.properties.station_id}`);
+            navigate(`/stations/${info.object.properties.station_id}`);
         },
     });
 

@@ -33,7 +33,7 @@ const Check: React.FC<CheckProps> = ({checked, setChecked}) => {
 
 function App() {
     const navigate = useNavigate();
-    const match = useMatch('/:stationId');
+    const match = useMatch('/stations/:stationId');
     const [data, setData] = useState({});
     const [bikeWays, setBikeWays] = useState({});
     const [timestamps, setTimestamps] = useState<Date[]>([]);

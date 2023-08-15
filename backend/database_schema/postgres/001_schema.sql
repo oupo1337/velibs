@@ -37,5 +37,6 @@ CREATE TABLE bike_ways (
 
 CREATE INDEX statuses_station_id_timestamp_idx ON statuses (station_id, timestamp DESC);
 CREATE INDEX statuses_timestamp_idx ON statuses (timestamp);
+CREATE INDEX statuses_station_id_idx ON statuses (station_id);
 
 COMMIT;
