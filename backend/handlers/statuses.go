@@ -125,7 +125,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		Type:     "FeatureCollection",
 		Features: features,
 	}
-	c.Header("Cache-Control", "max-age=86400")
+	c.Header("Cache-Control", "max-age=86400, immutable")
 	c.JSON(http.StatusOK, collection)
 }
 
