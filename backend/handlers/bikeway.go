@@ -71,6 +71,7 @@ func (b *BikeWays) FetchBikeWays(c *gin.Context) {
 		Type:     "FeatureCollection",
 		Features: features,
 	}
+	c.Header("Cache-Control", "max-age=86400, immutable")
 	c.JSON(http.StatusOK, collection)
 }
 

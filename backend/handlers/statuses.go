@@ -89,7 +89,8 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		return
 	}
 
-	stations, err := s.db.FetchTimestamp(c.Request.Context(), c.Query("timestamp"))
+	timestamp := c.Query("timestamp")
+	stations, err := s.db.FetchTimestamp(c.Request.Context(), timestamp)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.FetchTimestamp error: %w", err))
 		c.Status(http.StatusInternalServerError)
@@ -121,12 +122,13 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 		})
 	}
 
-	collection := featureCollection{
+	if timestamp != "" {
+		c.Header("Cache-Control", "max-age=86400, immutable")
+	}
+	c.JSON(http.StatusOK, featureCollection{
 		Type:     "FeatureCollection",
 		Features: features,
-	}
-	c.Header("Cache-Control", "max-age=86400, immutable")
-	c.JSON(http.StatusOK, collection)
+	})
 }
 
 func NewStatuses(db *postgres.Database) *Statuses {
