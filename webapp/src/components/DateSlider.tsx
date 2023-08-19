@@ -3,14 +3,15 @@ import React, {useEffect} from "react";
 import Slider from "@mui/material/Slider";
 
 interface DateSliderProps {
-    setTimestamps : React.Dispatch<React.SetStateAction<Date[]>>
-    timestamps : Date[]
-    value : number
-    setValue : React.Dispatch<React.SetStateAction<number>>
-    setData : React.Dispatch<React.SetStateAction<string>>
+    format: string
+    timestamps: Date[]
+    setTimestamps: React.Dispatch<React.SetStateAction<Date[]>>
+    value: number
+    setValue: React.Dispatch<React.SetStateAction<number>>
+    setData: React.Dispatch<React.SetStateAction<string>>
 }
 
-const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, value, setValue, setData }) => {
+const DateSlider: React.FC<DateSliderProps> = ({format, setTimestamps, timestamps, value, setValue, setData }) => {
     useEffect(() => {
         fetch('https://api.velib.runtheit.com/api/v2/timestamps')
             .then(response => response.json())
@@ -36,7 +37,7 @@ const DateSlider: React.FC<DateSliderProps> = ({ setTimestamps, timestamps, valu
         const timestamp = timestamps[newValue].toISOString();
 
         setValue(newValue);
-        fetch(`https://api.velib.runtheit.com/api/statuses.geojson?timestamp=${timestamp}`)
+        fetch(`https://api.velib.runtheit.com/api/statuses.geojson?timestamp=${timestamp}&format=${format}`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error));

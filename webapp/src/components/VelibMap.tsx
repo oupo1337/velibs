@@ -24,11 +24,10 @@ interface VelibMapProps {
     data: any
     bikeWays: any
     displayBikeWays: boolean
-    velibType: string
-    mapType: string
+    format: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, velibType, mapType  }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, format  }) => {
     const navigate = useNavigate();
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
@@ -45,7 +44,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
 
     const heatmapLayer = new HeatmapLayer({
         id: 'heatmap-layer',
-        visible: mapType === 'heatmap',
+        visible: format === 'heatmap',
         data: data.features,
         pickable: false,
         getPosition: d => d.geometry.coordinates,
@@ -57,7 +56,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
 
     const h3Layer = new H3HexagonLayer({
         id: 'h3-hexagon-layer',
-        visible: mapType === 'h3',
+        visible: format === 'h3',
         data: data.features,
         pickable: true,
         wireframe: true,
@@ -70,7 +69,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, ve
     });
 
     const clusterLayer = new ClusterLayer({
-        visible: mapType === 'points',
+        visible: format === 'points',
         data: data.features,
         zoom: viewport.zoom,
         onClick: (info: any) => {

@@ -67,12 +67,11 @@ func (b *BikeWays) FetchBikeWays(c *gin.Context) {
 		features = append(features, f)
 	}
 
-	collection := FeatureCollection{
+	c.Header("Cache-Control", "max-age=86400, immutable")
+	c.JSON(http.StatusOK, FeatureCollection{
 		Type:     "FeatureCollection",
 		Features: features,
-	}
-	c.Header("Cache-Control", "max-age=86400, immutable")
-	c.JSON(http.StatusOK, collection)
+	})
 }
 
 func NewBikeWays(db *postgres.Database) *BikeWays {
