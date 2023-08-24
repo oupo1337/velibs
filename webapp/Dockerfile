@@ -8,10 +8,10 @@ RUN npm run build
 
 FROM nginx:1.23.4
 
-WORKDIR /usr/share/nginx/html
+WORKDIR /var/www/velib.runtheit.com
 RUN rm -rf ./*
 
-COPY default.conf /etc/nginx/conf.d/default.conf
+ADD default.conf /etc/nginx/conf.d
 COPY --from=build /build/build .
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]
