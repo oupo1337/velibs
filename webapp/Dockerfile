@@ -11,7 +11,7 @@ FROM nginx:1.25
 COPY ./default.conf /etc/nginx/conf.d/default.conf
 
 ENV NODE_ENV production
-WORKDIR /var/www/batchatai.com
+WORKDIR /var/www/velib.runtheit.com
 RUN rm -rf ./*
 
 COPY --from=build /build/dist .
