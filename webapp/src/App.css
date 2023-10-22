@@ -1,21 +1,21 @@
 .sidebar {
-    background-color: rgba(35, 55, 75, 0.9);
-    color: #fff;
-    padding: 8px 24px;
-    border-radius: 4px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+  background-color: rgba(35, 55, 75, 0.9);
+  color: #fff;
+  padding: 8px 24px;
+  border-radius: 4px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .sidebar-container {
-    display: flex;
-    flex-direction: column;
-    z-index: 1;
-    position: absolute;
-    gap: 1rem;
-    top: 0;
-    left: 0;
-    margin: 1rem;
-    padding: 1rem;
+  display: flex;
+  flex-direction: column;
+  z-index: 1;
+  position: absolute;
+  gap: 1rem;
+  top: 0;
+  left: 0;
+  margin: 1rem;
+  padding: 1rem;
 }

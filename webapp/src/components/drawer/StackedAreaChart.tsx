@@ -131,7 +131,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                             yAxis: data.capacity,
                             label: {
                                 position: "insideEndTop",
-                                formatter: params => "Capacité"
+                                formatter: () => "Capacité"
                             },
                             lineStyle: {
                                 color: "red",

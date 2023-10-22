@@ -8,7 +8,7 @@ interface VelibTypeRadioProps {
 }
 
 const VelibTypeRadio : React.FC<VelibTypeRadioProps> = ({ velibType, setVelibType }) => {
-    const handleChange = (event : ChangeEvent<HTMLElement>, value : string) => {
+    const handleChange = (_event : ChangeEvent<HTMLElement>, value : string) => {
         setVelibType(value);
     }
 

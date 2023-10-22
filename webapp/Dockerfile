@@ -1,17 +1,19 @@
-FROM node:20.1.0 AS build
+FROM node:20.5 AS build
 
-ADD . /build
 WORKDIR /build
 
+COPY . /build
 RUN npm install --legacy-peer-deps
 RUN npm run build
 
-FROM nginx:1.23.4
+FROM nginx:1.25
 
-WORKDIR /var/www/velib.runtheit.com
+COPY ./default.conf /etc/nginx/conf.d/default.conf
+
+ENV NODE_ENV production
+WORKDIR /var/www/batchatai.com
 RUN rm -rf ./*
 
-ADD default.conf /etc/nginx/conf.d
-COPY --from=build /build/build .
+COPY --from=build /build/dist .
 
 ENTRYPOINT ["nginx", "-g", "daemon off;"]

@@ -8,7 +8,7 @@ interface FormatRadioProps {
 }
 
 const FormatRadio : React.FC<FormatRadioProps> = ({format, setFormat}) => {
-    const handleChange = (event : ChangeEvent<HTMLElement>, value : string) => {
+    const handleChange = (_event : ChangeEvent<HTMLElement>, value : string) => {
         setFormat(value);
     }
 

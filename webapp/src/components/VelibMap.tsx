@@ -92,7 +92,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, fo
         lineWidthScale: 10,
         lineWidthMinPixels: 1,
         getFillColor: [160, 160, 180, 200],
-        getLineColor: d => [8, 166, 56],
+        getLineColor: [8, 166, 56],
         getPointRadius: 100,
         getLineWidth: 1,
     })
@@ -107,10 +107,6 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, fo
             <Map
                 mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
                 mapStyle="mapbox://styles/mapbox/standard-beta"
-                onLoad={(e) => {
-                    // @ts-ignore
-                    e.target.setConfigProperty("basemap", "lightPreset", "dusk");
-                }}
             />
         </DeckGL>
     );
