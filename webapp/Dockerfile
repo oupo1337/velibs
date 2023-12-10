@@ -3,7 +3,7 @@ FROM node:20.5 AS build
 WORKDIR /build
 
 COPY . /build
-RUN npm install --legacy-peer-deps
+RUN npm install
 RUN npm run build
 
 FROM nginx:1.25

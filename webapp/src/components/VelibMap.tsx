@@ -106,7 +106,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, fo
         >
             <Map
                 mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
-                mapStyle="mapbox://styles/mapbox/standard-beta"
+                mapStyle="mapbox://styles/oupo42/clpzr3osp01ld01qtcduf4ta6"
             />
         </DeckGL>
     );
