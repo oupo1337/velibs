@@ -65,6 +65,8 @@ services:
       TIMESCALE_PASSWORD: password
       TIMESCALE_ADDRESS: timescale
       TIMESCALE_NAME: postgres
+      VELIB_API_STATIONS_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_information.json
+      VELIB_API_STATUSES_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json
     restart: always
 
   webapp:

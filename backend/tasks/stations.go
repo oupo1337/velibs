@@ -12,6 +12,7 @@ import (
 )
 
 type Stations struct {
+	url       string
 	db        *postgres.Database
 	timescale *postgres.Database
 	client    *http.Client
@@ -26,9 +27,7 @@ type StationInformationResponse struct {
 }
 
 func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.StationInformation, error) {
-	url := "https://velib-metropole-opendata.smoove.pro/opendata/Velib_Metropole/station_information.json"
-
-	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.url, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -65,8 +64,9 @@ func (s *Stations) UpdateStations() {
 	}
 }
 
-func NewStations(db *postgres.Database, timescale *postgres.Database) *Stations {
+func NewStations(url string, db *postgres.Database, timescale *postgres.Database) *Stations {
 	return &Stations{
+		url:       url,
 		db:        db,
 		timescale: timescale,
 		client: &http.Client{

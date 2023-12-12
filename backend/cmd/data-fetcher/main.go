@@ -36,8 +36,8 @@ func initDependencies() (dependencies, error) {
 		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
 	}
 
-	stations := tasks.NewStations(db, timescale)
-	statuses := tasks.NewStatuses(db, timescale)
+	stations := tasks.NewStations(os.Getenv("VELIB_API_STATIONS_URL"), db, timescale)
+	statuses := tasks.NewStatuses(os.Getenv("VELIB_API_STATUSES_URL"), db, timescale)
 
 	c := cron.New()
 	if err := c.AddFunc("0 */10 * * * *", func() {
