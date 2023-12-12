@@ -45,7 +45,7 @@ services:
       GIN_MODE: release
     restart: always
     ports:
-      - 8080:8080
+      - 127.0.0.1:8080:8080
 
   data-fetcher:
     build:
@@ -75,4 +75,4 @@ services:
     depends_on:
       - api
     ports:
-      - 3000:80
+      - 127.0.0.1:3000:80
