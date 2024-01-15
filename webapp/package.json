@@ -15,13 +15,13 @@
     "@mui/material": "^5.14.14",
     "@types/supercluster": "^7.1.2",
     "dayjs": "^1.11.10",
-    "deck.gl": "^8.9.31",
+    "deck.gl": "^8.9.33",
     "echarts": "^5.4.3",
     "mapbox-gl": "^3.0.1",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-map-gl": "^7.1.6",
-    "react-router-dom": "^6.17.0",
+    "react-map-gl": "^7.1.7",
+    "react-router-dom": "^6.21.2",
     "supercluster": "^8.0.1"
   },
   "devDependencies": {

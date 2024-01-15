@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -58,12 +58,12 @@ func initApp(deps dependencies) *gin.Engine {
 func main() {
 	deps, err := initDependencies()
 	if err != nil {
-		log.Fatalf("initDependencies error: %s", err.Error())
+		slog.Error("initDependencies error", slog.String("error", err.Error()))
 	}
 
 	app := initApp(deps)
-	log.Println("api is running")
+	slog.Info("api is running")
 	if err := app.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil {
-		log.Fatalf("app.Run error: %s", err.Error())
+		slog.Error("app.Run error", slog.String("error", err.Error()))
 	}
 }

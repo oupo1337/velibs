@@ -30,7 +30,7 @@ services:
   api:
     build:
       context: ./backend
-      dockerfile: Dockerfile.api
+      dockerfile: ./cmd/api/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
@@ -50,7 +50,7 @@ services:
   data-fetcher:
     build:
       context: ./backend
-      dockerfile: Dockerfile.data-fetcher
+      dockerfile: ./cmd/data-fetcher/Dockerfile
     depends_on:
       postgres:
         condition: service_healthy
