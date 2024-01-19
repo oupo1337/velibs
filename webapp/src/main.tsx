@@ -1,4 +1,5 @@
 import React from 'react';
+
 import ReactDOM from 'react-dom/client';
 
 import 'dayjs/locale/fr'
@@ -10,7 +11,7 @@ import { CssBaseline, ThemeProvider, createTheme } from '@mui/material';
 import { RouterProvider, createBrowserRouter } from 'react-router-dom';
 
 import App from './App';
-import StationDrawer, { stationLoader } from './components/drawer/StationDrawer';
+import StationDrawer from './components/drawer/StationDrawer';
 
 dayjs.locale('fr');
 
@@ -26,7 +27,6 @@ const router = createBrowserRouter([
       {
         path: "/stations/:stationId",
         element: <StationDrawer  />,
-        loader: stationLoader,
       }
     ]
   },

@@ -1,6 +1,8 @@
-import * as React from "react";
+import React from "react";
 
-import { LoaderFunctionArgs, redirect, useLoaderData, defer, Await } from "react-router-dom";
+import axios from "axios";
+import { useParams } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
 
 import { Box, Typography } from "@mui/material";
 import CircularProgress from '@mui/material/CircularProgress';
@@ -9,33 +11,6 @@ import {Distribution, Station} from "../../domain/Domain";
 
 import StackedAreaChart from "./StackedAreaChart";
 import DistributionChart from "./DistributionChart";
-
-type StationData = [
-    station: Station,
-    distribution: Distribution[]
-]
-export type LoaderData = {
-    stationData: Promise<StationData>
-};
-
-export const stationLoader = async ({ params }: LoaderFunctionArgs) => {
-    const { stationId } = params;
-    if (!stationId) {
-        return redirect("/");
-    }
-
-    const station = fetch(`https://api.velib.runtheit.com/api/stations/${stationId}`)
-        .then(response => response.json())
-        .catch(() => redirect("/"))
-
-    const distribution = fetch(`https://api.velib.runtheit.com/api/v1/distributions/${stationId}`)
-        .then(response => response.json())
-        .catch(() => redirect("/"))
-
-    const stationData = Promise.all([station, distribution]);
-
-    return defer({ stationData } satisfies LoaderData);
-}
 
 const DrawerLoader = () => {
     return (
@@ -53,24 +28,70 @@ const DrawerError = () => {
     );
 }
 
-const StationDrawer = () => {
-    const { stationData } = useLoaderData() as LoaderData;
+interface StationProps {
+    stationID: string | undefined
+}
+
+const StationDisplay: React.FC<StationProps> = ({stationID}) => {
+    const fetchStation = async () => {
+        const response = await axios.get(`https://api.velib.runtheit.com/api/stations/${stationID}`);
+        return response.data;
+    }
+
+    const { isLoading, isError, isPending, data } = useQuery<Station, Error>({
+        queryKey: ['station', stationID],
+        queryFn: fetchStation,
+    });
+
+    if (isLoading || isPending) {
+        return <DrawerLoader />
+    }
+
+    if (isError) {
+        return <DrawerError />
+    }
+
+    return (
+        <>
+            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
+                { data.name }
+            </Typography>
+            <StackedAreaChart data={data} />
+        </>
+    );
+}
+
+const DistributionDisplay: React.FC<StationProps> = ({stationID}) => {
+    const fetchStationDistribution = async () => {
+        const response = await axios.get(`https://api.velib.runtheit.com/api/v1/distributions/${stationID}`);
+        return response.data;
+    }
+
+    const { isLoading, isError, isPending, data } = useQuery<Distribution[], Error>({
+        queryKey: ['station_distribution', stationID],
+        queryFn: fetchStationDistribution,
+    });
+
+    if (isLoading || isPending) {
+        return <DrawerLoader />
+    }
+
+    if (isError) {
+        return <DrawerError />
+    }
+
+    return (
+        <DistributionChart data={data} />
+    );
+}
+
+const StationDrawer: React.FC = () => {
+    const { stationId } = useParams();
 
     return (
         <Box style={{ flex: 1, width: '80vw', paddingTop: '4rem', paddingBottom: '4rem', display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'space-between' }}>
-            <React.Suspense fallback={<DrawerLoader />}>
-                <Await resolve={stationData} errorElement={<DrawerError />}>
-                    {([station, distribution]: StationData) => (
-                        <>
-                            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
-                                { station.name }
-                            </Typography>
-                            <StackedAreaChart data={station} />
-                            <DistributionChart data={distribution} />
-                        </>
-                    )}
-                </Await>
-            </React.Suspense>
+            <StationDisplay stationID={stationId} />
+            <DistributionDisplay stationID={stationId} />
         </Box>
     );
 }

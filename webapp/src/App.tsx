@@ -1,5 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import {Outlet, useMatch, useNavigate} from 'react-router-dom';
+import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 import {Drawer, Paper} from '@mui/material';
 
@@ -14,6 +15,7 @@ import './App.css';
 import Check from './components/Check';
 
 function App() {
+  const queryClient = new QueryClient();
   const navigate = useNavigate();
   const match = useMatch('/stations/:stationId');
   const [data, setData] = useState({});
@@ -45,7 +47,7 @@ function App() {
   }, []);
 
   return (
-    <>
+    <QueryClientProvider client={queryClient}>
       <Paper elevation={3} className="sidebar-container">
         <MenuTitle />
         <FormatRadio format={format} setFormat={setFormat} />
@@ -60,7 +62,7 @@ function App() {
       <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
         <Outlet />
       </Drawer>
-    </>
+    </QueryClientProvider>
   );
 }
 
