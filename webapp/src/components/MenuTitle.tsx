@@ -11,7 +11,7 @@ const MenuTitle: React.FC = () => {
             flexDirection: 'column',
         }}>
             <Typography variant="h4" component="h1">
-                Paname Velibs
+                Paris Velib'
             </Typography>
         </Box>
     )
