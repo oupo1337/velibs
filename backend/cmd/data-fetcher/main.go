@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/robfig/cron"
 
+	"github.com/oupo1337/velibs/backend/logging"
 	"github.com/oupo1337/velibs/backend/postgres"
 	"github.com/oupo1337/velibs/backend/tasks"
 )
@@ -53,11 +54,14 @@ func initDependencies() (dependencies, error) {
 }
 
 func main() {
+	logging.Init()
+
 	deps, err := initDependencies()
 	if err != nil {
-		log.Fatalf("initDependencies error: %s", err.Error())
+		slog.Error("initDependencies error", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
-	log.Println("crawler is running")
+	slog.Info("crawler is running")
 	deps.cron.Run()
 }

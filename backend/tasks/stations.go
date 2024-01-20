@@ -3,7 +3,7 @@ package tasks
 import (
 	"context"
 	"encoding/json"
-	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -45,21 +45,21 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 }
 
 func (s *Stations) UpdateStations() {
-	fmt.Printf("UpdateStations running...\n")
+	slog.Info("UpdateStations running")
 
 	stations, err := s.fetchStationsInformation(context.Background())
 	if err != nil {
-		fmt.Printf("s.fetchStationsInformation error: %s\n", err.Error())
+		slog.Error("s.fetchStationsInformation error", slog.String("error", err.Error()))
 		return
 	}
 
 	if err := s.db.InsertStations(context.Background(), stations); err != nil {
-		fmt.Printf("db.InsertStations error: %s\n", err.Error())
+		slog.Error("db.InsertStations error", slog.String("error", err.Error()))
 		return
 	}
 
 	if err := s.timescale.InsertStations(context.Background(), stations); err != nil {
-		fmt.Printf("db.InsertStations error (timescale): %s\n", err.Error())
+		slog.Error("s.timescale.InsertStations error", slog.String("error", err.Error()))
 		return
 	}
 }

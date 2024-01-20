@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"net/http"
 	"time"
 
@@ -45,21 +46,21 @@ func (s *Statuses) fetchStationsStatuses(ctx context.Context) ([]domain.StationS
 }
 
 func (s *Statuses) UpdateStatuses() {
-	fmt.Printf("UpdateStatuses running...\n")
+	slog.Info("UpdateStatuses running")
 
 	statuses, err := s.fetchStationsStatuses(context.Background())
 	if err != nil {
-		fmt.Printf("s.fetchStationsStatuses error: %s\n", err.Error())
+		slog.Error("s.fetchStationsStatuses error", slog.String("error", err.Error()))
 		return
 	}
 
 	if err := s.db.InsertStatuses(context.Background(), statuses); err != nil {
-		fmt.Printf("db.InsertStatuses error: %s\n", err.Error())
+		slog.Error("s.db.InsertStatuses error", slog.String("error", err.Error()))
 		return
 	}
 
 	if err := s.timescale.InsertStatuses(context.Background(), statuses); err != nil {
-		fmt.Printf("db.InsertStatuses error (timescale): %s\n", err.Error())
+		slog.Error("s.timescale.InsertStatuses error", slog.String("error", err.Error()))
 		return
 	}
 }

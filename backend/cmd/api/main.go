@@ -10,6 +10,7 @@ import (
 	"github.com/gin-gonic/gin"
 
 	"github.com/oupo1337/velibs/backend/handlers"
+	"github.com/oupo1337/velibs/backend/logging"
 	"github.com/oupo1337/velibs/backend/postgres"
 )
 
@@ -56,6 +57,8 @@ func initApp(deps dependencies) *gin.Engine {
 }
 
 func main() {
+	logging.Init()
+
 	deps, err := initDependencies()
 	if err != nil {
 		slog.Error("initDependencies error", slog.String("error", err.Error()))

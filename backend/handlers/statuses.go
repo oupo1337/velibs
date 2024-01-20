@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"fmt"
+	"log/slog"
 	"net/http"
 	"strconv"
 	"time"
@@ -70,7 +71,7 @@ type minMaxTimestampResponse struct {
 func (s *Statuses) GetMinMaxTimestamps(c *gin.Context) {
 	minTimestamp, maxTimestamp, err := s.db.GetMinMaxTimestamps(c.Request.Context())
 	if err != nil {
-		_ = c.Error(fmt.Errorf("db.GetMinMaxTimestamps error: %w", err))
+		slog.Error("db.GetMinMaxTimestamps error", slog.String("error", err.Error()))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -84,7 +85,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 	resQuery := c.DefaultQuery("resolution", "9")
 	resolution, err := strconv.Atoi(resQuery)
 	if err != nil {
-		_ = c.Error(fmt.Errorf("strconv.Atoi error: %w", err))
+		slog.Error("strconv.Atoi error", slog.String("error", err.Error()))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -92,7 +93,7 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 	timestamp := c.Query("timestamp")
 	stations, err := s.db.FetchTimestamp(c.Request.Context(), timestamp)
 	if err != nil {
-		_ = c.Error(fmt.Errorf("db.FetchTimestamp error: %w", err))
+		slog.Error("s.db.FetchTimestamp error", slog.String("error", err.Error()))
 		c.Status(http.StatusInternalServerError)
 		return
 	}

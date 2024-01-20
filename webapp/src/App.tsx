@@ -1,9 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import {useEffect, useState} from 'react';
 import {Outlet, useMatch, useNavigate} from 'react-router-dom';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
 import {Drawer, Paper} from '@mui/material';
 
+import Check from './components/Check';
 import DateDisplay from "./components/DateDisplay";
 import DateSlider from './components/DateSlider';
 import MenuTitle from './components/MenuTitle';
@@ -12,7 +13,6 @@ import FormatRadio from "./components/FormatRadio";
 import VelibTypeRadio from "./components/VelibTypeRadio";
 
 import './App.css';
-import Check from './components/Check';
 
 function App() {
   const queryClient = new QueryClient();
@@ -24,7 +24,7 @@ function App() {
   const [value, setValue] = useState(0);
   const [velibType, setVelibType] = useState('bikes');
   const [format, setFormat] = useState('points');
-  const [displayBikeWays, setDisplayBikeWays] = React.useState(false);
+  const [displayBikeWays, setDisplayBikeWays] = useState(false);
 
   const drawerOpen = Boolean(match);
 
