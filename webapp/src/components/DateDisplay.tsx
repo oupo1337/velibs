@@ -1,7 +1,8 @@
 import React from "react";
 
+import Typography from "@mui/material/Typography";
+
 import dayjs from 'dayjs'
-import { Typography } from "@mui/material";
 
 interface DateDisplayProps {
     date : Date

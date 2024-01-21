@@ -37,15 +37,16 @@ func initDependencies() (dependencies, error) {
 }
 
 func initApp(deps dependencies) *gin.Engine {
+	gin.SetMode(gin.ReleaseMode)
 	app := gin.Default()
 
-	app.Use(cors.New(
-		cors.Config{
-			AllowOrigins:  []string{"https://velib.runtheit.com", "http://localhost:3000"},
-			AllowMethods:  []string{http.MethodHead, http.MethodOptions, http.MethodGet},
-			AllowHeaders:  []string{"E-Tag", "If-None-Match"},
-			ExposeHeaders: []string{"E-Tag"},
-		}))
+	config := cors.Config{
+		AllowOrigins:  []string{"https://velib.runtheit.com", "http://localhost:3000"},
+		AllowMethods:  []string{http.MethodHead, http.MethodOptions, http.MethodGet},
+		AllowHeaders:  []string{"E-Tag", "If-None-Match"},
+		ExposeHeaders: []string{"E-Tag"},
+	}
+	app.Use(cors.New(config))
 
 	app.GET("/api/v2/timestamps", deps.statuses.GetMinMaxTimestamps)
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)

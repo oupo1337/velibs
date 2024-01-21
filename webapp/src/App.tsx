@@ -2,7 +2,13 @@ import {useEffect, useState} from 'react';
 import {Outlet, useMatch, useNavigate} from 'react-router-dom';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 
-import {Drawer, Paper} from '@mui/material';
+import Drawer from '@mui/material/Drawer';
+import Paper from '@mui/material/Paper';
+import Slide from '@mui/material/Slide';
+import IconButton from '@mui/material/IconButton';
+
+import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
+import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
 
 import Check from './components/Check';
 import DateDisplay from "./components/DateDisplay";
@@ -25,11 +31,16 @@ function App() {
   const [velibType, setVelibType] = useState('bikes');
   const [format, setFormat] = useState('points');
   const [displayBikeWays, setDisplayBikeWays] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(true);
 
   const drawerOpen = Boolean(match);
 
   const handleClose = () => {
     navigate('/');
+  }
+
+  const handleMenuClick = () => {
+    setMenuOpen(!menuOpen);
   }
 
   useEffect(() => {
@@ -46,15 +57,24 @@ function App() {
       .catch(error => console.error(error))
   }, []);
 
+  console.log(timestamps.length);
   return (
     <QueryClientProvider client={queryClient}>
+      <Slide direction="down" in={menuOpen} mountOnEnter unmountOnExit>
+        <Paper elevation={3} className="sidebar-container">
+          <MenuTitle />
+          <FormatRadio format={format} setFormat={setFormat} />
+          <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
+          <Check label={"Pistes cyclables"} checked={displayBikeWays} setChecked={setDisplayBikeWays} />
+          <DateDisplay date={timestamps[value]}/>
+          <DateSlider format={format} timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
+        </Paper>
+      </Slide>
+
       <Paper elevation={3} className="sidebar-container">
-        <MenuTitle />
-        <FormatRadio format={format} setFormat={setFormat} />
-        <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
-        <Check label={"Pistes cyclables"} checked={displayBikeWays} setChecked={setDisplayBikeWays} />
-        <DateDisplay date={timestamps[value]}/>
-        <DateSlider format={format} timestamps={timestamps} setTimestamps={setTimestamps} value={value} setValue={setValue} setData={setData} />
+        <IconButton onClick={handleMenuClick}>
+          {menuOpen ? <KeyboardDoubleArrowUpIcon /> : <KeyboardDoubleArrowDownIcon />}
+        </IconButton>
       </Paper>
 
       <VelibMap data={data} bikeWays={bikeWays} displayBikeWays={displayBikeWays} format={format}/>

@@ -4,10 +4,11 @@ import axios from "axios";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import { Box, Typography } from "@mui/material";
+import Box from "@mui/material/Box";
 import CircularProgress from '@mui/material/CircularProgress';
+import Typography from "@mui/material/Typography";
 
-import {Distribution, Station} from "../../domain/Domain";
+import { Distribution, Station } from "../../domain/Domain";
 
 import StackedAreaChart from "./StackedAreaChart";
 import DistributionChart from "./DistributionChart";

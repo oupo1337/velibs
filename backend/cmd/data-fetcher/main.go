@@ -62,6 +62,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("crawler is running")
+	slog.Info("data-fetcher is running")
 	deps.cron.Run()
 }

@@ -23,19 +23,11 @@ interface ClusterData {
 }
 
 function getTextSize(d: ClusterData): number {
-    if (d.properties.cluster)
-        return 20;
-    return 10;
-}
-
-function getSize(d: ClusterData): number {
-    if (!d.properties.cluster)
-        return 10;
-    if (d.properties.sum < 30)
-        return 30;
-    if (d.properties.sum < 100)
-        return 60;
-    return 80;
+    let value = d.properties.sum;
+    if (!d.properties.cluster) {
+        value = d.properties.bikes;
+    }
+    return Math.min(Math.max(value, 20), 30);
 }
 
 function getScatterPlotColor(d: ClusterData): [number, number, number] {
@@ -67,7 +59,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
     updateState({changeFlags}: any) {
         if (changeFlags.somethingChanged) {
             const cluster = new Supercluster({
-                radius: 50,
+                radius: this.context.viewport.zoom * 3,
                 maxZoom: 14,
                 reduce: (accumulated, props) => {
                     accumulated.sum += props.sum;
@@ -98,7 +90,14 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 stroked: true,
                 opacity: 0.8,
                 getPosition: (d: ClusterData) => d.geometry.coordinates,
-                getRadius: getSize,
+                getRadius: (d: ClusterData): number => {
+                    let value = d.properties.sum;
+                    if (!d.properties.cluster) {
+                        value = d.properties.bikes;
+                    }
+
+                    return ((value + 20) * 5) / this.context.viewport.zoom;
+                },
                 radiusScale: 6,
                 radiusUnits: 'meters',
                 getFillColor: getScatterPlotColor,
