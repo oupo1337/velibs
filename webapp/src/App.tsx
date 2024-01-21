@@ -31,7 +31,7 @@ function App() {
   const [velibType, setVelibType] = useState('bikes');
   const [format, setFormat] = useState('points');
   const [displayBikeWays, setDisplayBikeWays] = useState(false);
-  const [menuOpen, setMenuOpen] = useState(true);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   const drawerOpen = Boolean(match);
 
@@ -57,7 +57,6 @@ function App() {
       .catch(error => console.error(error))
   }, []);
 
-  console.log(timestamps.length);
   return (
     <QueryClientProvider client={queryClient}>
       <Slide direction="down" in={menuOpen} mountOnEnter unmountOnExit>
