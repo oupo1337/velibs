@@ -18,14 +18,20 @@ import VelibMap from './components/VelibMap';
 import FormatRadio from "./components/FormatRadio";
 import VelibTypeRadio from "./components/VelibTypeRadio";
 
+import { GeoJSON } from './domain/Domain';
+
+import { API_URL } from './configuration/Configuration';
+
 import './App.css';
 
 function App() {
   const queryClient = new QueryClient();
   const navigate = useNavigate();
   const match = useMatch('/stations/:stationId');
-  const [data, setData] = useState({});
-  const [bikeWays, setBikeWays] = useState({});
+  const [data, setData] = useState<GeoJSON>({
+    type: "",
+    features: []
+  });
   const [timestamps, setTimestamps] = useState<Date[]>([]);
   const [value, setValue] = useState(0);
   const [velibType, setVelibType] = useState('bikes');
@@ -44,18 +50,11 @@ function App() {
   }
 
   useEffect(() => {
-    fetch(`https://api.velib.runtheit.com/api/statuses.geojson`)
+    fetch(`${API_URL}/api/statuses.geojson`)
       .then(response => response.json())
       .then(data => setData(data))
       .catch(error => console.error(error));
   }, [])
-
-  useEffect(() => {
-    fetch(`https://api.velib.runtheit.com/api/v1/bikeways`)
-      .then(response => response.json())
-      .then(data => setBikeWays(data))
-      .catch(error => console.error(error))
-  }, []);
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -76,7 +75,7 @@ function App() {
         </IconButton>
       </Paper>
 
-      <VelibMap data={data} bikeWays={bikeWays} displayBikeWays={displayBikeWays} format={format}/>
+      <VelibMap data={data} displayBikeWays={displayBikeWays} format={format}/>
 
       <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>
         <Outlet />

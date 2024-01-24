@@ -8,11 +8,15 @@ import (
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
+	"go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin"
 
 	"github.com/oupo1337/velibs/backend/handlers"
 	"github.com/oupo1337/velibs/backend/logging"
 	"github.com/oupo1337/velibs/backend/postgres"
+	"github.com/oupo1337/velibs/backend/tracing"
 )
+
+const serviceName = "velib-api"
 
 type dependencies struct {
 	statuses *handlers.Statuses
@@ -47,6 +51,7 @@ func initApp(deps dependencies) *gin.Engine {
 		ExposeHeaders: []string{"E-Tag"},
 	}
 	app.Use(cors.New(config))
+	app.Use(otelgin.Middleware(serviceName))
 
 	app.GET("/api/v2/timestamps", deps.statuses.GetMinMaxTimestamps)
 	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
@@ -58,16 +63,25 @@ func initApp(deps dependencies) *gin.Engine {
 }
 
 func main() {
-	logging.Init()
+	logging.Init(serviceName)
+
+	err := tracing.Init(serviceName)
+	if err != nil {
+		slog.Error("tracing.Init error", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 
 	deps, err := initDependencies()
 	if err != nil {
 		slog.Error("initDependencies error", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 
 	app := initApp(deps)
-	slog.Info("api is running")
-	if err := app.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))); err != nil {
+	port := os.Getenv("PORT")
+	slog.Info("api is running", slog.String("port", port))
+	if err := app.Run(fmt.Sprintf(":%s", port)); err != nil {
 		slog.Error("app.Run error", slog.String("error", err.Error()))
+		os.Exit(1)
 	}
 }

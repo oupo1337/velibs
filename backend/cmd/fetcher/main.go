@@ -10,7 +10,10 @@ import (
 	"github.com/oupo1337/velibs/backend/logging"
 	"github.com/oupo1337/velibs/backend/postgres"
 	"github.com/oupo1337/velibs/backend/tasks"
+	"github.com/oupo1337/velibs/backend/tracing"
 )
+
+const serviceName = "velib-fetcher"
 
 type dependencies struct {
 	cron *cron.Cron
@@ -27,18 +30,11 @@ func initDependencies() (dependencies, error) {
 		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
 	}
 
-	timescale, err := postgres.New(postgres.Configuration{
-		Username: os.Getenv("TIMESCALE_USERNAME"),
-		Password: os.Getenv("TIMESCALE_PASSWORD"),
-		Address:  os.Getenv("TIMESCALE_ADDRESS"),
-		Name:     os.Getenv("TIMESCALE_NAME"),
-	})
-	if err != nil {
-		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
-	}
+	stationInformationURL := os.Getenv("VELIB_API_STATIONS_URL")
+	statusesURL := os.Getenv("VELIB_API_STATUSES_URL")
 
-	stations := tasks.NewStations(os.Getenv("VELIB_API_STATIONS_URL"), db, timescale)
-	statuses := tasks.NewStatuses(os.Getenv("VELIB_API_STATUSES_URL"), db, timescale)
+	stations := tasks.NewStations(stationInformationURL, db)
+	statuses := tasks.NewStatuses(statusesURL, db)
 
 	c := cron.New()
 	if err := c.AddFunc("0 */10 * * * *", func() {
@@ -54,7 +50,13 @@ func initDependencies() (dependencies, error) {
 }
 
 func main() {
-	logging.Init()
+	logging.Init(serviceName)
+
+	err := tracing.Init(serviceName)
+	if err != nil {
+		slog.Error("tracing.Init error", slog.String("error", err.Error()))
+		os.Exit(1)
+	}
 
 	deps, err := initDependencies()
 	if err != nil {

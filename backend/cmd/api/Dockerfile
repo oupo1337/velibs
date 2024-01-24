@@ -3,11 +3,9 @@ FROM golang:1.21 AS build
 ADD . /build
 WORKDIR /build/cmd/api
 
-RUN go build -o api
+RUN CGO_ENABLED=0 go build -o api
 
-FROM ubuntu
-
-RUN apt-get update && apt-get install -y ca-certificates
+FROM alpine:latest
 
 WORKDIR /app
 COPY --from=build /build/cmd/api/api /app/api

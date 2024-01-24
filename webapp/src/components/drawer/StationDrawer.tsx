@@ -12,6 +12,7 @@ import { Distribution, Station } from "../../domain/Domain";
 
 import StackedAreaChart from "./StackedAreaChart";
 import DistributionChart from "./DistributionChart";
+import { API_URL } from "../../configuration/Configuration";
 
 const DrawerLoader = () => {
     return (
@@ -35,7 +36,7 @@ interface StationProps {
 
 const StationDisplay: React.FC<StationProps> = ({stationID}) => {
     const fetchStation = async () => {
-        const response = await axios.get(`https://api.velib.runtheit.com/api/stations/${stationID}`);
+        const response = await axios.get(`${API_URL}/api/stations/${stationID}`);
         return response.data;
     }
 
@@ -64,7 +65,7 @@ const StationDisplay: React.FC<StationProps> = ({stationID}) => {
 
 const DistributionDisplay: React.FC<StationProps> = ({stationID}) => {
     const fetchStationDistribution = async () => {
-        const response = await axios.get(`https://api.velib.runtheit.com/api/v1/distributions/${stationID}`);
+        const response = await axios.get(`${API_URL}/api/v1/distributions/${stationID}`);
         return response.data;
     }
 

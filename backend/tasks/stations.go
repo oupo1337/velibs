@@ -5,17 +5,22 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"net/http/httptrace"
 	"time"
+
+	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
+	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
+	"go.opentelemetry.io/otel/codes"
 
 	"github.com/oupo1337/velibs/backend/domain"
 	"github.com/oupo1337/velibs/backend/postgres"
+	"github.com/oupo1337/velibs/backend/tracing"
 )
 
 type Stations struct {
-	url       string
-	db        *postgres.Database
-	timescale *postgres.Database
-	client    *http.Client
+	url    string
+	db     *postgres.Database
+	client *http.Client
 }
 
 type StationInformationResponse struct {
@@ -27,6 +32,7 @@ type StationInformationResponse struct {
 }
 
 func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.StationInformation, error) {
+	ctx = httptrace.WithClientTrace(ctx, otelhttptrace.NewClientTrace(ctx))
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, s.url, nil)
 	if err != nil {
 		return nil, err
@@ -45,32 +51,41 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 }
 
 func (s *Stations) UpdateStations() {
-	slog.Info("UpdateStations running")
+	ctx, span := tracing.Start(context.Background(), "UpdateStations")
+	defer span.End()
 
-	stations, err := s.fetchStationsInformation(context.Background())
+	slog.InfoContext(ctx, "UpdateStations running")
+
+	stations, err := s.fetchStationsInformation(ctx)
 	if err != nil {
+		span.SetStatus(codes.Error, "fetchStationsInformation failed")
+		span.RecordError(err)
 		slog.Error("s.fetchStationsInformation error", slog.String("error", err.Error()))
 		return
 	}
 
-	if err := s.db.InsertStations(context.Background(), stations); err != nil {
+	if err := s.db.InsertStations(ctx, stations); err != nil {
+		span.SetStatus(codes.Error, "InsertStations failed")
+		span.RecordError(err)
 		slog.Error("db.InsertStations error", slog.String("error", err.Error()))
-		return
-	}
-
-	if err := s.timescale.InsertStations(context.Background(), stations); err != nil {
-		slog.Error("s.timescale.InsertStations error", slog.String("error", err.Error()))
 		return
 	}
 }
 
-func NewStations(url string, db *postgres.Database, timescale *postgres.Database) *Stations {
+func NewStations(url string, db *postgres.Database) *Stations {
+	transport := otelhttp.NewTransport(
+		http.DefaultTransport,
+		otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
+			return otelhttptrace.NewClientTrace(ctx)
+		}),
+	)
+
 	return &Stations{
-		url:       url,
-		db:        db,
-		timescale: timescale,
+		url: url,
+		db:  db,
 		client: &http.Client{
-			Timeout: 10 * time.Second,
+			Timeout:   10 * time.Second,
+			Transport: transport,
 		},
 	}
 }

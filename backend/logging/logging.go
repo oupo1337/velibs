@@ -5,8 +5,11 @@ import (
 	"os"
 )
 
-func Init() {
+func Init(serviceName string) {
 	handler := slog.NewJSONHandler(os.Stdout, nil)
-	logger := slog.New(handler)
+
+	logger := slog.New(handler.WithAttrs([]slog.Attr{
+		slog.String("service", serviceName),
+	}))
 	slog.SetDefault(logger)
 }

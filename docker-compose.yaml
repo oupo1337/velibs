@@ -1,4 +1,9 @@
 services:
+  jaeger:
+    image: jaegertracing/all-in-one:latest
+    ports:
+      - "127.0.0.1:16686:16686"
+
   postgres:
     image: postgres:15.2-alpine
     environment:
@@ -12,20 +17,25 @@ services:
       retries: 5
     volumes:
       - ./backend/database_schema/postgres:/docker-entrypoint-initdb.d
+    ports:
+      - 127.0.0.1:5432:5432
 
-  timescale:
-    image: timescale/timescaledb:latest-pg15
+  fetcher:
+    build:
+      context: ./backend
+      dockerfile: ./cmd/fetcher/Dockerfile
+    depends_on:
+      postgres:
+        condition: service_healthy
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      DATABASE_USERNAME: postgres
+      DATABASE_PASSWORD: password
+      DATABASE_ADDRESS: postgres
+      DATABASE_NAME: postgres
+      VELIB_API_STATIONS_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_information.json
+      VELIB_API_STATUSES_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     restart: always
-    healthcheck:
-      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
-      interval: 5s
-      timeout: 5s
-      retries: 5
-    volumes:
-      - ./backend/database_schema/timescale:/docker-entrypoint-initdb.d
 
   api:
     build:
@@ -34,40 +44,16 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      timescale:
-        condition: service_healthy
     environment:
       PORT: 8080
       DATABASE_USERNAME: postgres
       DATABASE_PASSWORD: password
       DATABASE_ADDRESS: postgres
       DATABASE_NAME: postgres
-      GIN_MODE: release
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
     restart: always
     ports:
       - 127.0.0.1:8080:8080
-
-  data-fetcher:
-    build:
-      context: ./backend
-      dockerfile: ./cmd/data-fetcher/Dockerfile
-    depends_on:
-      postgres:
-        condition: service_healthy
-      timescale:
-        condition: service_healthy
-    environment:
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: password
-      DATABASE_ADDRESS: postgres
-      DATABASE_NAME: postgres
-      TIMESCALE_USERNAME: postgres
-      TIMESCALE_PASSWORD: password
-      TIMESCALE_ADDRESS: timescale
-      TIMESCALE_NAME: postgres
-      VELIB_API_STATIONS_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_information.json
-      VELIB_API_STATUSES_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json
-    restart: always
 
   webapp:
     build:

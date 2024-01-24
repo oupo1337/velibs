@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
@@ -23,44 +24,55 @@ type Database struct {
 }
 
 func (db *Database) InsertStations(ctx context.Context, stationsInformation []domain.StationInformation) error {
-	query := `
-		INSERT INTO stations (id, capacity, latitude, longitude, name)
-		VALUES ($1, $2, $3, $4, $5)
-		ON CONFLICT DO NOTHING`
-
-	for _, station := range stationsInformation {
-		_, err := db.conn.Exec(ctx, query, station.StationID, station.Capacity, station.Latitude, station.Longitude, station.Name)
-		if err != nil {
-			return fmt.Errorf("conn.Exec error: %w", err)
-		}
+	_, err := db.conn.CopyFrom(ctx,
+		pgx.Identifier{"stations"},
+		[]string{"id", "capacity", "latitude", "longitude", "name"},
+		pgx.CopyFromSlice(len(stationsInformation), func(i int) ([]any, error) {
+			return []any{
+				stationsInformation[i].StationID,
+				stationsInformation[i].Capacity,
+				stationsInformation[i].Latitude,
+				stationsInformation[i].Longitude,
+				stationsInformation[i].Name,
+			}, nil
+		}),
+	)
+	if err != nil {
+		return fmt.Errorf("db.conn.CopyFrom error")
 	}
 	return nil
 }
 
 func (db *Database) InsertStatuses(ctx context.Context, statuses []domain.StationStatus) error {
-	query := `
-		INSERT INTO statuses (timestamp, station_id, mechanical, electric)
-		VALUES (DATE_TRUNC('minute', $1::timestamp), $2, $3, $4)`
+	timestamp := time.Now().Truncate(time.Minute)
 
-	now := time.Now()
-	for _, status := range statuses {
-		mechanical := 0
-		electric := 0
+	_, err := db.conn.CopyFrom(ctx,
+		pgx.Identifier{"statuses"},
+		[]string{"timestamp", "station_id", "mechanical", "electric"},
+		pgx.CopyFromSlice(len(statuses), func(i int) ([]any, error) {
+			mechanical := 0
+			electric := 0
 
-		for _, available := range status.NumBikesAvailableTypes {
-			if available.Mechanical != nil {
-				mechanical = *available.Mechanical
+			for _, available := range statuses[i].NumBikesAvailableTypes {
+				if available.Mechanical != nil {
+					mechanical = *available.Mechanical
+				}
+
+				if available.Ebike != nil {
+					electric = *available.Ebike
+				}
 			}
 
-			if available.Ebike != nil {
-				electric = *available.Ebike
-			}
-		}
-
-		_, err := db.conn.Exec(ctx, query, now, status.StationID, mechanical, electric)
-		if err != nil {
-			return fmt.Errorf("conn.Exec error: %w", err)
-		}
+			return []any{
+				timestamp,
+				statuses[i].StationID,
+				mechanical,
+				electric,
+			}, nil
+		}),
+	)
+	if err != nil {
+		return fmt.Errorf("db.conn.CopyFrom error")
 	}
 	return nil
 }
@@ -297,11 +309,24 @@ func (db *Database) FetchBikeWays(ctx context.Context) ([]string, error) {
 }
 
 func New(conf Configuration) (*Database, error) {
-	url := fmt.Sprintf("postgres://%s:%s@%s/%s", conf.Username, conf.Password, conf.Address, conf.Name)
+	connString := fmt.Sprintf("postgres://%s:%s@%s/%s", conf.Username, conf.Password, conf.Address, conf.Name)
 
-	conn, err := pgxpool.New(context.Background(), url)
+	cfg, err := pgxpool.ParseConfig(connString)
 	if err != nil {
-		return nil, fmt.Errorf("pgx.Connect: %w", err)
+		return nil, fmt.Errorf("create connection pool error: %w", err)
+	}
+	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
+
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	conn, err := pgxpool.NewWithConfig(ctx, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("connect to database error: %w", err)
+	}
+
+	if err := conn.Ping(ctx); err != nil {
+		return nil, fmt.Errorf("conn.Ping error: %w", err)
 	}
 
 	return &Database{

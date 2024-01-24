@@ -11,7 +11,7 @@ interface FormatRadioProps {
 }
 
 const FormatRadio : React.FC<FormatRadioProps> = ({format, setFormat}) => {
-    const handleChange = (_event : ChangeEvent<HTMLElement>, value : string) => {
+    const handleChange = (_ : ChangeEvent<HTMLElement>, value : string) => {
         setFormat(value);
     }
 
@@ -21,7 +21,7 @@ const FormatRadio : React.FC<FormatRadioProps> = ({format, setFormat}) => {
                 <RadioGroup row value={format} onChange={handleChange}>
                     <FormControlLabel value="points" control={<Radio />} label="Points" />
                     <FormControlLabel value="heatmap" control={<Radio />} label="Heatmap" />
-                    <FormControlLabel value="h3" control={<Radio />} label="H3" />
+                    <FormControlLabel value="polygon" control={<Radio />} label="Polygon" />
                 </RadioGroup>
             </FormControl>
         </div>

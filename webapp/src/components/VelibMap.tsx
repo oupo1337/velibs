@@ -1,14 +1,19 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useNavigate} from 'react-router-dom';
 
 import Map from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react/typed';
-import {GeoJsonLayer} from '@deck.gl/layers/typed';
+import {PickingInfo} from '@deck.gl/core/typed'
+import {GeoJsonLayer, PolygonLayer} from '@deck.gl/layers/typed';
 import {HeatmapLayer} from '@deck.gl/aggregation-layers/typed';
 import {H3HexagonLayer} from '@deck.gl/geo-layers/typed';
 
+
 import ClusterLayer from "./layers/ClusterLayer";
+import { GeoJSON } from '../domain/Domain';
+
+import { API_URL } from '../configuration/Configuration';
 
 const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
 
@@ -21,14 +26,20 @@ interface ViewState {
 }
 
 interface VelibMapProps {
-    data: any
-    bikeWays: any
+    data: GeoJSON
     displayBikeWays: boolean
     format: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, format  }) => {
+
+const VelibMap: React.FC<VelibMapProps> = ({ data, displayBikeWays, format  }) => {
     const navigate = useNavigate();
+    
+    const [bikeWays, setBikeWays] = useState<GeoJSON>({
+        type: "",
+        features: []
+    });
+
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
         latitude: 48.8566,
@@ -36,6 +47,14 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, fo
         pitch: 0,
         bearing: 0
     });
+
+    useEffect(() => {
+        fetch(`${API_URL}/api/v1/bikeways`)
+          .then(response => response.json())
+          .then(data => setBikeWays(data))
+          .catch(error => console.error(error))
+    }, []);
+    
 
     const handleViewStateChange = ({viewState}: any) => {
         setViewport(viewState);
@@ -72,7 +91,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, fo
         visible: format === 'points',
         data: data.features,
         zoom: viewport.zoom,
-        onClick: (info: any) => {
+        onClick: (info: PickingInfo) => {
             if (info.object.properties.cluster) {
                 return
             }
@@ -97,12 +116,27 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, bikeWays, displayBikeWays, fo
         getLineWidth: 1,
     })
 
+    const polygonLayer = new PolygonLayer({
+        visible: format === 'polygon',
+        id: 'polygon-layer',
+        pickable: true,
+        stroked: true,
+        filled: true,
+        wireframe: true,
+        lineWidthMinPixels: 1,
+        getPolygon: d => d.contour,
+        getElevation: d => d.population / d.area / 10,
+        getFillColor: d => [d.population / d.area / 60, 140, 0],
+        getLineColor: [80, 80, 80],
+        getLineWidth: 1
+    })
+
     return (
         <DeckGL
             initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer]}
+            layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer, polygonLayer]}
         >
             <Map
                 mapboxAccessToken={MAPBOX_ACCESS_TOKEN}

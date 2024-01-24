@@ -2,18 +2,22 @@ import React, {useEffect} from "react";
 
 import Slider from "@mui/material/Slider";
 
+import { GeoJSON } from '../domain/Domain';
+
+import { API_URL } from "../configuration/Configuration";
+
 interface DateSliderProps {
     format: string
     timestamps: Date[]
     setTimestamps: React.Dispatch<React.SetStateAction<Date[]>>
     value: number
     setValue: React.Dispatch<React.SetStateAction<number>>
-    setData: React.Dispatch<React.SetStateAction<string>>
+    setData: React.Dispatch<React.SetStateAction<GeoJSON>>
 }
 
 const DateSlider: React.FC<DateSliderProps> = ({format, setTimestamps, timestamps, value, setValue, setData }) => {
     useEffect(() => {
-        fetch('https://api.velib.runtheit.com/api/v2/timestamps')
+        fetch(`${API_URL}/api/v2/timestamps`)
             .then(response => response.json())
             .then(data => {
                 const minutes = 10;
@@ -37,7 +41,7 @@ const DateSlider: React.FC<DateSliderProps> = ({format, setTimestamps, timestamp
         const timestamp = timestamps[newValue].toISOString();
 
         setValue(newValue);
-        fetch(`https://api.velib.runtheit.com/api/statuses.geojson?timestamp=${timestamp}&format=${format}`)
+        fetch(`${API_URL}/api/statuses.geojson?timestamp=${timestamp}&format=${format}`)
             .then(response => response.json())
             .then(data => setData(data))
             .catch(error => console.error(error));

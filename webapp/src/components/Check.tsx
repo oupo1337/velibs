@@ -10,8 +10,8 @@ interface CheckProps {
 }
 
 const Check: React.FC<CheckProps> = ({label, checked, setChecked}) => {
-    const handleChange = (event: any) => {
-        setChecked(event.target.checked);
+    const handleChange = (_: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
+        setChecked(checked);
     };
 
     return (

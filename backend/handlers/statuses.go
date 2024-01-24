@@ -4,11 +4,9 @@ import (
 	"fmt"
 	"log/slog"
 	"net/http"
-	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/uber/h3-go/v4"
 
 	"github.com/oupo1337/velibs/backend/postgres"
 )
@@ -82,14 +80,6 @@ func (s *Statuses) GetMinMaxTimestamps(c *gin.Context) {
 }
 
 func (s *Statuses) GetStatuses(c *gin.Context) {
-	resQuery := c.DefaultQuery("resolution", "9")
-	resolution, err := strconv.Atoi(resQuery)
-	if err != nil {
-		slog.Error("strconv.Atoi error", slog.String("error", err.Error()))
-		c.Status(http.StatusInternalServerError)
-		return
-	}
-
 	timestamp := c.Query("timestamp")
 	stations, err := s.db.FetchTimestamp(c.Request.Context(), timestamp)
 	if err != nil {
@@ -100,8 +90,6 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 
 	features := make([]feature, 0, len(stations))
 	for _, station := range stations {
-		latLng := h3.NewLatLng(station.Latitude, station.Longitude)
-
 		features = append(features, feature{
 			Type: "Feature",
 			Geometry: geometry{
@@ -118,7 +106,6 @@ func (s *Statuses) GetStatuses(c *gin.Context) {
 				Bikes:      station.Mechanical + station.Electric,
 				Mechanical: station.Mechanical,
 				Electric:   station.Electric,
-				Hexagon:    h3.LatLngToCell(latLng, resolution).String(),
 			},
 		})
 	}
