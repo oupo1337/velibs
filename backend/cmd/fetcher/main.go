@@ -64,6 +64,6 @@ func main() {
 		os.Exit(1)
 	}
 
-	slog.Info("data-fetcher is running")
+	slog.Info("service is running")
 	deps.cron.Run()
 }

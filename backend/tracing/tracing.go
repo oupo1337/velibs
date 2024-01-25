@@ -27,17 +27,6 @@ func Start(ctx context.Context, spanName string, opts ...trace.SpanStartOption) 
 func Init(serviceName string) error {
 	slog.Info("initializing tracing")
 
-	otel.SetTextMapPropagator(
-		propagation.NewCompositeTextMapPropagator(
-			propagation.TraceContext{},
-			propagation.Baggage{},
-		))
-
-	exporter, err := otlptrace.New(context.Background(), otlptracehttp.NewClient())
-	if err != nil {
-		return fmt.Errorf("otlptrace.New error: %w", err)
-	}
-
 	res, err := resource.New(
 		context.Background(),
 		resource.WithSchemaURL(semconv.SchemaURL),
@@ -51,6 +40,17 @@ func Init(serviceName string) error {
 	)
 	if err != nil {
 		return fmt.Errorf("resource.New error: %w", err)
+	}
+
+	otel.SetTextMapPropagator(
+		propagation.NewCompositeTextMapPropagator(
+			propagation.TraceContext{},
+			propagation.Baggage{},
+		))
+
+	exporter, err := otlptrace.New(context.Background(), otlptracehttp.NewClient())
+	if err != nil {
+		return fmt.Errorf("otlptrace.New error: %w", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(

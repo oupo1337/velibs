@@ -1,8 +1,30 @@
 services:
-  jaeger:
-    image: jaegertracing/all-in-one:latest
+  grafana:
+    image: grafana/grafana:10.2.2
+    volumes:
+      - ./configuration/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+      - GF_AUTH_DISABLE_LOGIN_FORM=true
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor traceQLStreaming metricsSummary
     ports:
-      - "127.0.0.1:16686:16686"
+      - 127.0.0.1:4321:3000
+
+  tempo:
+    image: grafana/tempo:latest
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    volumes:
+      - ./configuration/tempo.yaml:/etc/tempo.yaml
+
+  prometheus:
+    image: prom/prometheus:latest
+    command:
+      - --config.file=/etc/prometheus.yaml
+      - --web.enable-remote-write-receiver
+      - --enable-feature=exemplar-storage
+    volumes:
+      - ./configuration/prometheus.yaml:/etc/prometheus.yaml
 
   postgres:
     image: postgres:15.2-alpine
@@ -34,7 +56,7 @@ services:
       DATABASE_NAME: postgres
       VELIB_API_STATIONS_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_information.json
       VELIB_API_STATUSES_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
     restart: always
 
   api:
@@ -50,7 +72,7 @@ services:
       DATABASE_PASSWORD: password
       DATABASE_ADDRESS: postgres
       DATABASE_NAME: postgres
-      OTEL_EXPORTER_OTLP_ENDPOINT: http://jaeger:4318
+      OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
     restart: always
     ports:
       - 127.0.0.1:8080:8080

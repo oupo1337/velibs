@@ -79,7 +79,7 @@ func main() {
 
 	app := initApp(deps)
 	port := os.Getenv("PORT")
-	slog.Info("api is running", slog.String("port", port))
+	slog.Info("service is running", slog.String("port", port))
 	if err := app.Run(fmt.Sprintf(":%s", port)); err != nil {
 		slog.Error("app.Run error", slog.String("error", err.Error()))
 		os.Exit(1)

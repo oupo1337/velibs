@@ -9,7 +9,6 @@ import (
 	"time"
 
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
-	"go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp"
 	"go.opentelemetry.io/otel/codes"
 
 	"github.com/oupo1337/velibs/backend/domain"
@@ -73,19 +72,11 @@ func (s *Stations) UpdateStations() {
 }
 
 func NewStations(url string, db *postgres.Database) *Stations {
-	transport := otelhttp.NewTransport(
-		http.DefaultTransport,
-		otelhttp.WithClientTrace(func(ctx context.Context) *httptrace.ClientTrace {
-			return otelhttptrace.NewClientTrace(ctx)
-		}),
-	)
-
 	return &Stations{
 		url: url,
 		db:  db,
 		client: &http.Client{
-			Timeout:   10 * time.Second,
-			Transport: transport,
+			Timeout: 10 * time.Second,
 		},
 	}
 }
