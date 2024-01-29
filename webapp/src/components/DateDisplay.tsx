@@ -5,7 +5,7 @@ import Typography from "@mui/material/Typography";
 import dayjs from 'dayjs'
 
 interface DateDisplayProps {
-    date : Date
+    date : Date | undefined
 }
 
 const DateDisplay : React.FC<DateDisplayProps> = ({ date }) => {

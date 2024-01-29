@@ -10,12 +10,16 @@ services:
       - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor traceQLStreaming metricsSummary
     ports:
       - 127.0.0.1:4321:3000
+    profiles:
+      - production
 
   tempo:
     image: grafana/tempo:latest
     command: [ "-config.file=/etc/tempo.yaml" ]
     volumes:
       - ./configuration/tempo.yaml:/etc/tempo.yaml
+    profiles:
+      - production
 
   prometheus:
     image: prom/prometheus:latest
@@ -25,37 +29,47 @@ services:
       - --enable-feature=exemplar-storage
     volumes:
       - ./configuration/prometheus.yaml:/etc/prometheus.yaml
+    profiles:
+      - production
 
-  postgres:
-    image: postgres:15.2-alpine
+  database:
+    image: postgis/postgis:16-3.4
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     restart: always
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U postgres" ]
       interval: 5s
       timeout: 5s
       retries: 5
-    volumes:
-      - ./backend/database_schema/postgres:/docker-entrypoint-initdb.d
     ports:
       - 127.0.0.1:5432:5432
+
+  migration:
+    build:
+      context: ./migration
+      dockerfile: Dockerfile
+    depends_on:
+      database:
+        condition: service_healthy
+    environment:
+      - SQITCH_TARGET=db:pg://${POSTGRES_USER}@database/${POSTGRES_USER}
+      - SQITCH_PASSWORD=${POSTGRES_PASSWORD}
 
   fetcher:
     build:
       context: ./backend
       dockerfile: ./cmd/fetcher/Dockerfile
     depends_on:
-      postgres:
-        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     environment:
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: password
-      DATABASE_ADDRESS: postgres
-      DATABASE_NAME: postgres
-      VELIB_API_STATIONS_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_information.json
-      VELIB_API_STATUSES_URL: https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_status.json
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_ADDRESS: database
+      DATABASE_NAME: ${POSTGRES_USER}
+      TELEMETRY_ENABLED: ${TELEMETRY_ENABLED}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
     restart: always
 
@@ -64,14 +78,16 @@ services:
       context: ./backend
       dockerfile: ./cmd/api/Dockerfile
     depends_on:
-      postgres:
-        condition: service_healthy
+      migration:
+        condition: service_completed_successfully
     environment:
       PORT: 8080
-      DATABASE_USERNAME: postgres
-      DATABASE_PASSWORD: password
-      DATABASE_ADDRESS: postgres
-      DATABASE_NAME: postgres
+      APP_DOMAIN_NAME: ${APP_DOMAIN_NAME}
+      DATABASE_USERNAME: ${POSTGRES_USER}
+      DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
+      DATABASE_ADDRESS: database
+      DATABASE_NAME: ${POSTGRES_USER}
+      TELEMETRY_ENABLED: ${TELEMETRY_ENABLED}
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
     restart: always
     ports:
@@ -80,7 +96,14 @@ services:
   webapp:
     build:
       context: ./webapp
+      args:
+        API_URL: ${API_URL}
+        MAPBOX_ACCESS_TOKEN: ${MAPBOX_ACCESS_TOKEN}
+        MAP_STYLE: ${MAP_STYLE}
     depends_on:
       - api
+
     ports:
       - 127.0.0.1:3000:80
+    profiles:
+      - production

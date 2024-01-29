@@ -8,6 +8,8 @@ import (
 	"github.com/exaring/otelpgx"
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/paulmach/orb"
+	"github.com/paulmach/orb/encoding/ewkb"
 
 	"github.com/oupo1337/velibs/backend/domain"
 )
@@ -24,21 +26,29 @@ type Database struct {
 }
 
 func (db *Database) InsertStations(ctx context.Context, stationsInformation []domain.StationInformation) error {
-	_, err := db.conn.CopyFrom(ctx,
-		pgx.Identifier{"stations"},
-		[]string{"id", "capacity", "latitude", "longitude", "name"},
-		pgx.CopyFromSlice(len(stationsInformation), func(i int) ([]any, error) {
-			return []any{
-				stationsInformation[i].StationID,
-				stationsInformation[i].Capacity,
-				stationsInformation[i].Latitude,
-				stationsInformation[i].Longitude,
-				stationsInformation[i].Name,
-			}, nil
-		}),
-	)
-	if err != nil {
-		return fmt.Errorf("db.conn.CopyFrom error")
+	query := `
+		INSERT INTO stations (id, name, capacity, position)
+		VALUES ($1, $2, $3, ST_GeomFromEWKB($4))
+		ON CONFLICT DO NOTHING
+	`
+
+	batch := &pgx.Batch{}
+	for i := range stationsInformation {
+		_ = batch.Queue(query,
+			stationsInformation[i].StationID,
+			stationsInformation[i].Name,
+			stationsInformation[i].Capacity,
+			ewkb.Value(orb.Point{stationsInformation[i].Longitude, stationsInformation[i].Latitude}, 4326),
+		)
+	}
+
+	results := db.conn.SendBatch(ctx, batch)
+	defer results.Close()
+
+	for range stationsInformation {
+		if _, err := results.Exec(); err != nil {
+			return fmt.Errorf("results.Exec error: %w", err)
+		}
 	}
 	return nil
 }
@@ -90,78 +100,44 @@ func (db *Database) GetMinMaxTimestamps(ctx context.Context) (time.Time, time.Ti
 	return minTimestamp, maxTimestamp, nil
 }
 
-func (db *Database) FetchTimestamp(ctx context.Context, timestamp string) ([]domain.Station, error) {
+func (db *Database) FetchStationsStatuses(ctx context.Context, timestamp string) ([]byte, error) {
 	if timestamp == "" {
-		return db.FetchMaxTimestamp(ctx)
+		tmstp, err := db.FetchMaxTimestamp(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("db.FetchMaxTimestamp error: %w", err)
+		}
+		timestamp = tmstp
 	}
 
 	query := `
-		SELECT timestamp, id, name, capacity, latitude, longitude, mechanical, electric
-		FROM statuses
-		JOIN stations ON (id = station_id)
-	  	WHERE timestamp = $1`
+		SELECT json_build_object(
+			'type', 'FeatureCollection',
+			'features', json_agg(ST_AsGeoJSON(t.*)::json)
+		)
+		FROM (
+			SELECT stations.id, name, capacity, mechanical, electric, position
+			FROM statuses
+			JOIN stations ON (id = station_id)
+			WHERE timestamp = $1
+		) as t(station_id, name, capacity, mechanical, electric, position)
+	`
 
-	rows, err := db.conn.Query(ctx, query, timestamp)
-	if err != nil {
-		return nil, fmt.Errorf("conn.Query error: %w", err)
+	var data []byte
+	if err := db.conn.QueryRow(ctx, query, timestamp).Scan(&data); err != nil {
+		return nil, fmt.Errorf("db.conn.QueryRow error: %w", err)
 	}
-	defer func() {
-		_ = rows.Close
-	}()
-
-	var stations []domain.Station
-	for rows.Next() {
-		var station domain.Station
-
-		if err := rows.Scan(&station.Timestamp,
-			&station.ID,
-			&station.Name,
-			&station.Capacity,
-			&station.Latitude,
-			&station.Longitude,
-			&station.Mechanical,
-			&station.Electric); err != nil {
-			return nil, fmt.Errorf("rows.Scan error: %w", err)
-		}
-		stations = append(stations, station)
-	}
-	return stations, nil
+	return data, nil
 }
 
-func (db *Database) FetchMaxTimestamp(ctx context.Context) ([]domain.Station, error) {
-	query := `
-		WITH 
-			max_timestamp AS (SELECT MAX(timestamp) FROM statuses)
-		SELECT timestamp, id, name, capacity, latitude, longitude, mechanical, electric
-		FROM statuses
-		JOIN stations ON (id = station_id)
-		WHERE timestamp = (SELECT max FROM max_timestamp)`
+func (db *Database) FetchMaxTimestamp(ctx context.Context) (string, error) {
+	query := `SELECT MAX(timestamp) FROM statuses`
 
-	rows, err := db.conn.Query(ctx, query)
+	var timestamp time.Time
+	err := db.conn.QueryRow(ctx, query).Scan(&timestamp)
 	if err != nil {
-		return nil, fmt.Errorf("conn.Query error: %w", err)
+		return "", fmt.Errorf("conn.Query error: %w", err)
 	}
-	defer func() {
-		_ = rows.Close
-	}()
-
-	var stations []domain.Station
-	for rows.Next() {
-		var station domain.Station
-
-		if err := rows.Scan(&station.Timestamp,
-			&station.ID,
-			&station.Name,
-			&station.Capacity,
-			&station.Latitude,
-			&station.Longitude,
-			&station.Mechanical,
-			&station.Electric); err != nil {
-			return nil, fmt.Errorf("rows.Scan error: %w", err)
-		}
-		stations = append(stations, station)
-	}
-	return stations, nil
+	return timestamp.Format(time.RFC3339), nil
 }
 
 func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) (domain.StationTimeSeries, error) {
@@ -184,9 +160,7 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) 
 	if err != nil {
 		return domain.StationTimeSeries{}, fmt.Errorf("conn.Query error: %w", err)
 	}
-	defer func() {
-		_ = rows.Close
-	}()
+	defer rows.Close()
 
 	var ts []domain.TimeSeries
 	for rows.Next() {
@@ -221,9 +195,7 @@ func (db *Database) GetStationDistribution(ctx context.Context, stationID string
 	if err != nil {
 		return nil, fmt.Errorf("conn.Query error: %w", err)
 	}
-	defer func() {
-		_ = rows.Close
-	}()
+	defer rows.Close()
 
 	var distribution []domain.DistributionData
 	for rows.Next() {
@@ -237,75 +209,6 @@ func (db *Database) GetStationDistribution(ctx context.Context, stationID string
 		distribution = append(distribution, data)
 	}
 	return distribution, nil
-}
-
-func (db *Database) InsertBikeWays(ctx context.Context, ways []domain.BikeWay) error {
-	query := `
-		INSERT INTO bike_ways (typology, bidirectional, speed_regime, direction, route, arrondissement, forest, length, length_kilometers, position, forbidden_circulation, piste, bus_lane, type_continuity, network, date, geo_shape)
-		VALUES (@typology, @bidirectional, @speed_regime, @direction, @route, @arrondissement, @forest, @length, @length_kilometers, @position, @forbidden_circulation, @piste, @bus_lane, @type_continuity, @network, @date, @geo_shape)
-	`
-
-	for _, way := range ways {
-		if way.GeoShape == nil {
-			continue
-		}
-
-		var value *time.Time
-		date, err := time.Parse(time.DateOnly, way.Date)
-		if err == nil {
-			value = &date
-		}
-
-		args := pgx.NamedArgs{
-			"typology":              way.Typology,
-			"bidirectional":         way.Bidirectional == "Oui",
-			"speed_regime":          way.SpeedRegime,
-			"direction":             way.Direction,
-			"route":                 way.Route,
-			"arrondissement":        way.Arrondissement,
-			"forest":                way.Forest == "Oui",
-			"length":                way.Length,
-			"length_kilometers":     way.LengthKilometers,
-			"position":              way.Position,
-			"forbidden_circulation": way.ForbiddenCirculation,
-			"piste":                 way.Piste,
-			"bus_lane":              way.BusLane,
-			"type_continuity":       way.TypeContinuity,
-			"network":               way.Network,
-			"date":                  value,
-			"geo_shape":             way.GeoShape,
-		}
-
-		if _, err := db.conn.Exec(ctx, query, args); err != nil {
-			return fmt.Errorf("conn.Exec error: %w", err)
-		}
-	}
-	return nil
-}
-
-func (db *Database) FetchBikeWays(ctx context.Context) ([]string, error) {
-	query := `
-		SELECT geo_shape FROM bike_ways
-	`
-
-	rows, err := db.conn.Query(ctx, query)
-	if err != nil {
-		return nil, fmt.Errorf("conn.Query error: %w", err)
-	}
-	defer func() {
-		_ = rows.Close
-	}()
-
-	var ways []string
-	for rows.Next() {
-		var way string
-
-		if err := rows.Scan(&way); err != nil {
-			return nil, fmt.Errorf("rows.Scan error: %w", err)
-		}
-		ways = append(ways, way)
-	}
-	return ways, nil
 }
 
 func New(conf Configuration) (*Database, error) {

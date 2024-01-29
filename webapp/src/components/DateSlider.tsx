@@ -1,57 +1,48 @@
-import React, {useEffect} from "react";
+import React, {useEffect, useState} from "react";
 
 import Slider from "@mui/material/Slider";
-
-import { GeoJSON } from '../domain/Domain';
 
 import { API_URL } from "../configuration/Configuration";
 
 interface DateSliderProps {
-    format: string
-    timestamps: Date[]
-    setTimestamps: React.Dispatch<React.SetStateAction<Date[]>>
-    value: number
-    setValue: React.Dispatch<React.SetStateAction<number>>
-    setData: React.Dispatch<React.SetStateAction<GeoJSON>>
+    setTimestamp: React.Dispatch<React.SetStateAction<Date | undefined>>
 }
 
-const DateSlider: React.FC<DateSliderProps> = ({format, setTimestamps, timestamps, value, setValue, setData }) => {
+const DateSlider: React.FC<DateSliderProps> = ({ setTimestamp }) => {
+    const [timestamps, setTimestamps] = useState<Date[]>([]);
+    const [value, setValue] = useState(0);
+
     useEffect(() => {
         fetch(`${API_URL}/api/v2/timestamps`)
             .then(response => response.json())
             .then(data => {
-                const minutes = 10;
+                const interval = 10;
                 const max = new Date(data.max);
                 let timestamp = new Date(data.min);
-
+                
                 const timestamps : Date[] = [];
                 while (timestamp <= max) {
                     timestamps.push(timestamp);
-                    timestamp = new Date(timestamp.getTime() + minutes*60*1000);
+                    timestamp = new Date(timestamp.getTime() + interval*60*1000);
                 }
 
                 setTimestamps(timestamps);
-                setValue(timestamps.length -1);
+                setValue(timestamps.length - 1);
+                setTimestamp(max);
             })
             .catch(error => console.error(error));
-    }, [setTimestamps, setValue])
+    }, []);
 
     const handleChange = (_ : Event, value : number | number[]) => {
         const newValue = value as number;
-        const timestamp = timestamps[newValue].toISOString();
 
         setValue(newValue);
-        fetch(`${API_URL}/api/statuses.geojson?timestamp=${timestamp}&format=${format}`)
-            .then(response => response.json())
-            .then(data => setData(data))
-            .catch(error => console.error(error));
+        setTimestamp(timestamps[newValue]);
     }
 
     return (
         <div className="sidebar" style={{flex: 1}}>
             <Slider
-                aria-label="Temperature"
-                valueLabelDisplay="off"
                 value={value}
                 onChange={handleChange}
                 step={1}

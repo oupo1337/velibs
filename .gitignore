@@ -22,4 +22,6 @@
 
 # build folder
 build
-tempo-data
+
+# environment file
+.env

@@ -15,32 +15,6 @@ type Statuses struct {
 	db *postgres.Database
 }
 
-type geometry struct {
-	Type        string    `json:"type"`
-	Coordinates []float64 `json:"coordinates"`
-}
-
-type properties struct {
-	Name       string `json:"name"`
-	StationID  int64  `json:"station_id"`
-	Capacity   int64  `json:"capacity"`
-	Bikes      int64  `json:"bikes"`
-	Mechanical int64  `json:"mechanical"`
-	Electric   int64  `json:"electric"`
-	Hexagon    string `json:"hexagon"`
-}
-
-type feature struct {
-	Type       string     `json:"type"`
-	Geometry   geometry   `json:"geometry"`
-	Properties properties `json:"properties"`
-}
-
-type featureCollection struct {
-	Type     string    `json:"type"`
-	Features []feature `json:"features"`
-}
-
 func (s *Statuses) GetStationDistribution(c *gin.Context) {
 	distribution, err := s.db.GetStationDistribution(c.Request.Context(), c.Param("id"))
 	if err != nil {
@@ -79,44 +53,52 @@ func (s *Statuses) GetMinMaxTimestamps(c *gin.Context) {
 	})
 }
 
-func (s *Statuses) GetStatuses(c *gin.Context) {
+func (s *Statuses) GetAdministrativeDistrictsStatuses(c *gin.Context) {
 	timestamp := c.Query("timestamp")
-	stations, err := s.db.FetchTimestamp(c.Request.Context(), timestamp)
+
+	data, err := s.db.GetAdministrativeDistricts(c.Request.Context(), timestamp)
+	if err != nil {
+		slog.Error("s.db.GetAdministrativeDistricts error", slog.String("error", err.Error()))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	if timestamp != "" {
+		c.Header("Cache-Control", "max-age=86400, immutable")
+	}
+	c.Data(http.StatusOK, "application/json", data)
+}
+
+func (s *Statuses) GetBoroughs(c *gin.Context) {
+	timestamp := c.Query("timestamp")
+
+	data, err := s.db.GetBoroughs(c.Request.Context(), timestamp)
+	if err != nil {
+		slog.Error("s.db.GetBoroughs error", slog.String("error", err.Error()))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+
+	if timestamp != "" {
+		c.Header("Cache-Control", "max-age=86400, immutable")
+	}
+	c.Data(http.StatusOK, "application/json", data)
+}
+
+func (s *Statuses) GetStations(c *gin.Context) {
+	timestamp := c.Query("timestamp")
+
+	data, err := s.db.FetchStationsStatuses(c.Request.Context(), timestamp)
 	if err != nil {
 		slog.Error("s.db.FetchTimestamp error", slog.String("error", err.Error()))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
 
-	features := make([]feature, 0, len(stations))
-	for _, station := range stations {
-		features = append(features, feature{
-			Type: "Feature",
-			Geometry: geometry{
-				Type: "Point",
-				Coordinates: []float64{
-					station.Longitude,
-					station.Latitude,
-				},
-			},
-			Properties: properties{
-				Name:       station.Name,
-				StationID:  station.ID,
-				Capacity:   station.Capacity,
-				Bikes:      station.Mechanical + station.Electric,
-				Mechanical: station.Mechanical,
-				Electric:   station.Electric,
-			},
-		})
-	}
-
 	if timestamp != "" {
 		c.Header("Cache-Control", "max-age=86400, immutable")
 	}
-	c.JSON(http.StatusOK, featureCollection{
-		Type:     "FeatureCollection",
-		Features: features,
-	})
+	c.Data(http.StatusOK, "application/json", data)
 }
 
 func NewStatuses(db *postgres.Database) *Statuses {

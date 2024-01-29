@@ -53,7 +53,7 @@ func (s *Stations) UpdateStations() {
 	ctx, span := tracing.Start(context.Background(), "UpdateStations")
 	defer span.End()
 
-	slog.InfoContext(ctx, "UpdateStations running")
+	slog.InfoContext(ctx, "updating velib stations list")
 
 	stations, err := s.fetchStationsInformation(ctx)
 	if err != nil {
@@ -71,9 +71,9 @@ func (s *Stations) UpdateStations() {
 	}
 }
 
-func NewStations(url string, db *postgres.Database) *Stations {
+func NewStations(db *postgres.Database) *Stations {
 	return &Stations{
-		url: url,
+		url: "https://velib-metropole-opendata.smovengo.cloud/opendata/Velib_Metropole/station_information.json",
 		db:  db,
 		client: &http.Client{
 			Timeout: 10 * time.Second,

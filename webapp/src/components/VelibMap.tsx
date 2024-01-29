@@ -1,21 +1,19 @@
-import React, {useEffect, useState} from 'react';
-import {useNavigate} from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 import Map from 'react-map-gl';
 
 import DeckGL from '@deck.gl/react/typed';
-import {PickingInfo} from '@deck.gl/core/typed'
-import {GeoJsonLayer, PolygonLayer} from '@deck.gl/layers/typed';
-import {HeatmapLayer} from '@deck.gl/aggregation-layers/typed';
-import {H3HexagonLayer} from '@deck.gl/geo-layers/typed';
+import { PickingInfo } from '@deck.gl/core/typed'
+import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers/typed';
+import { HeatmapLayer } from '@deck.gl/aggregation-layers/typed';
+import { H3HexagonLayer } from '@deck.gl/geo-layers/typed';
 
 
 import ClusterLayer from "./layers/ClusterLayer";
-import { GeoJSON } from '../domain/Domain';
+import { Feature } from '../domain/Domain';
 
-import { API_URL } from '../configuration/Configuration';
-
-const MAPBOX_ACCESS_TOKEN = 'pk.eyJ1Ijoib3VwbzQyIiwiYSI6ImNqeGRiYWJ6ZTAzeHAzdG9jMjlteWRqc24ifQ.vJ6kDNRfFbBH-i6K06_4yg';
+import { API_URL, MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
 
 interface ViewState {
     latitude: number;
@@ -26,35 +24,80 @@ interface ViewState {
 }
 
 interface VelibMapProps {
-    data: GeoJSON
-    displayBikeWays: boolean
+    timestamp : Date | undefined
     format: string
+    displayBikeWays: boolean
 }
 
-
-const VelibMap: React.FC<VelibMapProps> = ({ data, displayBikeWays, format  }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays }) => {
     const navigate = useNavigate();
-    
-    const [bikeWays, setBikeWays] = useState<GeoJSON>({
-        type: "",
-        features: []
-    });
+
+    const [bikeways, setBikeways] = useState<Feature[]>([]);
+    const [stations, setStations] = useState<Feature[]>([]);
+    const [districts, setDistricts] = useState<Feature[]>([]);
+    const [boroughs, setBoroughs] = useState<Feature[]>([]);
+    const [min, setMin] = useState(0);
+    const [max, setMax] = useState(0);
 
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
         latitude: 48.8566,
-        zoom: 11,
+        zoom: 12,
         pitch: 0,
         bearing: 0
     });
 
     useEffect(() => {
-        fetch(`${API_URL}/api/v1/bikeways`)
-          .then(response => response.json())
-          .then(data => setBikeWays(data))
-          .catch(error => console.error(error))
+        if (timestamp === undefined || format === 'districts') {
+            return
+        }
+
+        fetch(`${API_URL}/api/v1/stations.geojson?timestamp=${timestamp.toISOString()}`)
+            .then(response => response.json())
+            .then(data => setStations(data.features))
+            .catch(error => console.error(error));
+    }, [timestamp, format]);
+
+    useEffect(() => {
+        if (timestamp === undefined || format !== 'districts') {
+            return
+        }
+
+        fetch(`${API_URL}/api/v1/districts.geojson?timestamp=${timestamp.toISOString()}`)
+            .then(response => response.json())
+            .then(data => {
+                const velibCount = data.features.map((f: Feature) => f.properties.mechanical + f.properties.electric);
+
+                setMin(Math.min(...velibCount));
+                setMax(Math.max(...velibCount));
+                setDistricts(data.features);
+            })
+            .catch(error => console.error(error));
+    }, [timestamp, format]);
+
+    useEffect(() => {
+        if (timestamp === undefined || format !== 'boroughs') {
+            return
+        }
+
+        fetch(`${API_URL}/api/v1/boroughs.geojson?timestamp=${timestamp.toISOString()}`)
+            .then(response => response.json())
+            .then(data => {
+                const velibCount = data.features.map((f: Feature) => f.properties.mechanical + f.properties.electric);
+
+                setMin(Math.min(...velibCount));
+                setMax(Math.max(...velibCount));
+                setBoroughs(data.features);
+            })
+            .catch(error => console.error(error));
+    }, [timestamp, format]);
+
+    useEffect(() => {
+        fetch(`${API_URL}/api/v1/bikeways.geojson`)
+            .then(response => response.json())
+            .then(data => setBikeways(data.features))
+            .catch(error => console.error(error));
     }, []);
-    
 
     const handleViewStateChange = ({viewState}: any) => {
         setViewport(viewState);
@@ -64,19 +107,19 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, displayBikeWays, format  }) =
     const heatmapLayer = new HeatmapLayer({
         id: 'heatmap-layer',
         visible: format === 'heatmap',
-        data: data.features,
+        data: stations,
         pickable: false,
         getPosition: d => d.geometry.coordinates,
-        getWeight: d => d.properties.bikes * 10,
+        getWeight: d => (d.properties.mechanical + d.properties.electric) * 10,
         radiusPixels: 30,
         intensity: 1,
         threshold: 0.05,
-    })
+    });
 
     const h3Layer = new H3HexagonLayer({
         id: 'h3-hexagon-layer',
         visible: format === 'h3',
-        data: data.features,
+        data: stations,
         pickable: true,
         wireframe: true,
         filled: true,
@@ -89,7 +132,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, displayBikeWays, format  }) =
 
     const clusterLayer = new ClusterLayer({
         visible: format === 'points',
-        data: data.features,
+        data: stations,
         zoom: viewport.zoom,
         onClick: (info: PickingInfo) => {
             if (info.object.properties.cluster) {
@@ -99,14 +142,13 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, displayBikeWays, format  }) =
         },
     });
 
-    const bikeWaysLayer = new GeoJsonLayer({
+    const bikewaysLayer = new GeoJsonLayer({
         visible: displayBikeWays,
-        id: 'bike-ways-layer',
-        data: bikeWays.features,
+        id: 'bikeways-layer',
+        data: bikeways,
         pickable: true,
         stroked: false,
         filled: true,
-        extruded: true,
         pointType: 'circle',
         lineWidthScale: 10,
         lineWidthMinPixels: 1,
@@ -114,33 +156,103 @@ const VelibMap: React.FC<VelibMapProps> = ({ data, displayBikeWays, format  }) =
         getLineColor: [8, 166, 56],
         getPointRadius: 100,
         getLineWidth: 1,
-    })
+    });
 
-    const polygonLayer = new PolygonLayer({
-        visible: format === 'polygon',
-        id: 'polygon-layer',
+    const districtsLayer = new PolygonLayer({
+        visible: format === 'districts',
+        id: 'districts-layer',
+        data: districts,
         pickable: true,
         stroked: true,
         filled: true,
+        extruded: true,
         wireframe: true,
         lineWidthMinPixels: 1,
-        getPolygon: d => d.contour,
-        getElevation: d => d.population / d.area / 10,
-        getFillColor: d => [d.population / d.area / 60, 140, 0],
-        getLineColor: [80, 80, 80],
+        getPolygon: d => d.geometry.coordinates,
+        getElevation: d => (d.properties.mechanical + d.properties.electric) * 3,
+        getFillColor: d => {
+            const red = (d.properties.mechanical + d.properties.electric - min) * (255/(max-min));
+            return [red, 140, 0]
+        },
         getLineWidth: 1
-    })
+    });
+
+    const boroughsLayer = new PolygonLayer({
+        visible: format === 'boroughs',
+        id: 'boroughs-layer',
+        data: boroughs,
+        pickable: true,
+        stroked: true,
+        filled: true,
+        extruded: true,
+        wireframe: true,
+        lineWidthMinPixels: 1,
+        getPolygon: d => d.geometry.coordinates,
+        getElevation: d => (d.properties.mechanical + d.properties.electric) * 3,
+        getFillColor: d => {
+            const red = (d.properties.mechanical + d.properties.electric - min) * (255/(max-min));
+            return [red, 140, 0]
+        },
+        getLineWidth: 1,
+    });
+
+    const districtsBoroughsTooltip = (info: PickingInfo) => {
+        return {
+            html: `
+                <b>${info.object.properties.name}</b><br/><br/>
+                Mécaniques: ${info.object.properties.mechanical}<br/>
+                Éléctriques: ${info.object.properties.electric}<br/>
+                Total: ${info.object.properties.mechanical + info.object.properties.electric}`,
+        };
+    }
+
+    const stationTooltip = (info: PickingInfo) => {
+        if (info.object.properties.cluster) {
+            return {
+                html: `
+                    <b>${info.object.properties.point_count} stations</b><br/><br/>
+                    Mécaniques: ${info.object.properties.mechanical}<br/>
+                    Éléctriques: ${info.object.properties.electric}<br/>
+                `,
+            };
+        }
+
+        return {
+            html: `
+                <b>${info.object.properties.name}</b><br/><br/>
+                Mécaniques: ${info.object.properties.mechanical}<br/>
+                Éléctriques: ${info.object.properties.electric}`,
+        };
+    }
+
+    const getTooltip = (info: PickingInfo) => {
+        if (info.object === undefined || info.object === null) {
+            return null;
+        }
+
+        switch (format) {
+            case 'districts':
+                return districtsBoroughsTooltip(info);
+            case 'boroughs':
+                return districtsBoroughsTooltip(info);
+            case 'points':
+                return stationTooltip(info);
+            default:
+                return null;
+        }
+    }
 
     return (
         <DeckGL
             initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[bikeWaysLayer, clusterLayer, heatmapLayer, h3Layer, polygonLayer]}
+            layers={[clusterLayer, heatmapLayer, h3Layer, districtsLayer, boroughsLayer, bikewaysLayer]}
+            getTooltip={getTooltip}
         >
             <Map
                 mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
-                mapStyle="mapbox://styles/oupo42/clpzr3osp01ld01qtcduf4ta6"
+                mapStyle={MAP_STYLE}
             />
         </DeckGL>
     );

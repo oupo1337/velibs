@@ -12,6 +12,7 @@ import (
 
 	"github.com/oupo1337/velibs/backend/handlers"
 	"github.com/oupo1337/velibs/backend/logging"
+	"github.com/oupo1337/velibs/backend/middleware"
 	"github.com/oupo1337/velibs/backend/postgres"
 	"github.com/oupo1337/velibs/backend/tracing"
 )
@@ -42,23 +43,31 @@ func initDependencies() (dependencies, error) {
 
 func initApp(deps dependencies) *gin.Engine {
 	gin.SetMode(gin.ReleaseMode)
-	app := gin.Default()
+	app := gin.New()
 
+	domain := os.Getenv("APP_DOMAIN_NAME")
 	config := cors.Config{
-		AllowOrigins:  []string{"https://velib.runtheit.com", "http://localhost:3000"},
+		AllowOrigins:  []string{"http://localhost:3000", domain},
 		AllowMethods:  []string{http.MethodHead, http.MethodOptions, http.MethodGet},
 		AllowHeaders:  []string{"E-Tag", "If-None-Match"},
 		ExposeHeaders: []string{"E-Tag"},
 	}
+
+	app.Use(gin.Recovery())
+	app.Use(middleware.NewLogging())
 	app.Use(cors.New(config))
 	app.Use(otelgin.Middleware(serviceName))
 
 	app.GET("/api/v2/timestamps", deps.statuses.GetMinMaxTimestamps)
-	app.GET("/api/statuses.geojson", deps.statuses.GetStatuses)
-	app.GET("/api/stations/:id", deps.statuses.GetStationTimeSeries)
+
+	app.GET("/api/v1/stations.geojson", deps.statuses.GetStations)
+	app.GET("/api/v1/districts.geojson", deps.statuses.GetAdministrativeDistrictsStatuses)
+	app.GET("/api/v1/boroughs.geojson", deps.statuses.GetBoroughs)
+	app.GET("/api/v1/bikeways.geojson", deps.ways.FetchBikeways)
+
+	app.GET("/api/v1/stations/:id", deps.statuses.GetStationTimeSeries)
 	app.GET("/api/v1/distributions/:id", deps.statuses.GetStationDistribution)
-	app.GET("/api/v1/bikeways", deps.ways.FetchBikeWays)
-	app.POST("/api/v1/bikeways", deps.ways.AddBikeWays)
+
 	return app
 }
 

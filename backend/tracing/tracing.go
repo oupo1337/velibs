@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
+	"strconv"
 	"time"
 
 	"go.opentelemetry.io/otel"
@@ -25,7 +27,11 @@ func Start(ctx context.Context, spanName string, opts ...trace.SpanStartOption) 
 }
 
 func Init(serviceName string) error {
-	slog.Info("initializing tracing")
+	enabled, _ := strconv.ParseBool(os.Getenv("TELEMETRY_ENABLED"))
+	if !enabled {
+		slog.Warn("telemetry is disabled")
+		return nil
+	}
 
 	res, err := resource.New(
 		context.Background(),

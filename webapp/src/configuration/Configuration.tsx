@@ -1,3 +1,3 @@
-export const API_URL = process.env.NODE_ENV === 'development' ?
-    'http://localhost:8080' :
-    'https://api.velib.runtheit.com';
+export const API_URL = import.meta.env.VITE_API_URL;
+export const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
+export const MAP_STYLE = import.meta.env.VITE_MAP_STYLE

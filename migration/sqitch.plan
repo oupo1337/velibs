@@ -1,0 +1,7 @@
+%syntax-version=1.0.0
+%project=velib
+
+001_initial_schema 2024-01-25T20:28:58Z chris <chris@DESKTOP-S4P2T51> # Describe initial schema
+002_bikeways 2024-01-25T22:16:00Z chris <chris@DESKTOP-S4P2T51> # Add bikeways schema
+003_administrative_districts 2024-01-25T22:18:40Z chris <chris@DESKTOP-S4P2T51> # Add administrative districts schema
+004_boroughs 2024-01-28T18:42:25Z chris <chris@DESKTOP-S4P2T51> # Add boroughs data

@@ -15,17 +15,16 @@ interface ClusterData {
     },
     properties: {
         cluster: boolean,
-        sum: number,
-        bikes: number,
+        total: number,
         electric: number,
         mechanical: number,
     }
 }
 
 function getTextSize(d: ClusterData): number {
-    let value = d.properties.sum;
+    let value = d.properties.total;
     if (!d.properties.cluster) {
-        value = d.properties.bikes;
+        value = d.properties.mechanical + d.properties.electric;
     }
     return Math.min(Math.max(value, 20), 30);
 }
@@ -33,17 +32,19 @@ function getTextSize(d: ClusterData): number {
 function getScatterPlotColor(d: ClusterData): [number, number, number] {
     if (!d.properties.cluster)
         return [17, 68, 225];
-    if (d.properties.sum < 30)
+    if (d.properties.total < 30)
         return [81, 187, 214];
-    if (d.properties.sum < 100)
+    if (d.properties.total < 100)
         return [241, 240, 117];
     return [242, 140, 177];
 }
 
 function getText(d: ClusterData): string {
     if (d.properties.cluster)
-        return d.properties.sum.toString();
-    return d.properties.bikes.toString();
+        return d.properties.total.toString();
+
+    const value = d.properties.mechanical + d.properties.electric;
+    return value.toString();
 }
 
 const bounds: BBox = [
@@ -62,11 +63,15 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 radius: this.context.viewport.zoom * 3,
                 maxZoom: 14,
                 reduce: (accumulated, props) => {
-                    accumulated.sum += props.sum;
+                    accumulated.total += props.total;
+                    accumulated.mechanical += props.mechanical;
+                    accumulated.electric += props.electric;
                 },
                 map: (props) => {
                     return {
-                        sum: props.bikes
+                        total: props.mechanical + props.electric,
+                        mechanical: props.mechanical,
+                        electric: props.electric,
                     }
                 },
             });
@@ -91,9 +96,9 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 opacity: 0.8,
                 getPosition: (d: ClusterData) => d.geometry.coordinates,
                 getRadius: (d: ClusterData): number => {
-                    let value = d.properties.sum;
+                    let value = d.properties.total;
                     if (!d.properties.cluster) {
-                        value = d.properties.bikes;
+                        value = d.properties.mechanical + d.properties.electric;
                     }
 
                     return ((value + 20) * 5) / this.context.viewport.zoom;

@@ -30,19 +30,27 @@ func initDependencies() (dependencies, error) {
 		return dependencies{}, fmt.Errorf("postgres.New error: %w", err)
 	}
 
-	stationInformationURL := os.Getenv("VELIB_API_STATIONS_URL")
-	statusesURL := os.Getenv("VELIB_API_STATUSES_URL")
-
-	stations := tasks.NewStations(stationInformationURL, db)
-	statuses := tasks.NewStatuses(statusesURL, db)
+	districts := tasks.NewAdministrativeDistricts(db)
+	boroughs := tasks.NewBoroughs(db)
+	stations := tasks.NewStations(db)
+	statuses := tasks.NewStatuses(db)
+	bikeways := tasks.NewBikeways(db)
 
 	c := cron.New()
-	if err := c.AddFunc("0 */10 * * * *", func() {
-		stations.UpdateStations()
-		statuses.UpdateStatuses()
-	}); err != nil {
+	if err := c.AddFunc("0 */10 * * * *", statuses.UpdateStatuses); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
+	if err := c.AddFunc("0 0 0 * * *", stations.UpdateStations); err != nil {
+		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
+	}
+	if err := c.AddFunc("0 0 0 * * *", bikeways.UpdateBikeways); err != nil {
+		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
+	}
+
+	districts.Run()
+	boroughs.UpdateBoroughs()
+	stations.UpdateStations()
+	bikeways.UpdateBikeways()
 
 	return dependencies{
 		cron: c,

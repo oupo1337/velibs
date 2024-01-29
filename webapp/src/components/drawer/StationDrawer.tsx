@@ -36,7 +36,7 @@ interface StationProps {
 
 const StationDisplay: React.FC<StationProps> = ({stationID}) => {
     const fetchStation = async () => {
-        const response = await axios.get(`${API_URL}/api/stations/${stationID}`);
+        const response = await axios.get(`${API_URL}/api/v1/stations/${stationID}`);
         return response.data;
     }
 
