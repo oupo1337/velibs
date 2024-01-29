@@ -1,6 +1,6 @@
 # velibs
 
-To be able to start the project you need to create a .env file at the root.
+To be able to start the project you need to create a `.env` file at the root.
 
 ```
 APP_DOMAIN_NAME=http://localhost:3000
