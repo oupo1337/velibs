@@ -48,38 +48,38 @@ func (a *Boroughs) fetchBoroughs(ctx context.Context) (domain.BoroughsGeoJSON, e
 	return data, nil
 }
 
-func (a *Boroughs) UpdateBoroughs() {
-	ctx, span := tracing.Start(context.Background(), "UpdateBoroughs")
-	defer span.End()
-
+func (a *Boroughs) updateBoroughs(ctx context.Context) error {
 	slog.InfoContext(ctx, "updating Paris boroughs")
 
 	hasBoroughs, err := a.db.HasBoroughs(ctx)
 	if err != nil {
-		span.SetStatus(codes.Error, "db.HasBoroughs failed")
-		span.RecordError(err)
-		slog.ErrorContext(ctx, "db.HasBoroughs error", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("db.HasBoroughs error: %w", err)
 	}
 
 	if hasBoroughs {
 		slog.InfoContext(ctx, "database already contains Paris boroughs")
-		return
+		return nil
 	}
 
 	boroughs, err := a.fetchBoroughs(ctx)
 	if err != nil {
-		span.SetStatus(codes.Error, "a.fetchBoroughs failed")
-		span.RecordError(err)
-		slog.ErrorContext(ctx, "a.fetchBoroughs error", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("fetchBoroughs error: %w", err)
 	}
 
 	if err := a.db.InsertBoroughs(ctx, boroughs); err != nil {
-		span.SetStatus(codes.Error, "db.InsertBoroughs failed")
+		return fmt.Errorf("db.InsertBoroughs error: %w", err)
+	}
+	return nil
+}
+
+func (b *Boroughs) Run() {
+	ctx, span := tracing.Start(context.Background(), "update.Boroughs")
+	defer span.End()
+
+	if err := b.updateBoroughs(ctx); err != nil {
+		span.SetStatus(codes.Error, "updateBoroughs failed")
 		span.RecordError(err)
-		slog.ErrorContext(ctx, "db.InsertBoroughs error", slog.String("error", err.Error()))
-		return
+		slog.ErrorContext(ctx, "updateBoroughs failed", slog.String("error", err.Error()))
 	}
 }
 

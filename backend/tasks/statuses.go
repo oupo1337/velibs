@@ -50,25 +50,28 @@ func (s *Statuses) fetchStationsStatuses(ctx context.Context) ([]domain.StationS
 	return data.Data.StationsStatuses, nil
 }
 
-func (s *Statuses) UpdateStatuses() {
-	ctx, span := tracing.Start(context.Background(), "UpdateStatuses")
-	defer span.End()
-
+func (s *Statuses) updateStatuses(ctx context.Context) error {
 	slog.InfoContext(ctx, "fetching velib stations statuses")
 
 	statuses, err := s.fetchStationsStatuses(ctx)
 	if err != nil {
-		span.SetStatus(codes.Error, "fetchStationsStatuses failed")
-		span.RecordError(err)
-		slog.Error("s.fetchStationsStatuses error", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("s.fetchStationsStatuses error: %w", err)
 	}
 
 	if err := s.db.InsertStatuses(ctx, statuses); err != nil {
-		span.SetStatus(codes.Error, "InsertStatuses failed")
+		return fmt.Errorf("db.InsertStatuses error: %w", err)
+	}
+	return nil
+}
+
+func (s *Statuses) Run() {
+	ctx, span := tracing.Start(context.Background(), "update.Statuses")
+	defer span.End()
+
+	if err := s.updateStatuses(ctx); err != nil {
+		span.SetStatus(codes.Error, "updateStatuses failed")
 		span.RecordError(err)
-		slog.Error("s.db.InsertStatuses error", slog.String("error", err.Error()))
-		return
+		slog.ErrorContext(ctx, "updateStatuses failed", slog.String("error", err.Error()))
 	}
 }
 

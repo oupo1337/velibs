@@ -37,20 +37,20 @@ func initDependencies() (dependencies, error) {
 	bikeways := tasks.NewBikeways(db)
 
 	c := cron.New()
-	if err := c.AddFunc("0 */10 * * * *", statuses.UpdateStatuses); err != nil {
+	if err := c.AddFunc("0 */10 * * * *", statuses.Run); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
-	if err := c.AddFunc("0 0 0 * * *", stations.UpdateStations); err != nil {
+	if err := c.AddFunc("0 0 0 * * *", stations.Run); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
-	if err := c.AddFunc("0 0 0 * * *", bikeways.UpdateBikeways); err != nil {
+	if err := c.AddFunc("0 0 0 * * *", bikeways.Run); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
 
 	districts.Run()
-	boroughs.UpdateBoroughs()
-	stations.UpdateStations()
-	bikeways.UpdateBikeways()
+	boroughs.Run()
+	stations.Run()
+	bikeways.Run()
 
 	return dependencies{
 		cron: c,

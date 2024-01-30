@@ -11,17 +11,17 @@ query_frontend:
     duration_slo: 5s
 
 distributor:
-  receivers:                           # this configuration will listen on all ports and protocols that tempo is capable of.
+  receivers:
     otlp:
       protocols:
         http:
 
 ingester:
-  max_block_duration: 5m               # cut the headblock when this much time passes. this is being set for demo purposes and should probably be left alone normally
+  max_block_duration: 5m
 
 compactor:
   compaction:
-    block_retention: 1h                # overall Tempo trace retention. set for demo purposes
+    block_retention: 1h
 
 metrics_generator:
   registry:
@@ -36,13 +36,13 @@ metrics_generator:
 
 storage:
   trace:
-    backend: local                     # backend configuration to use
+    backend: local
     wal:
-      path: /tmp/tempo/wal             # where to store the the wal locally
+      path: /tmp/tempo/wal
     local:
       path: /tmp/tempo/blocks
 
 overrides:
   defaults:
     metrics_generator:
-      processors: [service-graphs, span-metrics] # enables metrics generator
+      processors: [service-graphs, span-metrics]

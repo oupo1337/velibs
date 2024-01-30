@@ -49,25 +49,28 @@ func (b *Bikeways) fetchBikeways(ctx context.Context) (domain.BikewaysGeoJSON, e
 	return data, nil
 }
 
-func (b *Bikeways) UpdateBikeways() {
-	ctx, span := tracing.Start(context.Background(), "UpdateBikeways")
-	defer span.End()
-
+func (b *Bikeways) updateBikeways(ctx context.Context) error {
 	slog.InfoContext(ctx, "updating Paris bikeways")
 
 	bikeways, err := b.fetchBikeways(ctx)
 	if err != nil {
-		span.SetStatus(codes.Error, "fetchBikeways failed")
-		span.RecordError(err)
-		slog.Error("s.fetchBikeways error", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("b.fetchBikeways error: %w", err)
 	}
 
 	if err := b.db.InsertBikeways(ctx, bikeways); err != nil {
-		span.SetStatus(codes.Error, "InsertBikeways failed")
+		return fmt.Errorf("b.db.InsertBikeways error: %w", err)
+	}
+	return nil
+}
+
+func (b *Bikeways) Run() {
+	ctx, span := tracing.Start(context.Background(), "update.Bikeways")
+	defer span.End()
+
+	if err := b.updateBikeways(ctx); err != nil {
+		span.SetStatus(codes.Error, "updateBikeways failed")
 		span.RecordError(err)
-		slog.Error("b.db.InsertBikeways error", slog.String("error", err.Error()))
-		return
+		slog.ErrorContext(ctx, "updateBikeways failed", slog.String("error", err.Error()))
 	}
 }
 

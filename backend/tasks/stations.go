@@ -3,6 +3,7 @@ package tasks
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"net/http/httptrace"
@@ -49,25 +50,28 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 	return data.Data.StationsInformation, nil
 }
 
-func (s *Stations) UpdateStations() {
-	ctx, span := tracing.Start(context.Background(), "UpdateStations")
-	defer span.End()
-
+func (s *Stations) updateStations(ctx context.Context) error {
 	slog.InfoContext(ctx, "updating velib stations list")
 
 	stations, err := s.fetchStationsInformation(ctx)
 	if err != nil {
-		span.SetStatus(codes.Error, "fetchStationsInformation failed")
-		span.RecordError(err)
-		slog.Error("s.fetchStationsInformation error", slog.String("error", err.Error()))
-		return
+		return fmt.Errorf("fetchStationsInformation error: %w", err)
 	}
 
 	if err := s.db.InsertStations(ctx, stations); err != nil {
-		span.SetStatus(codes.Error, "InsertStations failed")
+		return fmt.Errorf("db.InsertStations error: %w", err)
+	}
+	return nil
+}
+
+func (s *Stations) Run() {
+	ctx, span := tracing.Start(context.Background(), "update.Stations")
+	defer span.End()
+
+	if err := s.updateStations(ctx); err != nil {
+		span.SetStatus(codes.Error, "updateStations failed")
 		span.RecordError(err)
-		slog.Error("db.InsertStations error", slog.String("error", err.Error()))
-		return
+		slog.ErrorContext(ctx, "updateStations failed", slog.String("error", err.Error()))
 	}
 }
 

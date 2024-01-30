@@ -74,14 +74,13 @@ func (a *AdministrativeDistricts) updateAdministrativeDistricts(ctx context.Cont
 }
 
 func (a *AdministrativeDistricts) Run() {
-	ctx, span := tracing.Start(context.Background(), "Update/AdministrativeDistricts")
+	ctx, span := tracing.Start(context.Background(), "update.AdministrativeDistricts")
 	defer span.End()
 
-	err := a.updateAdministrativeDistricts(ctx)
-	if err != nil {
+	if err := a.updateAdministrativeDistricts(ctx); err != nil {
 		span.SetStatus(codes.Error, "updateAdministrativeDistricts failed")
 		span.RecordError(err)
-		slog.ErrorContext(ctx, err.Error())
+		slog.ErrorContext(ctx, "updateAdministrativeDistricts failed", slog.String("error", err.Error()))
 	}
 }
 

@@ -1,21 +1,32 @@
+version: "3.8"
+
+name: velib
+
 services:
-  grafana:
-    image: grafana/grafana:10.2.2
+  loki:
+    image: grafana/loki:2.9.4
+    command:
+      - -config.file=/etc/loki/config.yaml
     volumes:
-      - ./configuration/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
-    environment:
-      - GF_AUTH_ANONYMOUS_ENABLED=true
-      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
-      - GF_AUTH_DISABLE_LOGIN_FORM=true
-      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor traceQLStreaming metricsSummary
-    ports:
-      - 127.0.0.1:4321:3000
+      - ./configuration/loki.yaml:/etc/loki/config.yaml
+    profiles:
+      - production
+
+  promtail:
+    image: grafana/promtail:2.9.4
+    command:
+      - -config.file=/etc/promtail/config.yaml
+    volumes:
+      - ./configuration/promtail.yaml:/etc/promtail/config.yaml
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /var/lib/docker/containers:/var/lib/docker/containers
     profiles:
       - production
 
   tempo:
     image: grafana/tempo:latest
-    command: [ "-config.file=/etc/tempo.yaml" ]
+    command:
+      - -config.file=/etc/tempo.yaml
     volumes:
       - ./configuration/tempo.yaml:/etc/tempo.yaml
     profiles:
@@ -29,6 +40,22 @@ services:
       - --enable-feature=exemplar-storage
     volumes:
       - ./configuration/prometheus.yaml:/etc/prometheus.yaml
+    profiles:
+      - production
+
+  grafana:
+    image: grafana/grafana:10.2.2
+    volumes:
+      - ./configuration/grafana-datasources.yaml:/etc/grafana/provisioning/datasources/datasources.yaml
+    environment:
+      - GF_FEATURE_TOGGLES_ENABLE=traceqlEditor traceQLStreaming metricsSummary
+    depends_on:
+      - loki
+      - promtail
+      - tempo
+      - prometheus
+    ports:
+      - 127.0.0.1:4321:3000
     profiles:
       - production
 
@@ -102,7 +129,6 @@ services:
         MAP_STYLE: ${MAP_STYLE}
     depends_on:
       - api
-
     ports:
       - 127.0.0.1:3000:80
     profiles:
