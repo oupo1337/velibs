@@ -20,6 +20,7 @@ func (b *BikeWays) FetchBikeways(c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 		return
 	}
+	c.Header("Cache-Control", "max-age=86400, immutable")
 	c.Data(http.StatusOK, "application/json", data)
 }
 
