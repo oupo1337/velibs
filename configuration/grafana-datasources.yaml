@@ -1,35 +1,50 @@
 apiVersion: 1
 
 datasources:
-- name: Prometheus
-  type: prometheus
-  uid: prometheus
-  access: proxy
-  orgId: 1
-  url: http://prometheus:9090
-  basicAuth: false
-  isDefault: false
-  version: 1
-  editable: false
-  jsonData:
-    httpMethod: GET
-- name: Tempo
-  type: tempo
-  access: proxy
-  orgId: 1
-  url: http://tempo:3200
-  basicAuth: false
-  isDefault: true
-  version: 1
-  editable: false
-  apiVersion: 1
-  uid: tempo
-  jsonData:
-    httpMethod: GET
-    serviceMap:
-      datasourceUid: prometheus
-- name: Loki
-  type: loki
-  url: http://loki:3100
-  basicAuth: false
-  isDefault: false
+  - name: Prometheus
+    type: prometheus
+    uid: prometheus
+    access: proxy
+    orgId: 1
+    url: http://prometheus:9090
+    basicAuth: false
+    isDefault: false
+    version: 1
+    editable: false
+    jsonData:
+      httpMethod: GET
+  - name: Tempo
+    type: tempo
+    access: proxy
+    orgId: 1
+    url: http://tempo:3200
+    basicAuth: false
+    isDefault: true
+    version: 1
+    editable: false
+    apiVersion: 1
+    uid: tempo
+    jsonData:
+      httpMethod: GET
+      serviceMap:
+        datasourceUid: prometheus
+  - name: Loki
+    type: loki
+    url: http://loki:3100
+    basicAuth: false
+    isDefault: false
+  - name: Postgres
+    type: postgres
+    url: database:5432
+    user: postgres
+    secureJsonData:
+      password: 'password'
+    jsonData:
+      database: postgres
+      sslmode: 'disable' # disable/require/verify-ca/verify-full
+      maxOpenConns: 100 # Grafana v5.4+
+      maxIdleConns: 100 # Grafana v5.4+
+      maxIdleConnsAuto: true # Grafana v9.5.1+
+      connMaxLifetime: 14400 # Grafana v5.4+
+      postgresVersion: 903 # 903=9.3, 904=9.4, 905=9.5, 906=9.6, 1000=10
+      timescaledb: false
