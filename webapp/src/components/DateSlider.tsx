@@ -31,7 +31,7 @@ const DateSlider: React.FC<DateSliderProps> = ({ setTimestamp }) => {
                 setTimestamp(max);
             })
             .catch(error => console.error(error));
-    }, []);
+    }, [setTimestamp]);
 
     const handleChange = (_ : Event, value : number | number[]) => {
         const newValue = value as number;

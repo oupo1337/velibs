@@ -63,12 +63,14 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 radius: this.context.viewport.zoom * 3,
                 maxZoom: 14,
                 reduce: (accumulated, props) => {
+                    accumulated.name = [...accumulated.name, ...props.name];
                     accumulated.total += props.total;
                     accumulated.mechanical += props.mechanical;
                     accumulated.electric += props.electric;
                 },
                 map: (props) => {
                     return {
+                        name: [props.name],
                         total: props.mechanical + props.electric,
                         mechanical: props.mechanical,
                         electric: props.electric,
@@ -125,6 +127,6 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
     }
 }
 
-ClusterLayer.layerName = 'ClusterLayer';
+ClusterLayer.layerName = 'cluster-layer';
 
 export default ClusterLayer;

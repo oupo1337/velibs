@@ -131,6 +131,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
     });
 
     const clusterLayer = new ClusterLayer({
+        id: 'cluster-layer',
         visible: format === 'points',
         data: stations,
         zoom: viewport.zoom,
@@ -140,6 +141,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             }
             navigate(`/stations/${info.object.properties.station_id}`);
         },
+        // onHover: info => setHoverInfo(info)
     });
 
     const bikewaysLayer = new GeoJsonLayer({
@@ -200,43 +202,59 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         return {
             html: `
                 <b>${info.object.properties.name}</b><br/><br/>
-                Mécaniques: ${info.object.properties.mechanical}<br/>
-                Éléctriques: ${info.object.properties.electric}<br/>
-                Total: ${info.object.properties.mechanical + info.object.properties.electric}`,
+                Mécaniques&nbsp;: ${info.object.properties.mechanical}<br/>
+                Éléctriques&nbsp;: ${info.object.properties.electric}<br/>
+                Total&nbsp;: ${info.object.properties.mechanical + info.object.properties.electric}`,
         };
     }
 
     const stationTooltip = (info: PickingInfo) => {
+        let tooltipTitle = ""
         if (info.object.properties.cluster) {
-            return {
-                html: `
-                    <b>${info.object.properties.point_count} stations</b><br/><br/>
-                    Mécaniques: ${info.object.properties.mechanical}<br/>
-                    Éléctriques: ${info.object.properties.electric}<br/>
-                `,
-            };
+            const nbStations = 5;
+            const names = info.object.properties.name.slice(0, nbStations).join('<br/>');
+
+            tooltipTitle = `<b>${info.object.properties.point_count} stations</b><br/><br/>${names}`;
+            if (info.object.properties.name.length > nbStations) {
+                tooltipTitle += `<br/>et ${info.object.properties.name.length - nbStations} autres`;
+            }
+            tooltipTitle += `<br/><br/>`;
+        } else {
+            tooltipTitle = `<b>${info.object.properties.name}</b><br/><br/>`;
         }
 
         return {
             html: `
-                <b>${info.object.properties.name}</b><br/><br/>
-                Mécaniques: ${info.object.properties.mechanical}<br/>
-                Éléctriques: ${info.object.properties.electric}`,
+                ${tooltipTitle}
+                Mécaniques&nbsp;: ${info.object.properties.mechanical}<br/>
+                Éléctriques&nbsp;: ${info.object.properties.electric}<br/>
+            `,
+        };
+    }
+
+    const BikewaysTooltip = (info: PickingInfo) => {
+        return {
+            html: `<b>${info.object.properties.route}</b></br></br>
+                    ${info.object.properties.typology}<br/>
+                    ${info.object.properties.direction}<br/>
+                    ${info.object.properties.status}`,
         };
     }
 
     const getTooltip = (info: PickingInfo) => {
-        if (info.object === undefined || info.object === null) {
+        if (info.object === undefined || info.object === null || info.layer == null) {
             return null;
         }
 
-        switch (format) {
+        switch (info.layer.id) {
             case 'districts':
                 return districtsBoroughsTooltip(info);
             case 'boroughs':
                 return districtsBoroughsTooltip(info);
-            case 'points':
+            case 'cluster-layer':
                 return stationTooltip(info);
+            case 'bikeways-layer':
+                return BikewaysTooltip(info);
             default:
                 return null;
         }
@@ -247,10 +265,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[clusterLayer, heatmapLayer, h3Layer, districtsLayer, boroughsLayer, bikewaysLayer]}
+            layers={[bikewaysLayer, clusterLayer, heatmapLayer, h3Layer, districtsLayer, boroughsLayer]}
             getTooltip={getTooltip}
         >
-            <Map
+            <Map 
                 mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
                 mapStyle={MAP_STYLE}
             />
