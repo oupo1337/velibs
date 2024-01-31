@@ -247,9 +247,9 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         }
 
         switch (info.layer.id) {
-            case 'districts':
+            case 'districts-layer':
                 return districtsBoroughsTooltip(info);
-            case 'boroughs':
+            case 'boroughs-layer':
                 return districtsBoroughsTooltip(info);
             case 'cluster-layer':
                 return stationTooltip(info);
