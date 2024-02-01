@@ -42,6 +42,11 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 	if err != nil {
 		return nil, err
 	}
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			slog.Error("response.Body.Close error", slog.String("error", err.Error()))
+		}
+	}()
 
 	var data StationInformationResponse
 	if err := json.NewDecoder(response.Body).Decode(&data); err != nil {

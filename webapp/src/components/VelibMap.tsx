@@ -116,20 +116,6 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         threshold: 0.05,
     });
 
-    const h3Layer = new H3HexagonLayer({
-        id: 'h3-hexagon-layer',
-        visible: format === 'h3',
-        data: stations,
-        pickable: true,
-        wireframe: true,
-        filled: true,
-        extruded: true,
-        elevationScale: 20,
-        getHexagon: d => d.properties.hexagon,
-        getFillColor: d => [d.properties.bikes * 5, 0, 255],
-        getElevation: d => d.properties.bikes
-    });
-
     const clusterLayer = new ClusterLayer({
         id: 'cluster-layer',
         visible: format === 'points',
@@ -141,7 +127,6 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             }
             navigate(`/stations/${info.object.properties.station_id}`);
         },
-        // onHover: info => setHoverInfo(info)
     });
 
     const bikewaysLayer = new GeoJsonLayer({
@@ -265,7 +250,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[bikewaysLayer, clusterLayer, heatmapLayer, h3Layer, districtsLayer, boroughsLayer]}
+            layers={[bikewaysLayer, clusterLayer, heatmapLayer, districtsLayer, boroughsLayer]}
             getTooltip={getTooltip}
         >
             <Map 

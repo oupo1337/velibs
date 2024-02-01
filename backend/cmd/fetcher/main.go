@@ -15,8 +15,19 @@ import (
 
 const serviceName = "velib-fetcher"
 
+type runner interface {
+	Run()
+}
+
 type dependencies struct {
-	cron *cron.Cron
+	cron        *cron.Cron
+	initRunners []runner
+}
+
+func run(runners []runner) {
+	for _, r := range runners {
+		r.Run()
+	}
 }
 
 func initDependencies() (dependencies, error) {
@@ -47,13 +58,9 @@ func initDependencies() (dependencies, error) {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
 
-	districts.Run()
-	boroughs.Run()
-	stations.Run()
-	bikeways.Run()
-
 	return dependencies{
-		cron: c,
+		cron:        c,
+		initRunners: []runner{districts, boroughs, stations, bikeways},
 	}, nil
 }
 
@@ -71,6 +78,8 @@ func main() {
 		slog.Error("initDependencies error", slog.String("error", err.Error()))
 		os.Exit(1)
 	}
+
+	run(deps.initRunners)
 
 	slog.Info("service is running")
 	deps.cron.Run()

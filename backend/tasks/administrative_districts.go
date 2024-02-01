@@ -34,7 +34,11 @@ func (a *AdministrativeDistricts) fetchAdministrativeDistricts(ctx context.Conte
 	if err != nil {
 		return domain.DistrictsGeoJSON{}, fmt.Errorf("b.client.Do error: %w", err)
 	}
-	defer response.Body.Close()
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			slog.Error("response.Body.Close error", slog.String("error", err.Error()))
+		}
+	}()
 
 	body, err := io.ReadAll(response.Body)
 	if err != nil {

@@ -56,8 +56,8 @@ type BikewaysProperties struct {
 type Feature[T any, U any] struct {
 	Type     string `json:"type"`
 	Geometry struct {
-		Coordinates U      `json:"coordinates"`
 		Type        string `json:"type"`
+		Coordinates U      `json:"coordinates"`
 	} `json:"geometry"`
 	Properties T `json:"properties"`
 }
