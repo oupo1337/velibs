@@ -7,8 +7,6 @@ import DeckGL from '@deck.gl/react/typed';
 import { PickingInfo } from '@deck.gl/core/typed'
 import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers/typed';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers/typed';
-import { H3HexagonLayer } from '@deck.gl/geo-layers/typed';
-
 
 import ClusterLayer from "./layers/ClusterLayer";
 import { Feature } from '../domain/Domain';
