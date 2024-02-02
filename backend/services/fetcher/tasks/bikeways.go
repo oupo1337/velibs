@@ -13,9 +13,9 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/codes"
 
+	"github.com/oupo1337/velibs/backend/common/tracing"
 	"github.com/oupo1337/velibs/backend/domain"
-	"github.com/oupo1337/velibs/backend/postgres"
-	"github.com/oupo1337/velibs/backend/tracing"
+	"github.com/oupo1337/velibs/backend/infrastructure/postgres"
 )
 
 type Bikeways struct {
@@ -37,7 +37,7 @@ func (b *Bikeways) fetchBikeways(ctx context.Context) (domain.BikewaysGeoJSON, e
 	}
 	defer func() {
 		if err := response.Body.Close(); err != nil {
-			slog.Error("response.Body.Close error", slog.String("error", err.Error()))
+			slog.ErrorContext(ctx, "response.Body.Close error", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -53,7 +53,7 @@ func (b *Bikeways) fetchBikeways(ctx context.Context) (domain.BikewaysGeoJSON, e
 	return data, nil
 }
 
-func (b *Bikeways) updateBikeways(ctx context.Context) error {
+func (b *Bikeways) UpdateBikeways(ctx context.Context) error {
 	slog.InfoContext(ctx, "updating Paris bikeways")
 
 	bikeways, err := b.fetchBikeways(ctx)
@@ -71,7 +71,7 @@ func (b *Bikeways) Run() {
 	ctx, span := tracing.Start(context.Background(), "update.Bikeways")
 	defer span.End()
 
-	if err := b.updateBikeways(ctx); err != nil {
+	if err := b.UpdateBikeways(ctx); err != nil {
 		span.SetStatus(codes.Error, "updateBikeways failed")
 		span.RecordError(err)
 		slog.ErrorContext(ctx, "updateBikeways failed", slog.String("error", err.Error()))

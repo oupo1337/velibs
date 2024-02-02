@@ -1,0 +1,34 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: backend-migration-hook
+  annotations:
+    "helm.sh/hook": "post-install,pre-upgrade"
+    "helm.sh/hook-delete-policy": before-hook-creation
+spec:
+  ttlSecondsAfterFinished: 30
+  template:
+    spec:
+      containers:
+        - name: pre-upgrade
+          image: {{ .Values.configuration.migrationImage }}
+          imagePullPolicy: Never
+          resources:
+            requests:
+              cpu: "0.25"
+              memory: "512Mi"
+              ephemeral-storage: "10Mi"
+            limits:
+              cpu: "0.25"
+              memory: "512Mi"
+              ephemeral-storage: "10Mi"
+          env:
+            - name: SQITCH_TARGET
+              value: db:pg://{{ .Values.configuration.database.username }}@{{ .Values.configuration.database.address }}/{{ .Values.configuration.database.name }}
+            - name: SQITCH_PASSWORD
+              value: {{ .Values.configuration.database.password | quote }}
+      restartPolicy: OnFailure
+      terminationGracePeriodSeconds: 0
+  backoffLimit: 3
+  completions: 1
+  parallelism: 1

@@ -8,7 +8,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 
-	"github.com/oupo1337/velibs/backend/postgres"
+	"github.com/oupo1337/velibs/backend/infrastructure/postgres"
 )
 
 type Statuses struct {

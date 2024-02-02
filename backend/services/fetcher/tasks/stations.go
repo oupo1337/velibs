@@ -12,9 +12,9 @@ import (
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/codes"
 
+	"github.com/oupo1337/velibs/backend/common/tracing"
 	"github.com/oupo1337/velibs/backend/domain"
-	"github.com/oupo1337/velibs/backend/postgres"
-	"github.com/oupo1337/velibs/backend/tracing"
+	"github.com/oupo1337/velibs/backend/infrastructure/postgres"
 )
 
 type Stations struct {
@@ -44,7 +44,7 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 	}
 	defer func() {
 		if err := response.Body.Close(); err != nil {
-			slog.Error("response.Body.Close error", slog.String("error", err.Error()))
+			slog.ErrorContext(ctx, "response.Body.Close error", slog.String("error", err.Error()))
 		}
 	}()
 
@@ -55,7 +55,7 @@ func (s *Stations) fetchStationsInformation(ctx context.Context) ([]domain.Stati
 	return data.Data.StationsInformation, nil
 }
 
-func (s *Stations) updateStations(ctx context.Context) error {
+func (s *Stations) UpdateStations(ctx context.Context) error {
 	slog.InfoContext(ctx, "updating velib stations list")
 
 	stations, err := s.fetchStationsInformation(ctx)
@@ -73,7 +73,7 @@ func (s *Stations) Run() {
 	ctx, span := tracing.Start(context.Background(), "update.Stations")
 	defer span.End()
 
-	if err := s.updateStations(ctx); err != nil {
+	if err := s.UpdateStations(ctx); err != nil {
 		span.SetStatus(codes.Error, "updateStations failed")
 		span.RecordError(err)
 		slog.ErrorContext(ctx, "updateStations failed", slog.String("error", err.Error()))

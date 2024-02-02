@@ -220,7 +220,7 @@ func New(conf Configuration) (*Database, error) {
 	}
 	cfg.ConnConfig.Tracer = otelpgx.NewTracer()
 
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 1*time.Minute)
 	defer cancel()
 
 	conn, err := pgxpool.NewWithConfig(ctx, cfg)

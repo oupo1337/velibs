@@ -10,11 +10,12 @@ import (
 	"net/http/httptrace"
 	"time"
 
-	"github.com/oupo1337/velibs/backend/domain"
-	"github.com/oupo1337/velibs/backend/postgres"
-	"github.com/oupo1337/velibs/backend/tracing"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/codes"
+
+	"github.com/oupo1337/velibs/backend/common/tracing"
+	"github.com/oupo1337/velibs/backend/domain"
+	"github.com/oupo1337/velibs/backend/infrastructure/postgres"
 )
 
 type Boroughs struct {

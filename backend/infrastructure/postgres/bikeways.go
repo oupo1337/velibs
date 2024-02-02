@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	"github.com/jackc/pgx/v5"
-	"github.com/oupo1337/velibs/backend/domain"
 	"github.com/paulmach/orb"
 	"github.com/paulmach/orb/encoding/ewkb"
+
+	"github.com/oupo1337/velibs/backend/domain"
 )
 
 func (db *Database) InsertBikeways(ctx context.Context, bikeways domain.BikewaysGeoJSON) error {
