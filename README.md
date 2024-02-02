@@ -1,6 +1,8 @@
-# velibs
+# Velib
 
-To be able to start the project you need to create a `.env` file at the root.
+## Configuration
+
+First, to be able to start the project you need to create a `.env` file at the root of the project.
 
 ```
 # Domain for the application (used for CORS here)
@@ -25,8 +27,24 @@ MAPBOX_ACCESS_TOKEN=<YOUR_MAPBOX_ACCESS_TOKEN>
 MAP_STYLE=mapbox://styles/mapbox/standard
 ```
 
-You can then run the project by typing :
+## Running the project
+
+### docker compose
+
+If you want to start the project using docker compose, simply type:
 
 ```
 docker compose --profile production up
+```
+
+### helm
+
+If you want to deploy the helm chart, simply type:
+
+```
+docker compose build
+```
+
+```
+helm upgrade --install velib helm
 ```
