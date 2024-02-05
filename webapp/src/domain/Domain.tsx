@@ -12,7 +12,7 @@ export interface StationInformation {
 
 export interface Station {
   stations: StationInformation[]
-  time_series: Timeseries[]
+  timeseries: Timeseries[]
 }
 
 export interface Distribution {

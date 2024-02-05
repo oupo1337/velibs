@@ -74,8 +74,8 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             return
         }
 
-        const totalCapacity = data.stations.reduce<number>((total, current) => total + current.capacity, 0);
-        const cleanData = cleanTimeSeries(data.time_series);
+        const totalCapacity = data.stations.reduce((total, current) => total + current.capacity, 0);
+        const cleanData = cleanTimeSeries(data.timeseries);
         const option: ECOption = {
             responsive: true,
             legend: {
@@ -104,13 +104,6 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     type: 'value',
                     max: totalCapacity + 10,
                 }
-            ],
-            dataZoom: [
-                {
-                    type: 'inside',
-                    start: 90,
-                    end: 100
-                },
             ],
             series: [
                 {

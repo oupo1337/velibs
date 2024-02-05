@@ -178,10 +178,10 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) (domain
 	}
 	defer timeseriesRows.Close()
 
-	ts, err := pgx.CollectRows(timeseriesRows, func(row pgx.CollectableRow) (domain.TimeSeries, error) {
-		var current domain.TimeSeries
+	ts, err := pgx.CollectRows(timeseriesRows, func(row pgx.CollectableRow) (domain.Timeseries, error) {
+		var current domain.Timeseries
 		if err := row.Scan(&current.Date, &current.Mechanical, &current.Electric); err != nil {
-			return domain.TimeSeries{}, fmt.Errorf("rows.Scan error: %w", err)
+			return domain.Timeseries{}, fmt.Errorf("rows.Scan error: %w", err)
 		}
 		return current, nil
 	})
@@ -191,7 +191,7 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) (domain
 
 	return domain.StationTimeSeries{
 		Stations:   stations,
-		TimeSeries: ts,
+		Timeseries: ts,
 	}, nil
 }
 

@@ -33,17 +33,17 @@ func (db *Database) GetAdministrativeDistricts(ctx context.Context, timestamp st
 	}
 
 	query := `
-		SELECT json_build_object(
+		SELECT JSON_BUILD_OBJECT(
 			'type', 'FeatureCollection',
-			'features', json_agg(ST_AsGeoJSON(t.*)::json)
+			'features', JSON_AGG(ST_AsGeoJSON(t.*)::json)
 		)
 		FROM (
-			SELECT administrative_districts.name, shape, SUM(statuses.mechanical), SUM(statuses.electric)
+			SELECT administrative_districts.name, JSON_AGG(id), shape, SUM(statuses.mechanical), SUM(statuses.electric)
 			FROM administrative_districts
 			LEFT JOIN stations ON ST_Contains(administrative_districts.shape, stations.position)
 			JOIN statuses ON (stations.id = statuses.station_id AND timestamp = $1)
 			GROUP BY administrative_districts.name, shape
-		) as t(name, shape, mechanical, electric)`
+		) as t(name, ids, shape, mechanical, electric)`
 
 	var data []byte
 	if err := db.conn.QueryRow(ctx, query, timestamp).Scan(&data); err != nil {

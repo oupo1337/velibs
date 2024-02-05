@@ -10,6 +10,7 @@ import FormControl from "@mui/material/FormControl/FormControl";
 import InputLabel from "@mui/material/InputLabel/InputLabel";
 import MenuItem from "@mui/material/MenuItem/MenuItem";
 import Select from "@mui/material/Select/Select";
+import Stack from "@mui/material/Stack/Stack";
 import Typography from "@mui/material/Typography/Typography";
 
 import { Distribution, Station, StationInformation } from "../../domain/Domain";
@@ -50,12 +51,17 @@ const StationLabel: React.FC<StationLabelProps> = ({ stations }) => {
     }
 
     return (
-        <FormControl margin="normal">
-            <InputLabel>Station</InputLabel>
-            <Select label="Station">
-                {stations.map((station, index) => <MenuItem key={index} value={station.id}>{station.name}</MenuItem>)}
-            </Select>
-        </FormControl>
+        <Stack justifyContent="space-evenly" direction="row" spacing={2}>
+            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
+                { stations.length } stations
+            </Typography>
+            <FormControl style={{minWidth: 600}}>
+                <InputLabel>Station</InputLabel>
+                <Select label="Station">
+                    {stations.map((station, index) => <MenuItem key={index} value={station.id}>{station.name}</MenuItem>)}
+                </Select>
+            </FormControl>
+        </Stack>
     );
 }
 

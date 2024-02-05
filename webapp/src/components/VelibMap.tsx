@@ -130,7 +130,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
                     pathname: '/stations',
                     search: `?${createSearchParams({ ids: [info.object.properties.station_id] })}`,
                 });
-            }            
+            }
         },
     });
 
@@ -166,7 +166,13 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             const red = (d.properties.mechanical + d.properties.electric - min) * (255/(max-min));
             return [red, 140, 0]
         },
-        getLineWidth: 1
+        getLineWidth: 1,
+        onClick: (info: PickingInfo) => {
+            navigate({
+                pathname: '/stations',
+                search: `?${createSearchParams({ ids: info.object.properties.ids })}`,
+            });
+        }
     });
 
     const boroughsLayer = new PolygonLayer({
@@ -186,6 +192,12 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             return [red, 140, 0]
         },
         getLineWidth: 1,
+        onClick: (info: PickingInfo) => {
+            navigate({
+                pathname: '/stations',
+                search: `?${createSearchParams({ ids: info.object.properties.ids })}`,
+            });
+        }
     });
 
     const districtsBoroughsTooltip = (info: PickingInfo) => {

@@ -34,17 +34,17 @@ func (db *Database) GetBoroughs(ctx context.Context, timestamp string) ([]byte, 
 	}
 
 	query := `
-		SELECT json_build_object(
+		SELECT JSON_BUILD_OBJECT(
 			'type', 'FeatureCollection',
-			'features', json_agg(ST_AsGeoJSON(t.*)::json)
+			'features', JSON_AGG(ST_AsGeoJSON(t.*)::json)
 		)
 		FROM (
-			SELECT boroughs.name, boroughs.label, shape, SUM(statuses.mechanical), SUM(statuses.electric)
+			SELECT boroughs.name, boroughs.label, JSON_AGG(id), shape, SUM(statuses.mechanical), SUM(statuses.electric)
 			FROM boroughs
 			LEFT JOIN stations ON ST_Contains(boroughs.shape, stations.position)
 			JOIN statuses ON (stations.id = statuses.station_id AND timestamp = $1)
 			GROUP BY boroughs.name, boroughs.label, shape
-		) as t(name, label, shape, mechanical, electric)`
+		) as t(name, label, ids, shape, mechanical, electric)`
 
 	var data []byte
 	if err := db.conn.QueryRow(ctx, query, timestamp).Scan(&data); err != nil {

@@ -51,7 +51,7 @@ func (db *Database) InsertBikeways(ctx context.Context, bikeways domain.Bikeways
 
 func (db *Database) FetchBikeways(ctx context.Context) ([]byte, error) {
 	query := `
-		SELECT json_build_object(
+		SELECT JSON_BUILD_OBJECT(
 			'type', 'FeatureCollection',
 			'features', json_agg(ST_AsGeoJSON(t.*)::json)
 		)
