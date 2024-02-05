@@ -38,7 +38,7 @@ MAP_STYLE=mapbox://styles/mapbox/standard
 
 #### docker compose
 
-If you want to start the project using docker compose, simply type:
+If you want to start the project using docker compose, run this command:
 
 ```
 docker compose --profile production up
@@ -46,7 +46,7 @@ docker compose --profile production up
 
 #### helm
 
-If you want to deploy the helm chart, simply type:
+If you want to deploy the helm chart, run these commands:
 
 ```
 docker compose build
@@ -58,7 +58,7 @@ helm upgrade --install velib helm
 
 ## Libraries used
 
-Thanks to the open source community
+Principal tools and libraries used for the project:
 
 - [Mapbox](https://www.mapbox.com/) with [mapbox-gl](https://github.com/mapbox/mapbox-gl-js) and [supercluster](https://github.com/mapbox/supercluster)
 - The [Vis.gl](https://vis.gl/) suite and more precisely [react-map-gl](https://visgl.github.io/react-map-gl/) and [deck.gl](https://deck.gl/)

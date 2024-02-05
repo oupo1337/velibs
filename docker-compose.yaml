@@ -109,7 +109,7 @@ services:
         condition: service_completed_successfully
     environment:
       APPLICATION_ADDRESS: :8080
-      APP_DOMAIN_NAME: ${APP_DOMAIN_NAME}
+      APPLICATION_DOMAIN_NAME: ${APPLICATION_DOMAIN_NAME}
       DATABASE_USERNAME: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}
       DATABASE_ADDRESS: database
