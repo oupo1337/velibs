@@ -25,7 +25,7 @@ const router = createBrowserRouter([
     element: <App />,
     children: [
       {
-        path: "/stations/:stationId",
+        path: "/stations",
         element: <StationDrawer  />,
       }
     ]

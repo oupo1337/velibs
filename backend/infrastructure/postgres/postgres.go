@@ -140,46 +140,62 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) (string, error) {
 	return timestamp.Format(time.RFC3339), nil
 }
 
-func (db *Database) GetStationTimeSeries(ctx context.Context, stationID string) (domain.StationTimeSeries, error) {
-	var ID int64
-	var name string
-	var capacity int64
-	if err := db.conn.QueryRow(ctx, `SELECT id, name, capacity FROM stations WHERE id = $1`, stationID).
-		Scan(&ID, &name, &capacity); err != nil {
-		return domain.StationTimeSeries{}, fmt.Errorf("conn.QueryRow.Scan error: %w", err)
-	}
+func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) (domain.StationTimeSeries, error) {
+	stationsQuery := `
+		SELECT id, name, capacity
+		FROM stations
+		WHERE id = ANY($1)
+	`
 
-	query := `
-			SELECT timestamp, mechanical, electric
-			FROM statuses
-			WHERE station_id = $1
-				AND timestamp > NOW() - interval '1 week'
-			ORDER BY timestamp;`
-
-	rows, err := db.conn.Query(ctx, query, stationID)
+	stationsRows, err := db.conn.Query(ctx, stationsQuery, IDs)
 	if err != nil {
 		return domain.StationTimeSeries{}, fmt.Errorf("conn.Query error: %w", err)
 	}
-	defer rows.Close()
+	defer stationsRows.Close()
 
-	var ts []domain.TimeSeries
-	for rows.Next() {
-		var current domain.TimeSeries
-		if err := rows.Scan(&current.Date, &current.Mechanical, &current.Electric); err != nil {
-			return domain.StationTimeSeries{}, fmt.Errorf("rows.Scan error: %w", err)
+	stations, err := pgx.CollectRows(stationsRows, func(row pgx.CollectableRow) (domain.StationInformation, error) {
+		var current domain.StationInformation
+		if err := row.Scan(&current.StationID, &current.Name, &current.Capacity); err != nil {
+			return domain.StationInformation{}, fmt.Errorf("rows.Scan error: %w", err)
 		}
-		ts = append(ts, current)
+		return current, nil
+	})
+	if err != nil {
+		return domain.StationTimeSeries{}, fmt.Errorf("pgx.CollectRows error: %w", err)
+	}
+
+	timeseriesQuery := `
+			SELECT timestamp, SUM(mechanical), SUM(electric)
+			FROM statuses
+			WHERE station_id = ANY($1)
+				AND timestamp > NOW() - interval '1 week'
+			GROUP BY timestamp
+			ORDER BY timestamp`
+
+	timeseriesRows, err := db.conn.Query(ctx, timeseriesQuery, IDs)
+	if err != nil {
+		return domain.StationTimeSeries{}, fmt.Errorf("conn.Query error: %w", err)
+	}
+	defer timeseriesRows.Close()
+
+	ts, err := pgx.CollectRows(timeseriesRows, func(row pgx.CollectableRow) (domain.TimeSeries, error) {
+		var current domain.TimeSeries
+		if err := row.Scan(&current.Date, &current.Mechanical, &current.Electric); err != nil {
+			return domain.TimeSeries{}, fmt.Errorf("rows.Scan error: %w", err)
+		}
+		return current, nil
+	})
+	if err != nil {
+		return domain.StationTimeSeries{}, fmt.Errorf("pgx.CollectRows error: %w", err)
 	}
 
 	return domain.StationTimeSeries{
-		ID:         ID,
-		Name:       name,
-		Capacity:   capacity,
+		Stations:   stations,
 		TimeSeries: ts,
 	}, nil
 }
 
-func (db *Database) GetStationDistribution(ctx context.Context, stationID string) ([]domain.DistributionData, error) {
+func (db *Database) GetStationDistribution(ctx context.Context, IDs []int) ([]domain.DistributionData, error) {
 	query := `
 		SELECT
 			EXTRACT(HOUR FROM timestamp),
@@ -187,26 +203,28 @@ func (db *Database) GetStationDistribution(ctx context.Context, stationID string
 			AVG(mechanical) AS mechanical,
 			AVG(electric) AS electric
 		FROM statuses
-		WHERE station_id = $1
+		WHERE station_id = ANY($1)
 		GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)
 		ORDER BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)`
 
-	rows, err := db.conn.Query(ctx, query, stationID)
+	rows, err := db.conn.Query(ctx, query, IDs)
 	if err != nil {
 		return nil, fmt.Errorf("conn.Query error: %w", err)
 	}
 	defer rows.Close()
 
-	var distribution []domain.DistributionData
-	for rows.Next() {
+	distribution, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (domain.DistributionData, error) {
 		var hour int
 		var minute int
 		var data domain.DistributionData
 		if err := rows.Scan(&hour, &minute, &data.Mechanical, &data.Electric); err != nil {
-			return nil, fmt.Errorf("rows.Scan error: %w", err)
+			return domain.DistributionData{}, fmt.Errorf("rows.Scan error: %w", err)
 		}
 		data.Time = fmt.Sprintf("%02d:%02d", hour, minute)
-		distribution = append(distribution, data)
+		return data, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("pgx.CollectRows error: %w", err)
 	}
 	return distribution, nil
 }

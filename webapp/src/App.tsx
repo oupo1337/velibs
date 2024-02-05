@@ -12,7 +12,7 @@ import './App.css';
 function App() {
   const queryClient = new QueryClient();
   const navigate = useNavigate();
-  const match = useMatch('/stations/:stationId');
+  const match = useMatch('/stations');
 
   const [timestamp, setTimestamp] = useState<Date | undefined>();
   const [velibType, setVelibType] = useState('bikes');

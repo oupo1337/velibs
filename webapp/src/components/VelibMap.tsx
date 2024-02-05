@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { createSearchParams, useNavigate } from 'react-router-dom';
 
 import Map from 'react-map-gl';
 
@@ -121,9 +121,16 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         zoom: viewport.zoom,
         onClick: (info: PickingInfo) => {
             if (info.object.properties.cluster) {
-                return
-            }
-            navigate(`/stations/${info.object.properties.station_id}`);
+                navigate({
+                    pathname: '/stations',
+                    search: `?${createSearchParams({ ids: info.object.properties.station_id })}`,
+                });
+            } else {
+                navigate({
+                    pathname: '/stations',
+                    search: `?${createSearchParams({ ids: [info.object.properties.station_id] })}`,
+                });
+            }            
         },
     });
 

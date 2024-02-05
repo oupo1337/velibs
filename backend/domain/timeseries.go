@@ -9,8 +9,6 @@ type TimeSeries struct {
 }
 
 type StationTimeSeries struct {
-	ID         int64        `json:"id"`
-	Name       string       `json:"name"`
-	Capacity   int64        `json:"capacity"`
-	TimeSeries []TimeSeries `json:"time_series"`
+	Stations   []StationInformation `json:"stations"`
+	TimeSeries []TimeSeries         `json:"time_series"`
 }

@@ -1,18 +1,24 @@
 import React from "react";
 
 import axios from "axios";
-import { useParams } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 
-import Box from "@mui/material/Box";
-import CircularProgress from '@mui/material/CircularProgress';
-import Typography from "@mui/material/Typography";
+import Box from "@mui/material/Box/Box";
+import CircularProgress from '@mui/material/CircularProgress/CircularProgress';
+import FormControl from "@mui/material/FormControl/FormControl";
+import InputLabel from "@mui/material/InputLabel/InputLabel";
+import MenuItem from "@mui/material/MenuItem/MenuItem";
+import Select from "@mui/material/Select/Select";
+import Typography from "@mui/material/Typography/Typography";
 
-import { Distribution, Station } from "../../domain/Domain";
+import { Distribution, Station, StationInformation } from "../../domain/Domain";
 
-import StackedAreaChart from "./StackedAreaChart";
-import DistributionChart from "./DistributionChart";
+import StackedAreaChart from "../charts/StackedAreaChart";
+import DistributionChart from "../charts/DistributionChart";
+
 import { API_URL } from "../../configuration/Configuration";
+
 
 const DrawerLoader = () => {
     return (
@@ -30,18 +36,41 @@ const DrawerError = () => {
     );
 }
 
-interface StationProps {
-    stationID: string | undefined
+interface StationLabelProps {
+    stations: StationInformation[]
 }
 
-const StationDisplay: React.FC<StationProps> = ({stationID}) => {
+const StationLabel: React.FC<StationLabelProps> = ({ stations }) => {
+    if (stations.length === 1) {
+        return (
+            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
+                { stations[0].name }
+            </Typography>
+        );
+    }
+
+    return (
+        <FormControl margin="normal">
+            <InputLabel>Station</InputLabel>
+            <Select label="Station">
+                {stations.map((station, index) => <MenuItem key={index} value={station.id}>{station.name}</MenuItem>)}
+            </Select>
+        </FormControl>
+    );
+}
+
+interface StationProps {
+    ids: string[]
+}
+
+const StationDisplay: React.FC<StationProps> = ({ ids }) => {
     const fetchStation = async () => {
-        const response = await axios.get(`${API_URL}/api/v1/stations/${stationID}`);
+        const response = await axios.get(`${API_URL}/api/v1/stations`, { params: { ids: ids }});
         return response.data;
     }
 
     const { isLoading, isError, isPending, data } = useQuery<Station, Error>({
-        queryKey: ['station', stationID],
+        queryKey: ['stations', ids],
         queryFn: fetchStation,
     });
 
@@ -55,22 +84,20 @@ const StationDisplay: React.FC<StationProps> = ({stationID}) => {
 
     return (
         <>
-            <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
-                { data.name }
-            </Typography>
+            <StationLabel stations={data.stations} />
             <StackedAreaChart data={data} />
         </>
     );
 }
 
-const DistributionDisplay: React.FC<StationProps> = ({stationID}) => {
+const DistributionDisplay: React.FC<StationProps> = ({ ids }) => {
     const fetchStationDistribution = async () => {
-        const response = await axios.get(`${API_URL}/api/v1/distributions/${stationID}`);
+        const response = await axios.get(`${API_URL}/api/v1/distributions`, { params: { ids: ids }});
         return response.data;
     }
 
     const { isLoading, isError, isPending, data } = useQuery<Distribution[], Error>({
-        queryKey: ['station_distribution', stationID],
+        queryKey: ['station_distribution', ids],
         queryFn: fetchStationDistribution,
     });
 
@@ -88,12 +115,13 @@ const DistributionDisplay: React.FC<StationProps> = ({stationID}) => {
 }
 
 const StationDrawer: React.FC = () => {
-    const { stationId } = useParams();
+    const { search } = useLocation();
+    const ids = new URLSearchParams(search).getAll('ids');
 
     return (
         <Box style={{ flex: 1, width: '80vw', paddingTop: '4rem', paddingBottom: '4rem', display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'space-between' }}>
-            <StationDisplay stationID={stationId} />
-            <DistributionDisplay stationID={stationId} />
+            <StationDisplay ids={ids} />
+            <DistributionDisplay ids={ids} />
         </Box>
     );
 }

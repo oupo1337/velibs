@@ -64,6 +64,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 maxZoom: 14,
                 reduce: (accumulated, props) => {
                     accumulated.name = [...accumulated.name, ...props.name];
+                    accumulated.station_id = [...accumulated.station_id, ...props.station_id];
                     accumulated.total += props.total;
                     accumulated.mechanical += props.mechanical;
                     accumulated.electric += props.electric;
@@ -71,6 +72,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 map: (props) => {
                     return {
                         name: [props.name],
+                        station_id: [props.station_id],
                         total: props.mechanical + props.electric,
                         mechanical: props.mechanical,
                         electric: props.electric,

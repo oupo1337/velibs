@@ -108,7 +108,7 @@ services:
       migration:
         condition: service_completed_successfully
     environment:
-      PORT: 8080
+      APPLICATION_ADDRESS: :8080
       APP_DOMAIN_NAME: ${APP_DOMAIN_NAME}
       DATABASE_USERNAME: ${POSTGRES_USER}
       DATABASE_PASSWORD: ${POSTGRES_PASSWORD}

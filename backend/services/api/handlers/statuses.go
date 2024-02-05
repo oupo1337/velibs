@@ -15,8 +15,18 @@ type Statuses struct {
 	db *postgres.Database
 }
 
+type idsQuery struct {
+	IDs []int `form:"ids[]" binding:"required"`
+}
+
 func (s *Statuses) GetStationDistribution(c *gin.Context) {
-	distribution, err := s.db.GetStationDistribution(c.Request.Context(), c.Param("id"))
+	var query idsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	distribution, err := s.db.GetStationDistribution(c.Request.Context(), query.IDs)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.GetStationDistribution error: %w", err))
 		c.Status(http.StatusInternalServerError)
@@ -26,7 +36,13 @@ func (s *Statuses) GetStationDistribution(c *gin.Context) {
 }
 
 func (s *Statuses) GetStationTimeSeries(c *gin.Context) {
-	sts, err := s.db.GetStationTimeSeries(c.Request.Context(), c.Param("id"))
+	var query idsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	sts, err := s.db.GetStationTimeSeries(c.Request.Context(), query.IDs)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.GetStationTimeSeries error: %w", err))
 		c.Status(http.StatusInternalServerError)

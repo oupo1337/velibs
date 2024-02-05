@@ -45,8 +45,8 @@ func initRouter(deps dependencies) application.Service {
 	router.GET("/api/v1/boroughs.geojson", deps.statuses.GetBoroughs)
 	router.GET("/api/v1/bikeways.geojson", deps.ways.FetchBikeways)
 
-	router.GET("/api/v1/stations/:id", deps.statuses.GetStationTimeSeries)
-	router.GET("/api/v1/distributions/:id", deps.statuses.GetStationDistribution)
+	router.GET("/api/v1/stations", deps.statuses.GetStationTimeSeries)
+	router.GET("/api/v1/distributions", deps.statuses.GetStationDistribution)
 
 	return router
 }

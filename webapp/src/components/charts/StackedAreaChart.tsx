@@ -27,7 +27,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
 import type { ComposeOption } from 'echarts/core';
 
-import { Station, TimeSeries } from "../../domain/Domain";
+import { Station, Timeseries } from "../../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption
@@ -58,7 +58,7 @@ interface GraphProps {
     data : Station
 }
 
-function cleanTimeSeries(data: TimeSeries[]) {
+function cleanTimeSeries(data: Timeseries[]) {
     return data.map(d => ({
         date: new Date(d.date),
         mechanical: +d.mechanical,
@@ -74,6 +74,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             return
         }
 
+        const totalCapacity = data.stations.reduce<number>((total, current) => total + current.capacity, 0);
         const cleanData = cleanTimeSeries(data.time_series);
         const option: ECOption = {
             responsive: true,
@@ -101,7 +102,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             yAxis: [
                 {
                     type: 'value',
-                    max: data.capacity + 10,
+                    max: totalCapacity + 10,
                 }
             ],
             dataZoom: [
@@ -128,7 +129,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     markLine: {
                         data: [{
                             name: "Capacité",
-                            yAxis: data.capacity,
+                            yAxis: totalCapacity,
                             label: {
                                 position: "insideEndTop",
                                 formatter: () => "Capacité"
