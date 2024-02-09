@@ -44,7 +44,8 @@ func (db *Database) GetBoroughs(ctx context.Context, timestamp string) ([]byte, 
 			LEFT JOIN stations ON ST_Contains(boroughs.shape, stations.position)
 			JOIN statuses ON (stations.id = statuses.station_id AND timestamp = $1)
 			GROUP BY boroughs.name, boroughs.label, shape
-		) as t(name, label, ids, shape, mechanical, electric)`
+		) as t(name, label, ids, shape, mechanical, electric)
+	`
 
 	var data []byte
 	if err := db.conn.QueryRow(ctx, query, timestamp).Scan(&data); err != nil {

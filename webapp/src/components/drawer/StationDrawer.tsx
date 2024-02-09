@@ -32,7 +32,6 @@ const StationLabel: React.FC<StationLabelProps> = ({ stations, setCurrentStation
 
     const handleChange = (event: SelectChangeEvent) => {
         if (event.target.value === "all") {
-            console.log('all');
             setCurrentStations(stations);
             return
         }

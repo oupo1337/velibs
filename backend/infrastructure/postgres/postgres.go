@@ -130,7 +130,10 @@ func (db *Database) FetchStationsStatuses(ctx context.Context, timestamp string)
 }
 
 func (db *Database) FetchMaxTimestamp(ctx context.Context) (string, error) {
-	query := `SELECT MAX(timestamp) FROM statuses`
+	query := `
+		SELECT MAX(timestamp)
+		FROM statuses
+	`
 
 	var timestamp time.Time
 	err := db.conn.QueryRow(ctx, query).Scan(&timestamp)
@@ -164,12 +167,13 @@ func (db *Database) GetStations(ctx context.Context, IDs []int) ([]domain.Statio
 
 func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) ([]domain.Timeseries, error) {
 	query := `
-			SELECT timestamp, SUM(mechanical), SUM(electric)
-			FROM statuses
-			WHERE station_id = ANY($1)
-				AND timestamp > NOW() - interval '1 week'
-			GROUP BY timestamp
-			ORDER BY timestamp`
+		SELECT timestamp, SUM(mechanical), SUM(electric)
+		FROM statuses
+		WHERE station_id = ANY($1)
+			AND timestamp > NOW() - interval '1 week'
+		GROUP BY timestamp
+		ORDER BY timestamp
+	`
 
 	timeseriesRows, err := db.conn.Query(ctx, query, IDs)
 	if err != nil {
@@ -196,7 +200,8 @@ func (db *Database) GetStationDistribution(ctx context.Context, IDs []int) ([]do
 		FROM statuses
 		WHERE station_id = ANY($1)
 		GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)
-		ORDER BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)`
+		ORDER BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)
+	`
 
 	rows, err := db.conn.Query(ctx, query, IDs)
 	if err != nil {

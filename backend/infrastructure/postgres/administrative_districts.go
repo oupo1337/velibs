@@ -82,7 +82,3 @@ func (db *Database) InsertAdministrativeDistricts(ctx context.Context, districts
 	}
 	return nil
 }
-
-// CREATE INDEX paris_administrative_districts_gist ON administrative_districts USING GIST (shape);
-// CREATE INDEX paris_boroughs_gist ON boroughs USING GIST (shape);
-// CREATE INDEX velib_stations_gist ON stations USING GIST (position);
