@@ -19,6 +19,22 @@ type idsQuery struct {
 	IDs []int `form:"ids[]" binding:"required"`
 }
 
+func (s *Statuses) GetStations(c *gin.Context) {
+	var query idsQuery
+	if err := c.ShouldBindQuery(&query); err != nil {
+		c.Status(http.StatusBadRequest)
+		return
+	}
+
+	stations, err := s.db.GetStations(c.Request.Context(), query.IDs)
+	if err != nil {
+		_ = c.Error(fmt.Errorf("db.GetStations error: %w", err))
+		c.Status(http.StatusInternalServerError)
+		return
+	}
+	c.JSON(http.StatusOK, stations)
+}
+
 func (s *Statuses) GetStationDistribution(c *gin.Context) {
 	var query idsQuery
 	if err := c.ShouldBindQuery(&query); err != nil {
@@ -42,13 +58,13 @@ func (s *Statuses) GetStationTimeSeries(c *gin.Context) {
 		return
 	}
 
-	sts, err := s.db.GetStationTimeSeries(c.Request.Context(), query.IDs)
+	timeseries, err := s.db.GetStationTimeSeries(c.Request.Context(), query.IDs)
 	if err != nil {
 		_ = c.Error(fmt.Errorf("db.GetStationTimeSeries error: %w", err))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
-	c.JSON(http.StatusOK, sts)
+	c.JSON(http.StatusOK, timeseries)
 }
 
 type minMaxTimestampResponse struct {
@@ -101,7 +117,7 @@ func (s *Statuses) GetBoroughs(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", data)
 }
 
-func (s *Statuses) GetStations(c *gin.Context) {
+func (s *Statuses) GetStationsStatuses(c *gin.Context) {
 	timestamp := c.Query("timestamp")
 
 	data, err := s.db.FetchStationsStatuses(c.Request.Context(), timestamp)

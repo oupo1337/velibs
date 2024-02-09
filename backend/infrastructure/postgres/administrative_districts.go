@@ -43,7 +43,8 @@ func (db *Database) GetAdministrativeDistricts(ctx context.Context, timestamp st
 			LEFT JOIN stations ON ST_Contains(administrative_districts.shape, stations.position)
 			JOIN statuses ON (stations.id = statuses.station_id AND timestamp = $1)
 			GROUP BY administrative_districts.name, shape
-		) as t(name, ids, shape, mechanical, electric)`
+		) as t(name, ids, shape, mechanical, electric)
+	`
 
 	var data []byte
 	if err := db.conn.QueryRow(ctx, query, timestamp).Scan(&data); err != nil {
@@ -81,3 +82,7 @@ func (db *Database) InsertAdministrativeDistricts(ctx context.Context, districts
 	}
 	return nil
 }
+
+// CREATE INDEX paris_administrative_districts_gist ON administrative_districts USING GIST (shape);
+// CREATE INDEX paris_boroughs_gist ON boroughs USING GIST (shape);
+// CREATE INDEX velib_stations_gist ON stations USING GIST (position);

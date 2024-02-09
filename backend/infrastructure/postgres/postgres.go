@@ -140,31 +140,30 @@ func (db *Database) FetchMaxTimestamp(ctx context.Context) (string, error) {
 	return timestamp.Format(time.RFC3339), nil
 }
 
-func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) (domain.StationTimeSeries, error) {
-	stationsQuery := `
+func (db *Database) GetStations(ctx context.Context, IDs []int) ([]domain.StationInformation, error) {
+	query := `
 		SELECT id, name, capacity
 		FROM stations
 		WHERE id = ANY($1)
 	`
 
-	stationsRows, err := db.conn.Query(ctx, stationsQuery, IDs)
+	stationsRows, err := db.conn.Query(ctx, query, IDs)
 	if err != nil {
-		return domain.StationTimeSeries{}, fmt.Errorf("conn.Query error: %w", err)
+		return nil, fmt.Errorf("conn.Query error: %w", err)
 	}
 	defer stationsRows.Close()
 
-	stations, err := pgx.CollectRows(stationsRows, func(row pgx.CollectableRow) (domain.StationInformation, error) {
+	return pgx.CollectRows(stationsRows, func(row pgx.CollectableRow) (domain.StationInformation, error) {
 		var current domain.StationInformation
 		if err := row.Scan(&current.StationID, &current.Name, &current.Capacity); err != nil {
 			return domain.StationInformation{}, fmt.Errorf("rows.Scan error: %w", err)
 		}
 		return current, nil
 	})
-	if err != nil {
-		return domain.StationTimeSeries{}, fmt.Errorf("pgx.CollectRows error: %w", err)
-	}
+}
 
-	timeseriesQuery := `
+func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) ([]domain.Timeseries, error) {
+	query := `
 			SELECT timestamp, SUM(mechanical), SUM(electric)
 			FROM statuses
 			WHERE station_id = ANY($1)
@@ -172,27 +171,19 @@ func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) (domain
 			GROUP BY timestamp
 			ORDER BY timestamp`
 
-	timeseriesRows, err := db.conn.Query(ctx, timeseriesQuery, IDs)
+	timeseriesRows, err := db.conn.Query(ctx, query, IDs)
 	if err != nil {
-		return domain.StationTimeSeries{}, fmt.Errorf("conn.Query error: %w", err)
+		return nil, fmt.Errorf("conn.Query error: %w", err)
 	}
 	defer timeseriesRows.Close()
 
-	ts, err := pgx.CollectRows(timeseriesRows, func(row pgx.CollectableRow) (domain.Timeseries, error) {
+	return pgx.CollectRows(timeseriesRows, func(row pgx.CollectableRow) (domain.Timeseries, error) {
 		var current domain.Timeseries
 		if err := row.Scan(&current.Date, &current.Mechanical, &current.Electric); err != nil {
 			return domain.Timeseries{}, fmt.Errorf("rows.Scan error: %w", err)
 		}
 		return current, nil
 	})
-	if err != nil {
-		return domain.StationTimeSeries{}, fmt.Errorf("pgx.CollectRows error: %w", err)
-	}
-
-	return domain.StationTimeSeries{
-		Stations:   stations,
-		Timeseries: ts,
-	}, nil
 }
 
 func (db *Database) GetStationDistribution(ctx context.Context, IDs []int) ([]domain.DistributionData, error) {
@@ -213,7 +204,7 @@ func (db *Database) GetStationDistribution(ctx context.Context, IDs []int) ([]do
 	}
 	defer rows.Close()
 
-	distribution, err := pgx.CollectRows(rows, func(row pgx.CollectableRow) (domain.DistributionData, error) {
+	return pgx.CollectRows(rows, func(row pgx.CollectableRow) (domain.DistributionData, error) {
 		var hour int
 		var minute int
 		var data domain.DistributionData
@@ -223,10 +214,6 @@ func (db *Database) GetStationDistribution(ctx context.Context, IDs []int) ([]do
 		data.Time = fmt.Sprintf("%02d:%02d", hour, minute)
 		return data, nil
 	})
-	if err != nil {
-		return nil, fmt.Errorf("pgx.CollectRows error: %w", err)
-	}
-	return distribution, nil
 }
 
 func New(conf Configuration) (*Database, error) {

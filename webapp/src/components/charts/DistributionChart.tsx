@@ -2,6 +2,8 @@ import React, {useEffect, useRef} from "react";
 
 import * as echarts from 'echarts/core';
 import { BarChart } from 'echarts/charts';
+import { LabelLayout, UniversalTransition } from 'echarts/features';
+import { CanvasRenderer } from 'echarts/renderers';
 import {
     DatasetComponent,
     GridComponent,
@@ -18,10 +20,6 @@ import type {
     TitleComponentOption,
     TooltipComponentOption,
 } from 'echarts/components';
-
-import { LabelLayout, UniversalTransition } from 'echarts/features';
-import { CanvasRenderer } from 'echarts/renderers';
-
 import type { BarSeriesOption } from 'echarts/charts';
 import type { ComposeOption } from 'echarts/core';
 

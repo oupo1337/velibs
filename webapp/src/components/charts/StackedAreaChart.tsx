@@ -27,7 +27,7 @@ import { CanvasRenderer } from 'echarts/renderers';
 import type { BarSeriesOption, LineSeriesOption } from 'echarts/charts';
 import type { ComposeOption } from 'echarts/core';
 
-import { Station, Timeseries } from "../../domain/Domain";
+import { StationInformation, Timeseries } from "../../domain/Domain";
 
 type ECOption = ComposeOption<
     | BarSeriesOption
@@ -55,7 +55,8 @@ echarts.use([
 ]);
 
 interface GraphProps {
-    data : Station
+    stations : StationInformation[]
+    timeseries : Timeseries[]
 }
 
 function cleanTimeSeries(data: Timeseries[]) {
@@ -66,7 +67,7 @@ function cleanTimeSeries(data: Timeseries[]) {
     }));
 }
 
-const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
+const StackedAreaChart: React.FC<GraphProps> = ({ stations, timeseries }) => {
     const chartRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -74,8 +75,8 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
             return
         }
 
-        const totalCapacity = data.stations.reduce((total, current) => total + current.capacity, 0);
-        const cleanData = cleanTimeSeries(data.timeseries);
+        const totalCapacity = stations.reduce((total, current) => total + current.capacity, 0);
+        const cleanData = cleanTimeSeries(timeseries);
         const option: ECOption = {
             responsive: true,
             legend: {
@@ -121,11 +122,11 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
                     },
                     markLine: {
                         data: [{
-                            name: "Capacité",
+                            name: "capacity",
                             yAxis: totalCapacity,
                             label: {
-                                position: "insideEndTop",
-                                formatter: () => "Capacité"
+                                position: "insideMiddleTop",
+                                formatter: () => `Capacité : ${totalCapacity}`
                             },
                             lineStyle: {
                                 color: "red",
@@ -153,7 +154,7 @@ const StackedAreaChart: React.FC<GraphProps> = ({ data }) => {
         const chart = echarts.init(chartRef.current);
 
         chart.setOption(option);
-    }, [data]);
+    }, [timeseries]);
 
     return <div ref={chartRef} style={{ width: '80vw', height: '450px' }} />;
 }

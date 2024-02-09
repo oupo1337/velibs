@@ -7,8 +7,3 @@ type Timeseries struct {
 	Mechanical int64     `json:"mechanical"`
 	Electric   int64     `json:"electric"`
 }
-
-type StationTimeSeries struct {
-	Stations   []StationInformation `json:"stations"`
-	Timeseries []Timeseries         `json:"timeseries"`
-}

@@ -120,17 +120,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         data: stations,
         zoom: viewport.zoom,
         onClick: (info: PickingInfo) => {
-            if (info.object.properties.cluster) {
-                navigate({
-                    pathname: '/stations',
-                    search: `?${createSearchParams({ ids: info.object.properties.station_id })}`,
-                });
-            } else {
-                navigate({
-                    pathname: '/stations',
-                    search: `?${createSearchParams({ ids: [info.object.properties.station_id] })}`,
-                });
-            }
+            const stationID = info.object.properties.station_id;
+            const ids = info.object.properties.cluster ? stationID : [stationID];
+
+            navigate({pathname: '/station', search: `?${createSearchParams({ ids })}`});
         },
     });
 
@@ -169,7 +162,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         getLineWidth: 1,
         onClick: (info: PickingInfo) => {
             navigate({
-                pathname: '/stations',
+                pathname: '/station',
                 search: `?${createSearchParams({ ids: info.object.properties.ids })}`,
             });
         }
@@ -194,7 +187,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         getLineWidth: 1,
         onClick: (info: PickingInfo) => {
             navigate({
-                pathname: '/stations',
+                pathname: '/station',
                 search: `?${createSearchParams({ ids: info.object.properties.ids })}`,
             });
         }

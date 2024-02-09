@@ -12,7 +12,7 @@ import './App.css';
 function App() {
   const queryClient = new QueryClient();
   const navigate = useNavigate();
-  const match = useMatch('/stations');
+  const match = useMatch('/station');
 
   const [timestamp, setTimestamp] = useState<Date | undefined>();
   const [velibType, setVelibType] = useState('bikes');
@@ -21,9 +21,7 @@ function App() {
 
   const drawerOpen = Boolean(match);
 
-  const handleClose = () => {
-    navigate('/');
-  }
+  const handleClose = () => navigate('/');
 
   return (
     <QueryClientProvider client={queryClient}>
