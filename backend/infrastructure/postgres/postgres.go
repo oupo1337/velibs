@@ -167,7 +167,10 @@ func (db *Database) GetStations(ctx context.Context, IDs []int) ([]domain.Statio
 
 func (db *Database) GetStationTimeSeries(ctx context.Context, IDs []int) ([]domain.Timeseries, error) {
 	query := `
-		SELECT timestamp, SUM(mechanical), SUM(electric)
+		SELECT
+			timestamp,
+			SUM(mechanical),
+			SUM(electric)
 		FROM statuses
 		WHERE station_id = ANY($1)
 			AND timestamp > NOW() - interval '1 week'
@@ -195,8 +198,8 @@ func (db *Database) GetStationDistribution(ctx context.Context, IDs []int) ([]do
 		SELECT
 			EXTRACT(HOUR FROM timestamp),
 			EXTRACT(MINUTE FROM timestamp),
-			AVG(mechanical) AS mechanical,
-			AVG(electric) AS electric
+			AVG(mechanical),
+			AVG(electric)
 		FROM statuses
 		WHERE station_id = ANY($1)
 		GROUP BY EXTRACT(HOUR FROM timestamp), EXTRACT(MINUTE FROM timestamp)

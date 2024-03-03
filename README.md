@@ -53,7 +53,7 @@ docker compose build
 ```
 
 ```
-helm upgrade --install velib helm
+helm upgrade --install velib ./helm
 ```
 
 ## Libraries used

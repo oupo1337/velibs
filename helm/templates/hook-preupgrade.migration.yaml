@@ -11,7 +11,7 @@ spec:
     spec:
       containers:
         - name: pre-upgrade
-          image: {{ .Values.configuration.migrationImage }}
+          image: {{ .Values.images.migration }}
           imagePullPolicy: Never
           resources:
             requests:

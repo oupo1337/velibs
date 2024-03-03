@@ -34,7 +34,7 @@ spec:
         - name: webapp
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{ .Values.configuration.webAppImage }}
+          image: {{ .Values.images.webapp }}
           imagePullPolicy: "Never"
           ports:
             - name: http

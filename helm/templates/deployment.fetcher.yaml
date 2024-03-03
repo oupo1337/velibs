@@ -34,7 +34,7 @@ spec:
         - name: fetcher
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{ .Values.configuration.fetcherImage }}
+          image: {{ .Values.images.fetcher }}
           imagePullPolicy: "Never"
           ports:
             - name: http

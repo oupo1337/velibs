@@ -34,7 +34,7 @@ spec:
         - name: api
           securityContext:
             {{- toYaml .Values.securityContext | nindent 12 }}
-          image: {{ .Values.configuration.apiImage }}
+          image: {{ .Values.images.api }}
           imagePullPolicy: "Never"
           ports:
             - name: http
