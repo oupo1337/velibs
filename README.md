@@ -10,6 +10,7 @@ You can find a live version [here](https://velib.runtheit.com).
 ### Configuration
 
 First, to be able to start the project you need to create a `.env` file at the root of the project.
+(You can rename `.env.example` to `.env` if you want to use the default values but make sure to fill in your Mapbox access token).
 
 ```
 # Domain for the application (used for CORS here)
