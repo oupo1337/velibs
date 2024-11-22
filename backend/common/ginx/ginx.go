@@ -2,6 +2,7 @@ package ginx
 
 import (
 	"context"
+	"errors"
 	"net/http"
 	"os"
 	"slices"
@@ -28,7 +29,7 @@ func allowOrigins(origin string) bool {
 
 func (e *Engine) Start() error {
 	err := e.srv.ListenAndServe()
-	if err != nil && err != http.ErrServerClosed {
+	if err != nil && !errors.Is(err, http.ErrServerClosed) {
 		return err
 	}
 	return nil

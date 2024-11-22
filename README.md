@@ -14,7 +14,7 @@ First, to be able to start the project you need to create a `.env` file at the r
 
 ```
 # Domain for the application (used for CORS here)
-APP_DOMAIN_NAME=http://localhost:3000
+APPLICATION_DOMAIN_NAME=http://localhost:3000
 
 # API URL (used in the web application)
 API_URL=http://localhost:8080
