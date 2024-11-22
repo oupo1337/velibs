@@ -55,7 +55,7 @@ services:
       - tempo
       - prometheus
     ports:
-      - 127.0.0.1:4321:3000
+      - "127.0.0.1:4321:3000"
     profiles:
       - production
 
@@ -71,7 +71,7 @@ services:
       timeout: 5s
       retries: 5
     ports:
-      - 127.0.0.1:5432:5432
+      - "127.0.0.1:5432:5432"
 
   migration:
     build:
@@ -118,7 +118,7 @@ services:
       OTEL_EXPORTER_OTLP_ENDPOINT: http://tempo:4318
     restart: always
     ports:
-      - 127.0.0.1:8080:8080
+      - "127.0.0.1:8080:8080"
 
   webapp:
     build:
@@ -130,6 +130,7 @@ services:
     depends_on:
       - api
     ports:
-      - 127.0.0.1:3000:80
+      - "127.0.0.1:3000:80"
     profiles:
+      - webapp
       - production

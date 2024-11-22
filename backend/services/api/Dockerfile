@@ -1,4 +1,4 @@
-FROM golang:1.21 AS build
+FROM golang:1.23.3-alpine AS build
 
 ADD . /build
 WORKDIR /build/services/api
