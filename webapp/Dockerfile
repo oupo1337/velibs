@@ -1,4 +1,4 @@
-FROM node:20.5 AS build
+FROM node:22.13.1 AS build
 
 ARG API_URL
 ARG MAPBOX_ACCESS_TOKEN
