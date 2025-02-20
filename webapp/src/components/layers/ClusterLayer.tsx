@@ -1,27 +1,20 @@
-import {BBox} from 'geojson';
+import { BBox } from 'geojson';
 
-import Supercluster from 'supercluster';
+import Supercluster, { PointFeature } from 'supercluster';
 
-import {CompositeLayer} from '@deck.gl/core/typed';
-import {ScatterplotLayer, TextLayer} from '@deck.gl/layers/typed';
+import { CompositeLayer } from '@deck.gl/core';
+import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
+import { UpdateParameters } from "deck.gl";
+import { StationProperties } from '../../domain/Domain';
 
-interface ClusterLayerProps {
-    zoom: number;
+type ClusterPointFeature = PointFeature<ClusteredStationProperties>;
+
+interface ClusteredStationProperties extends StationProperties {
+    cluster: boolean;
+    total: number;
 }
 
-interface ClusterData {
-    geometry: {
-        coordinates: [number, number],
-    },
-    properties: {
-        cluster: boolean,
-        total: number,
-        electric: number,
-        mechanical: number,
-    }
-}
-
-function getTextSize(d: ClusterData): number {
+function getTextSize(d: ClusterPointFeature): number {
     let value = d.properties.total;
     if (!d.properties.cluster) {
         value = d.properties.mechanical + d.properties.electric;
@@ -29,7 +22,7 @@ function getTextSize(d: ClusterData): number {
     return Math.min(Math.max(value, 20), 30);
 }
 
-function getScatterPlotColor(d: ClusterData): [number, number, number] {
+function getScatterPlotColor(d: ClusterPointFeature): [number, number, number] {
     if (!d.properties.cluster)
         return [17, 68, 225];
     if (d.properties.total < 30)
@@ -39,7 +32,7 @@ function getScatterPlotColor(d: ClusterData): [number, number, number] {
     return [242, 140, 177];
 }
 
-function getText(d: ClusterData): string {
+function getText(d: ClusterPointFeature): string {
     if (d.properties.cluster)
         return d.properties.total.toString();
 
@@ -52,12 +45,16 @@ const bounds: BBox = [
     2.801514, 49.008150,
 ];
 
+interface ClusterLayerProps {
+    zoom: number;
+}
+
 class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
-    shouldUpdateState({changeFlags}: any) {
+    shouldUpdateState({changeFlags}: UpdateParameters<this>) {
         return changeFlags.somethingChanged;
     }
 
-    updateState({changeFlags}: any) {
+    updateState({changeFlags}: UpdateParameters<this>) {
         if (changeFlags.somethingChanged) {
             const cluster = new Supercluster({
                 radius: this.context.viewport.zoom * 3,
@@ -80,7 +77,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 },
             });
 
-            cluster.load(this.props.data as any);
+            cluster.load(this.props.data as ClusterPointFeature[]);
             const clusteredData = cluster.getClusters(bounds, this.props.zoom);
             this.setState({
                 data: clusteredData,
@@ -89,7 +86,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
     }
 
     renderLayers() {
-        const {data} = this.state;
+        const data = this.state.data as ClusterPointFeature[];
 
         return [
             new ScatterplotLayer({
@@ -98,8 +95,8 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 pickable: true,
                 stroked: true,
                 opacity: 0.8,
-                getPosition: (d: ClusterData) => d.geometry.coordinates,
-                getRadius: (d: ClusterData): number => {
+                getPosition: d => d.geometry.coordinates as [number, number, number],
+                getRadius: (d: ClusterPointFeature): number => {
                     let value = d.properties.total;
                     if (!d.properties.cluster) {
                         value = d.properties.mechanical + d.properties.electric;
@@ -111,13 +108,13 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 radiusUnits: 'meters',
                 getFillColor: getScatterPlotColor,
                 getLineColor: [0, 0, 0],
-                getLineWidth: (d: ClusterData) => d.properties.cluster ? 1 : 3,
+                getLineWidth: (d: ClusterPointFeature) => d.properties.cluster ? 1 : 3,
             }),
             new TextLayer({
                 id: 'text-layer',
                 data: data,
                 pickable: true,
-                getPosition: (d: ClusterData) => d.geometry.coordinates,
+                getPosition: (d: ClusterPointFeature) => d.geometry.coordinates as [number, number],
                 getText: getText,
                 getSize: getTextSize,
                 getAngle: 0,

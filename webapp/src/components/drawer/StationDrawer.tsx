@@ -66,12 +66,11 @@ interface TimeseriesDisplay {
 
 const TimeseriesDisplay: React.FC<TimeseriesDisplay> = ({ stations }) => {
     const { isLoading, isError, isPending, data } = useStationsTimeseries(stations);
-    if (isLoading || isPending) {
+
+    if (isLoading || isPending)
         return <DrawerLoader />;
-    }
-    if (isError) {
+    if (isError)
         return <DrawerError />;
-    }
     return <StackedAreaChart stations={stations} timeseries={data} />;
 }
 
@@ -81,12 +80,11 @@ interface DistributionDisplayProps {
 
 const DistributionDisplay: React.FC<DistributionDisplayProps> = ({ stations }) => {
     const { isLoading, isError, isPending, data } = useStationsDistribution(stations);
-    if (isLoading || isPending) {
+
+    if (isLoading || isPending)
         return <DrawerLoader />;
-    }
-    if (isError) {
+    if (isError)
         return <DrawerError />;
-    }
     return <DistributionChart data={data} />;
 }
 
@@ -108,13 +106,11 @@ const StationDisplay: React.FC<StationDisplayProps> = ({ stations }) => {
 
 const StationDrawer: React.FC = () => {
     const { isLoading, isError, isPending, data } = useStationsInformation();
-    if (isLoading || isPending) {
-        return <DrawerLoader />;
-    }
-    if (isError) {
-        return <DrawerError />;
-    }
 
+    if (isLoading || isPending)
+        return <DrawerLoader />;
+    if (isError)
+        return <DrawerError />;
     return (
         <Box style={{ flex: 1, width: '80vw', paddingTop: '4rem', paddingBottom: '4rem', display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'space-between' }}>
             <StationDisplay stations={data} />

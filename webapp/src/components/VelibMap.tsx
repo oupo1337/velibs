@@ -3,13 +3,14 @@ import { createSearchParams, useNavigate } from 'react-router-dom';
 
 import Map from 'react-map-gl';
 
-import DeckGL from '@deck.gl/react/typed';
-import { PickingInfo } from '@deck.gl/core/typed'
-import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers/typed';
-import { HeatmapLayer } from '@deck.gl/aggregation-layers/typed';
+import DeckGL from '@deck.gl/react';
+import { PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
+import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers';
+import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 
 import ClusterLayer from "./layers/ClusterLayer";
-import { Feature } from '../domain/Domain';
+
+import type { StationFeature, StationGeoJSON } from '../domain/Domain';
 
 import { API_URL, MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
 
@@ -30,10 +31,10 @@ interface VelibMapProps {
 const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays }) => {
     const navigate = useNavigate();
 
-    const [bikeways, setBikeways] = useState<Feature[]>([]);
-    const [stations, setStations] = useState<Feature[]>([]);
-    const [districts, setDistricts] = useState<Feature[]>([]);
-    const [boroughs, setBoroughs] = useState<Feature[]>([]);
+    const [bikeways, setBikeways] = useState<StationGeoJSON>([]);
+    const [stations, setStations] = useState<StationGeoJSON>([]);
+    const [districts, setDistricts] = useState<StationGeoJSON>([]);
+    const [boroughs, setBoroughs] = useState<StationGeoJSON>([]);
     const [min, setMin] = useState(0);
     const [max, setMax] = useState(0);
 
@@ -64,7 +65,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         fetch(`${API_URL}/api/v1/districts.geojson?timestamp=${timestamp.toISOString()}`)
             .then(response => response.json())
             .then(data => {
-                const velibCount = data.features.map((f: Feature) => f.properties.mechanical + f.properties.electric);
+                const velibCount = data.features.map((f: StationFeature) => f.properties.mechanical + f.properties.electric);
 
                 setMin(Math.min(...velibCount));
                 setMax(Math.max(...velibCount));
@@ -81,7 +82,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         fetch(`${API_URL}/api/v1/boroughs.geojson?timestamp=${timestamp.toISOString()}`)
             .then(response => response.json())
             .then(data => {
-                const velibCount = data.features.map((f: Feature) => f.properties.mechanical + f.properties.electric);
+                const velibCount = data.features.map((f: StationFeature) => f.properties.mechanical + f.properties.electric);
 
                 setMin(Math.min(...velibCount));
                 setMax(Math.max(...velibCount));
@@ -97,7 +98,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
             .catch(error => console.error(error));
     }, []);
 
-    const handleViewStateChange = ({viewState}: any) => {
+    const handleViewStateChange = ({viewState}: ViewStateChangeParameters) => {
         setViewport(viewState);
         return viewState;
     };
