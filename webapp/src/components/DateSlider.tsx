@@ -41,7 +41,7 @@ const DateSlider: React.FC<DateSliderProps> = ({ setTimestamp }) => {
     }
 
     return (
-        <div className="sidebar" style={{flex: 1}}>
+        <div className="menu-item">
             <Slider
                 value={value}
                 onChange={handleChange}

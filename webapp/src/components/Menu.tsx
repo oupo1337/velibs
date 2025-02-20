@@ -1,11 +1,9 @@
 import { useState } from "react"
 
 import Paper from "@mui/material/Paper"
-import Slide from "@mui/material/Slide"
-import IconButton from "@mui/material/IconButton"
 
-import KeyboardDoubleArrowUpIcon from '@mui/icons-material/KeyboardDoubleArrowUp';
-import KeyboardDoubleArrowDownIcon from '@mui/icons-material/KeyboardDoubleArrowDown';
+import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
+import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
 import Check from "./Check"
 import DateDisplay from "./DateDisplay"
@@ -28,30 +26,32 @@ interface MenuProps {
     setDisplayBikeways: React.Dispatch<React.SetStateAction<boolean>>
 }
   
-const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVelibType, format, setFormat, displayBikeways, setDisplayBikeways }) => {
-    const [menuOpened, setMenuOpened] = useState(false);
+import './Menu.css'
 
-    const handleMenuClick = () => {
-        setMenuOpened(!menuOpened);
-    }
+const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVelibType, format, setFormat, displayBikeways, setDisplayBikeways }) => {
+    const [isOpen, setIsOpen] = useState(false);
 
     return (
         <>
-            <Slide direction="down" in={menuOpened}>
-                <Paper elevation={3} className="sidebar-container">
+            <div className={`sidebar ${isOpen ? 'open' : ''}`}>
+                <div className="sidebar-inner">
                     <MenuTitle />
-                    <FormatRadio format={format} setFormat={setFormat} />
-                    <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
-                    <Check label={"Pistes cyclables"} checked={displayBikeways} setChecked={setDisplayBikeways} />
-                    <DateDisplay date={timestamp}/>
-                    <DateSlider setTimestamp={setTimestamp} />
-                </Paper>
-            </Slide>
+                    <div className="sidebar-controls">
+                        <FormatRadio format={format} setFormat={setFormat} />
+                        <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
+                        <Check label={"Pistes cyclables"} checked={displayBikeways} setChecked={setDisplayBikeways} />
+                        <DateDisplay date={timestamp}/>
+                        <DateSlider setTimestamp={setTimestamp} />
+                    </div>
+                </div>
+            </div>
 
-            <Paper elevation={3} className="sidebar-container">
-                <IconButton onClick={handleMenuClick}>
-                    {menuOpened ? <KeyboardDoubleArrowUpIcon /> : <KeyboardDoubleArrowDownIcon />}
-                </IconButton>
+            <Paper 
+                elevation={3}
+                className={`toggle-button ${isOpen ? 'open' : ''}`}
+                onClick={() => setIsOpen(!isOpen)}
+            >
+                {isOpen ? <KeyboardDoubleArrowLeftIcon /> : <KeyboardDoubleArrowRightIcon />}
             </Paper>
         </>
     )

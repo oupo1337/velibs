@@ -16,8 +16,8 @@ const FormatRadio : React.FC<FormatRadioProps> = ({format, setFormat}) => {
     }
 
     return (
-        <div className="sidebar">
-            <FormControl>
+        <div className="menu-item">
+            <FormControl fullWidth>
                 <RadioGroup row value={format} onChange={handleChange}>
                     <FormControlLabel value="points" control={<Radio />} label="Points" />
                     <FormControlLabel value="heatmap" control={<Radio />} label="Heatmap" />

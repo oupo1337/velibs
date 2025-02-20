@@ -10,7 +10,7 @@ interface DateDisplayProps {
 
 const DateDisplay : React.FC<DateDisplayProps> = ({ date }) => {
     return (
-        <div className="sidebar">
+        <div className="menu-item">
             <Typography>{dayjs(date).format('dddd D MMMM HH:mm')}</Typography>
         </div>
     );

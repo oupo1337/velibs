@@ -16,8 +16,8 @@ const VelibTypeRadio : React.FC<VelibTypeRadioProps> = ({ velibType, setVelibTyp
     }
 
     return (
-        <div className="sidebar">
-            <FormControl>
+        <div className="menu-item">
+            <FormControl fullWidth>
                 <RadioGroup row value={velibType} onChange={handleChange}>
                     <FormControlLabel value="bikes" control={<Radio />} label="Tous" />
                     <FormControlLabel value="mechanical" control={<Radio />} label="Mécaniques" />

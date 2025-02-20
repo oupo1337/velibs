@@ -15,7 +15,7 @@ const Check: React.FC<CheckProps> = ({label, checked, setChecked}) => {
     };
 
     return (
-        <div className="sidebar" style={{flex: 1}}>
+        <div className="menu-item">
             <FormControlLabel
                 control={<Checkbox checked={checked} onChange={handleChange} />}
                 label={label}
