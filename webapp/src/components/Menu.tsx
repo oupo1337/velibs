@@ -1,16 +1,16 @@
 import { useState } from "react"
 
 import Paper from "@mui/material/Paper"
+import Typography from "@mui/material/Typography";
 
-import KeyboardDoubleArrowLeftIcon from '@mui/icons-material/KeyboardDoubleArrowLeft';
 import KeyboardDoubleArrowRightIcon from '@mui/icons-material/KeyboardDoubleArrowRight';
 
 import Check from "./Check"
-import DateDisplay from "./DateDisplay"
 import DateSlider from "./DateSlider"
 import FormatRadio from "./FormatRadio"
-import MenuTitle from "./MenuTitle"
 import VelibTypeRadio from "./VelibTypeRadio"
+
+import '../styles/Menu.css'
 
 interface MenuProps {
     timestamp: Date | undefined
@@ -26,7 +26,7 @@ interface MenuProps {
     setDisplayBikeways: React.Dispatch<React.SetStateAction<boolean>>
 }
   
-import '../styles/Menu.css'
+
 
 const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVelibType, format, setFormat, displayBikeways, setDisplayBikeways }) => {
     const [isOpen, setIsOpen] = useState(false);
@@ -35,13 +35,14 @@ const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVeli
         <>
             <div className={`sidebar ${isOpen ? 'open' : ''}`}>
                 <div className="sidebar-inner">
-                    <MenuTitle />
+                    <Typography variant="h6" sx={{ textAlign: 'center', mb: 1, fontWeight: 'medium' }}>
+                        Paris Open Data
+                    </Typography>
                     <div className="sidebar-controls">
+                        <DateSlider date={timestamp} setTimestamp={setTimestamp} />
                         <FormatRadio format={format} setFormat={setFormat} />
                         <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
                         <Check label={"Pistes cyclables"} checked={displayBikeways} setChecked={setDisplayBikeways} />
-                        <DateDisplay date={timestamp}/>
-                        <DateSlider setTimestamp={setTimestamp} />
                     </div>
                 </div>
             </div>
@@ -50,8 +51,12 @@ const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVeli
                 elevation={3}
                 className={`toggle-button ${isOpen ? 'open' : ''}`}
                 onClick={() => setIsOpen(!isOpen)}
+                sx={{ 
+                    transform: isOpen ? 'translateX(480px)' : 'translateX(0)',
+                    transition: 'transform 0.3s ease'
+                }}
             >
-                {isOpen ? <KeyboardDoubleArrowLeftIcon /> : <KeyboardDoubleArrowRightIcon />}
+                <KeyboardDoubleArrowRightIcon />
             </Paper>
         </>
     )

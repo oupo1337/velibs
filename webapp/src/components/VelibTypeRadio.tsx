@@ -1,9 +1,11 @@
 import React, {ChangeEvent} from "react";
 
+import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
 import FormControlLabel from "@mui/material/FormControlLabel";
 import Radio from "@mui/material/Radio";
 import RadioGroup from "@mui/material/RadioGroup";
+import Typography from "@mui/material/Typography";
 
 interface VelibTypeRadioProps {
     velibType : string
@@ -17,6 +19,10 @@ const VelibTypeRadio : React.FC<VelibTypeRadioProps> = ({ velibType, setVelibTyp
 
     return (
         <div className="menu-item">
+            <Typography variant="h6" sx={{ textAlign: 'center', mb: 1, fontWeight: 'medium' }}>
+                Type de vélo
+            </Typography>
+            <Divider sx={{ mb: 2 }} />
             <FormControl fullWidth>
                 <RadioGroup row value={velibType} onChange={handleChange}>
                     <FormControlLabel value="bikes" control={<Radio />} label="Tous" />
