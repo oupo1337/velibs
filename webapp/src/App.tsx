@@ -7,8 +7,6 @@ import Drawer from '@mui/material/Drawer';
 import Menu from './components/Menu';
 import VelibMap from './components/VelibMap';
 
-import './App.css';
-
 function App() {
   const queryClient = new QueryClient();
   const navigate = useNavigate();
@@ -40,6 +38,7 @@ function App() {
         timestamp={timestamp}
         format={format}
         displayBikeWays={displayBikeWays}
+        velibType={velibType}
       />
 
       <Drawer anchor='right' open={drawerOpen} onClose={handleClose}>

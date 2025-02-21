@@ -14,6 +14,8 @@ import type { StationFeature, StationGeoJSON } from '../domain/Domain';
 
 import { API_URL, MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
 
+import '../styles/Map.css';
+
 interface ViewState {
     latitude: number;
     longitude: number;
@@ -26,9 +28,10 @@ interface VelibMapProps {
     timestamp : Date | undefined
     format: string
     displayBikeWays: boolean
+    velibType: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays, velibType }) => {
     const navigate = useNavigate();
 
     const [bikeways, setBikeways] = useState<StationGeoJSON>([]);
@@ -120,6 +123,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
         visible: format === 'points',
         data: stations,
         zoom: viewport.zoom,
+        velibType: velibType,
         onClick: (info: PickingInfo) => {
             const stationID = info.object.properties.station_id;
             const ids = info.object.properties.cluster ? stationID : [stationID];
@@ -195,36 +199,68 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays 
     });
 
     const districtsBoroughsTooltip = (info: PickingInfo) => {
+        const total = info.object.properties.mechanical + info.object.properties.electric;
         return {
             html: `
-                <b>${info.object.properties.name}</b><br/><br/>
-                Mécaniques&nbsp;: ${info.object.properties.mechanical}<br/>
-                Éléctriques&nbsp;: ${info.object.properties.electric}<br/>
-                Total&nbsp;: ${info.object.properties.mechanical + info.object.properties.electric}`,
+                <div style="background: rgba(255, 255, 255, 0.95); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); min-width: 200px; backdrop-filter: blur(2px);">
+                    <h3 style="margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; color: #2d3748; font-size: 14px;">
+                        ${info.object.properties.name}
+                    </h3>
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #4a5568;">Mécaniques</span>
+                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.mechanical}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #4a5568;">Électriques</span>
+                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.electric}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #f0f0f0; margin-top: 8px;">
+                            <span style="color: #2d3748; font-weight: 600;">Total</span>
+                            <span style="color: #2d3748; font-weight: 600;">${total}</span>
+                        </div>
+                    </div>
+                </div>`,
         };
     }
 
     const stationTooltip = (info: PickingInfo) => {
-        let tooltipTitle = ""
+        let tooltipContent = "";
         if (info.object.properties.cluster) {
             const nbStations = 5;
-            const names = info.object.properties.name.slice(0, nbStations).join('<br/>');
+            const names = info.object.properties.name.slice(0, nbStations);
+            const remainingCount = info.object.properties.name.length - nbStations;
 
-            tooltipTitle = `<b>${info.object.properties.point_count} stations</b><br/><br/>${names}`;
-            if (info.object.properties.name.length > nbStations) {
-                tooltipTitle += `<br/>et ${info.object.properties.name.length - nbStations} autres`;
-            }
-            tooltipTitle += `<br/><br/>`;
+            tooltipContent = `
+                <h3 style="margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; color: #2d3748; font-size: 14px;">
+                    ${info.object.properties.point_count} stations
+                </h3>
+                <div style="margin-bottom: 8px; color: #4a5568; font-size: 13px;">
+                    ${names.join('<br/>')}
+                    ${remainingCount > 0 ? `<br/><span style="color: #718096; font-style: italic;">et ${remainingCount} autres</span>` : ''}
+                </div>`;
         } else {
-            tooltipTitle = `<b>${info.object.properties.name}</b><br/><br/>`;
+            tooltipContent = `
+                <h3 style="margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; color: #2d3748; font-size: 14px;">
+                    ${info.object.properties.name}
+                </h3>`;
         }
 
         return {
             html: `
-                ${tooltipTitle}
-                Mécaniques&nbsp;: ${info.object.properties.mechanical}<br/>
-                Éléctriques&nbsp;: ${info.object.properties.electric}<br/>
-            `,
+                <div style="background: rgba(255, 255, 255, 0.95); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); min-width: 200px; backdrop-filter: blur(2px);">
+                    ${tooltipContent}
+                    <div style="margin-bottom: 8px;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #4a5568;">Mécaniques</span>
+                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.mechanical}</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
+                            <span style="color: #4a5568;">Électriques</span>
+                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.electric}</span>
+                        </div>
+                    </div>
+                </div>`,
         };
     }
 

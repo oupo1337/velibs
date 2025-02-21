@@ -1,0 +1,9 @@
+.deck-tooltip {
+    background: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
+
+.deck-tooltip::after {
+    display: none !important;
+}

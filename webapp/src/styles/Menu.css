@@ -8,6 +8,7 @@
     z-index: 1000;
     background-color: white;
     box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
 }
 
 .sidebar.open {
@@ -37,6 +38,10 @@
     margin-top: 32px;
     overflow-y: auto;
     padding-right: 8px;
+}
+
+.sidebar-content {
+    background-color: #f5f5f5;
 }
 
 .menu-item {
@@ -89,8 +94,4 @@
 .MuiTypography-root {
     color: #2c3e50;
     font-weight: 500;
-}
-
-.sidebar-content {
-    background-color: #f5f5f5;
 }

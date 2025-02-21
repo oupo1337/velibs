@@ -26,7 +26,7 @@ interface MenuProps {
     setDisplayBikeways: React.Dispatch<React.SetStateAction<boolean>>
 }
   
-import './Menu.css'
+import '../styles/Menu.css'
 
 const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVelibType, format, setFormat, displayBikeways, setDisplayBikeways }) => {
     const [isOpen, setIsOpen] = useState(false);
