@@ -15,7 +15,7 @@ const serviceName = "velib-api"
 
 type dependencies struct {
 	statuses *handlers.Statuses
-	ways     *handlers.BikeWays
+	ways     *handlers.BikeLanes
 }
 
 func initDependencies() (dependencies, error) {
@@ -31,7 +31,7 @@ func initDependencies() (dependencies, error) {
 
 	return dependencies{
 		statuses: handlers.NewStatuses(db),
-		ways:     handlers.NewBikeWays(db),
+		ways:     handlers.NewBikeLanes(db),
 	}, nil
 }
 
@@ -43,7 +43,7 @@ func initRouter(deps dependencies) application.Service {
 	router.GET("/api/v1/stations.geojson", deps.statuses.GetStationsStatuses)
 	router.GET("/api/v1/districts.geojson", deps.statuses.GetAdministrativeDistrictsStatuses)
 	router.GET("/api/v1/boroughs.geojson", deps.statuses.GetBoroughs)
-	router.GET("/api/v1/bikeways.geojson", deps.ways.FetchBikeways)
+	router.GET("/api/v1/bikelanes.geojson", deps.ways.FetchBikeLanes)
 
 	router.GET("/api/v1/stations", deps.statuses.GetStations)
 	router.GET("/api/v1/timeseries", deps.statuses.GetStationTimeSeries)

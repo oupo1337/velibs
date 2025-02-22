@@ -27,5 +27,25 @@ export interface StationProperties {
   electric: number
 }
 
+export interface BikeLanesProperties {
+  osmid: number
+  name: string
+  amenagement: string
+  cote_amenagement: string
+  sens: string
+  surface: string
+  arrondissement: string
+  bois: boolean
+  coronapiste: boolean
+  amenagement_temporaire: boolean
+  infrastructure_bidirection: boolean
+  voie_a_sens_unique: boolean
+  position_amenagement: string
+  vitesse_maximale_autorisee: string
+}
+
+export type BikeLanesFeature = Feature<Geometry, BikeLanesProperties>;
+export type BikeLanesGeoJSON = BikeLanesFeature[];
+
 export type StationFeature = Feature<Geometry, StationProperties>;
 export type StationGeoJSON = StationFeature[];

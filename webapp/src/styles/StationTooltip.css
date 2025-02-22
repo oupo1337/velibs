@@ -1,0 +1,46 @@
+.station-tooltip {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    min-width: 200px;
+    backdrop-filter: blur(2px);
+}
+
+.station-tooltip__title {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f0f0f0;
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.station-tooltip__station-list {
+    margin-bottom: 8px;
+    color: #4a5568;
+    font-size: 13px;
+}
+
+.station-tooltip__remaining {
+    color: #718096;
+    font-style: italic;
+}
+
+.station-tooltip__content {
+    margin-bottom: 8px;
+}
+
+.station-tooltip__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.station-tooltip__label {
+    color: #4a5568;
+}
+
+.station-tooltip__value {
+    color: #2d3748;
+    font-weight: 500;
+}

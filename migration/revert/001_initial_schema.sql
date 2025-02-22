@@ -2,7 +2,7 @@
 
 BEGIN;
 
-DROP TABLE stations;
 DROP TABLE statuses;
+DROP TABLE stations;
 
 COMMIT;

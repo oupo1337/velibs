@@ -1,8 +1,12 @@
 package domain
 
-type BikewaysGeoJSON GeoJSON[BikewaysProperties, [][]float64]
-type DistrictsGeoJSON GeoJSON[DistrictsProperties, [][][]float64]
-type BoroughsGeoJSON GeoJSON[BoroughsProperties, [][][]float64]
+import (
+	"github.com/paulmach/orb/geojson"
+)
+
+type BikeLanesGeoJSON GeoJSON[BikeLanesProperties]
+type DistrictsGeoJSON GeoJSON[DistrictsProperties]
+type BoroughsGeoJSON GeoJSON[BoroughsProperties]
 
 type BoroughsProperties struct {
 	NSqAr     int     `json:"n_sq_ar"`
@@ -36,33 +40,30 @@ type DistrictsProperties struct {
 	StPerimeterShape float64 `json:"st_perimeter_shape"`
 }
 
-type BikewaysProperties struct {
-	TypologieSimple       string  `json:"typologie_simple"`
-	Bidirectionnel        string  `json:"bidirectionnel"`
-	Statut                string  `json:"statut"`
-	SensVelo              string  `json:"sens_velo"`
-	Voie                  string  `json:"voie"`
-	Arrdt                 int     `json:"arrdt"`
-	Bois                  string  `json:"bois"`
-	Length                float64 `json:"length"`
-	LongueurDuTronconEnKm float64 `json:"longueur_du_troncon_en_km"`
-	CouloirBus            string  `json:"couloir_bus"`
-	GeoPoint2D            struct {
-		Lon float64 `json:"lon"`
-		Lat float64 `json:"lat"`
-	} `json:"geo_point_2d"`
+type BikeLanesProperties struct {
+	OsmId                     int    `json:"osm_id"`
+	Nom                       string `json:"nom"`
+	Amenagement               string `json:"amenagement"`
+	CoteAmenagement           string `json:"cote_amenagement"`
+	Sens                      string `json:"sens"`
+	Surface                   string `json:"surface"`
+	Arrondissement            string `json:"arrondissement"`
+	Bois                      string `json:"bois"`
+	Coronapiste               string `json:"coronapiste"`
+	AmenagementTemporaire     string `json:"amenagement_temporaire"`
+	InfrastructureBidirection string `json:"infrastructure_bidirection"`
+	VoieASensUnique           string `json:"voie_a_sens_unique"`
+	PositionAmenagement       string `json:"position_amenagement"`
+	VitesseMaximaleAutorisee  string `json:"vitesse_maximale_autorisee"`
 }
 
-type Feature[T any, U any] struct {
-	Type     string `json:"type"`
-	Geometry struct {
-		Type        string `json:"type"`
-		Coordinates U      `json:"coordinates"`
-	} `json:"geometry"`
+type Feature[T any] struct {
+	Type       string `json:"type"`
+	Geometry   geojson.Geometry
 	Properties T `json:"properties"`
 }
 
-type GeoJSON[T any, U any] struct {
-	Type     string          `json:"type"`
-	Features []Feature[T, U] `json:"features"`
+type GeoJSON[T any] struct {
+	Type     string       `json:"type"`
+	Features []Feature[T] `json:"features"`
 }

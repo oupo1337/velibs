@@ -33,7 +33,7 @@ func initDependencies() (dependencies, error) {
 	boroughs := tasks.NewBoroughs(db)
 	stations := tasks.NewStations(db)
 	statuses := tasks.NewStatuses(db)
-	bikeways := tasks.NewBikeways(db)
+	bikeLanes := tasks.NewBikeLanes(db)
 
 	c := cronx.New()
 	if err := c.AddFunc("0 */10 * * * *", "update.Statuses", statuses.UpdateStatuses); err != nil {
@@ -42,10 +42,11 @@ func initDependencies() (dependencies, error) {
 	if err := c.AddFunc("0 0 0 * * *", "update.Stations", stations.UpdateStations); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
-	if err := c.AddFunc("0 0 0 * * *", "update.Bikeways", bikeways.UpdateBikeways); err != nil {
+	if err := c.AddFunc("0 0 0 * * *", "update.BikeLanes", bikeLanes.UpdateBikeLanes); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}
 
+	bikeLanes.Run()
 	districts.Run()
 	boroughs.Run()
 	stations.Run()
@@ -56,7 +57,7 @@ func initDependencies() (dependencies, error) {
 }
 
 func main() {
-	application := application.New(serviceName)
+	app := application.New(serviceName)
 
 	deps, err := initDependencies()
 	if err != nil {
@@ -66,6 +67,6 @@ func main() {
 
 	router := ginx.New(serviceName)
 
-	application.AddServices(router, deps.cron)
-	application.Run()
+	app.AddServices(router, deps.cron)
+	app.Run()
 }

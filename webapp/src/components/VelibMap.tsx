@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { createSearchParams, useNavigate } from 'react-router-dom';
+import ReactDOMServer from 'react-dom/server';
 
 import Map from 'react-map-gl';
 
@@ -10,7 +11,11 @@ import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 
 import ClusterLayer from "./layers/ClusterLayer";
 
-import type { StationFeature, StationGeoJSON } from '../domain/Domain';
+import StationTooltip from '../tooltips/StationTooltip';
+import DistrictTooltip from '../tooltips/DistrictTooltip';
+import BikeLanesTooltip from '../tooltips/BikeLanesTooltip.tsx';
+
+import type { BikeLanesGeoJSON, StationFeature, StationGeoJSON } from '../domain/Domain';
 
 import { API_URL, MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
 
@@ -27,14 +32,14 @@ interface ViewState {
 interface VelibMapProps {
     timestamp : Date | undefined
     format: string
-    displayBikeWays: boolean
+    displayBikeLanes: boolean
     velibType: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays, velibType }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes, velibType }) => {
     const navigate = useNavigate();
 
-    const [bikeways, setBikeways] = useState<StationGeoJSON>([]);
+    const [bikeLanes, setBikeLanes] = useState<BikeLanesGeoJSON>([]);
     const [stations, setStations] = useState<StationGeoJSON>([]);
     const [districts, setDistricts] = useState<StationGeoJSON>([]);
     const [boroughs, setBoroughs] = useState<StationGeoJSON>([]);
@@ -95,9 +100,9 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays,
     }, [timestamp, format]);
 
     useEffect(() => {
-        fetch(`${API_URL}/api/v1/bikeways.geojson`)
+        fetch(`${API_URL}/api/v1/bikelanes.geojson`)
             .then(response => response.json())
-            .then(data => setBikeways(data.features))
+            .then(data => setBikeLanes(data.features))
             .catch(error => console.error(error));
     }, []);
 
@@ -132,10 +137,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays,
         },
     });
 
-    const bikewaysLayer = new GeoJsonLayer({
-        visible: displayBikeWays,
-        id: 'bikeways-layer',
-        data: bikeways,
+    const bikeLanesLayer = new GeoJsonLayer({
+        visible: displayBikeLanes,
+        id: 'bike-lanes-layer',
+        data: bikeLanes,
         pickable: true,
         stroked: false,
         filled: true,
@@ -198,81 +203,6 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays,
         }
     });
 
-    const districtsBoroughsTooltip = (info: PickingInfo) => {
-        const total = info.object.properties.mechanical + info.object.properties.electric;
-        return {
-            html: `
-                <div style="background: rgba(255, 255, 255, 0.95); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); min-width: 200px; backdrop-filter: blur(2px);">
-                    <h3 style="margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; color: #2d3748; font-size: 14px;">
-                        ${info.object.properties.name}
-                    </h3>
-                    <div style="margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: #4a5568;">Mécaniques</span>
-                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.mechanical}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: #4a5568;">Électriques</span>
-                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.electric}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; padding-top: 8px; border-top: 1px solid #f0f0f0; margin-top: 8px;">
-                            <span style="color: #2d3748; font-weight: 600;">Total</span>
-                            <span style="color: #2d3748; font-weight: 600;">${total}</span>
-                        </div>
-                    </div>
-                </div>`,
-        };
-    }
-
-    const stationTooltip = (info: PickingInfo) => {
-        let tooltipContent = "";
-        if (info.object.properties.cluster) {
-            const nbStations = 5;
-            const names = info.object.properties.name.slice(0, nbStations);
-            const remainingCount = info.object.properties.name.length - nbStations;
-
-            tooltipContent = `
-                <h3 style="margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; color: #2d3748; font-size: 14px;">
-                    ${info.object.properties.point_count} stations
-                </h3>
-                <div style="margin-bottom: 8px; color: #4a5568; font-size: 13px;">
-                    ${names.join('<br/>')}
-                    ${remainingCount > 0 ? `<br/><span style="color: #718096; font-style: italic;">et ${remainingCount} autres</span>` : ''}
-                </div>`;
-        } else {
-            tooltipContent = `
-                <h3 style="margin: 0 0 12px 0; padding-bottom: 8px; border-bottom: 2px solid #f0f0f0; color: #2d3748; font-size: 14px;">
-                    ${info.object.properties.name}
-                </h3>`;
-        }
-
-        return {
-            html: `
-                <div style="background: rgba(255, 255, 255, 0.95); padding: 12px; border-radius: 6px; box-shadow: 0 2px 4px rgba(0,0,0,0.08); min-width: 200px; backdrop-filter: blur(2px);">
-                    ${tooltipContent}
-                    <div style="margin-bottom: 8px;">
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: #4a5568;">Mécaniques</span>
-                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.mechanical}</span>
-                        </div>
-                        <div style="display: flex; justify-content: space-between; margin-bottom: 6px;">
-                            <span style="color: #4a5568;">Électriques</span>
-                            <span style="color: #2d3748; font-weight: 500;">${info.object.properties.electric}</span>
-                        </div>
-                    </div>
-                </div>`,
-        };
-    }
-
-    const BikewaysTooltip = (info: PickingInfo) => {
-        return {
-            html: `<b>${info.object.properties.route}</b></br></br>
-                    ${info.object.properties.typology}<br/>
-                    ${info.object.properties.direction}<br/>
-                    ${info.object.properties.status}`,
-        };
-    }
-
     const getTooltip = (info: PickingInfo) => {
         if (info.object === undefined || info.object === null || info.layer == null) {
             return null;
@@ -280,13 +210,12 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays,
 
         switch (info.layer.id) {
             case 'districts-layer':
-                return districtsBoroughsTooltip(info);
             case 'boroughs-layer':
-                return districtsBoroughsTooltip(info);
+                return { html: ReactDOMServer.renderToString(<DistrictTooltip info={info} />) };
             case 'cluster-layer':
-                return stationTooltip(info);
-            case 'bikeways-layer':
-                return BikewaysTooltip(info);
+                return { html: ReactDOMServer.renderToString(<StationTooltip info={info} />) };
+            case 'bike-lanes-layer':
+                return { html: ReactDOMServer.renderToString(<BikeLanesTooltip info={info} />) };
             default:
                 return null;
         }
@@ -297,10 +226,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeWays,
             initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[bikewaysLayer, clusterLayer, heatmapLayer, districtsLayer, boroughsLayer]}
+            layers={[bikeLanesLayer, clusterLayer, heatmapLayer, districtsLayer, boroughsLayer]}
             getTooltip={getTooltip}
         >
-            <Map 
+            <Map
                 mapboxAccessToken={MAPBOX_ACCESS_TOKEN}
                 mapStyle={MAP_STYLE}
             />

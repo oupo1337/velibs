@@ -49,7 +49,7 @@ const StationLabel: React.FC<StationLabelProps> = ({ stations, setCurrentStation
             <Typography variant="h4" component="h2" sx={{textAlign: 'center'}}>
                 { stations.length } stations
             </Typography>
-            <FormControl style={{minWidth: 600}}>
+            <FormControl sx={{ flex: 1, maxWidth: '70%' }}>
                 <InputLabel>Station</InputLabel>
                 <Select label="Station" defaultValue={"all"} onChange={handleChange}>
                     <MenuItem key={0} value={"all"}>Toutes les stations</MenuItem> 
@@ -96,11 +96,51 @@ const StationDisplay: React.FC<StationDisplayProps> = ({ stations }) => {
     const [currentStations, setCurrentStations] = useState(stations);
 
     return (
-        <>
-            <StationLabel stations={stations} setCurrentStations={setCurrentStations} />
-            <TimeseriesDisplay stations={currentStations} />
-            <DistributionDisplay stations={currentStations} />
-        </>
+        <Stack spacing={4} sx={{ 
+            width: '100%', 
+            px: 4,
+            '& .recharts-wrapper': {  // Target Recharts containers
+                width: '100% !important',
+                display: 'flex',
+                justifyContent: 'center'
+            },
+            '& .recharts-surface': {  // Target chart SVGs
+                width: '100% !important'
+            }
+        }}>
+            <Box sx={{ 
+                py: 2,
+                width: '100%',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.12)'
+            }}>
+                <StationLabel stations={stations} setCurrentStations={setCurrentStations} />
+            </Box>
+            
+            <Box sx={{ 
+                py: 2,
+                width: '100%',
+                borderBottom: '1px solid rgba(0, 0, 0, 0.12)'
+            }}>
+                <Typography variant="h6" gutterBottom>
+                    Evolution temporelle
+                </Typography>
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <TimeseriesDisplay stations={currentStations} />
+                </Box>
+            </Box>
+            
+            <Box sx={{ 
+                py: 2,
+                width: '100%'
+            }}>
+                <Typography variant="h6" gutterBottom>
+                    Distribution
+                </Typography>
+                <Box sx={{ width: '100%', display: 'flex', justifyContent: 'center' }}>
+                    <DistributionDisplay stations={currentStations} />
+                </Box>
+            </Box>
+        </Stack>
     );
 }
 
@@ -112,7 +152,23 @@ const StationDrawer: React.FC = () => {
     if (isError)
         return <DrawerError />;
     return (
-        <Box style={{ flex: 1, width: '80vw', paddingTop: '4rem', paddingBottom: '4rem', display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'space-between' }}>
+        <Box sx={{ 
+            width: '100%',
+            height: '100%',
+            overflowY: 'auto',
+            overflowX: 'hidden',
+            bgcolor: '#ffffff',
+            '&::-webkit-scrollbar': {
+                width: '8px',
+            },
+            '&::-webkit-scrollbar-thumb': {
+                backgroundColor: '#bdbdbd',
+                borderRadius: '4px',
+            },
+            '&::-webkit-scrollbar-track': {
+                backgroundColor: '#f5f5f5',
+            }
+        }}>
             <StationDisplay stations={data} />
         </Box>
     );

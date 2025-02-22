@@ -6,3 +6,4 @@
 003_administrative_districts 2024-01-25T22:18:40Z chris <chris@DESKTOP-S4P2T51> # Add administrative districts schema
 004_boroughs 2024-01-28T18:42:25Z chris <chris@DESKTOP-S4P2T51> # Add boroughs data
 005_add_geo_indexes 2024-02-09T10:28:35Z chris <chris@DESKTOP-S4P2T51> # Add geo indexes on stations, boroughs and districts table
+006_bikelanes 2025-02-21T10:28:35Z chris <chris@DESKTOP-S4P2T51> # Add new bike lanes table

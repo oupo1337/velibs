@@ -1,0 +1,59 @@
+.district-tooltip {
+    background: rgba(255, 255, 255, 0.95);
+    padding: 12px;
+    border-radius: 6px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    min-width: 200px;
+    backdrop-filter: blur(2px);
+}
+
+.district-tooltip__title {
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #f0f0f0;
+    color: #2d3748;
+    font-size: 14px;
+}
+
+.district-tooltip__content {
+    margin-bottom: 8px;
+}
+
+.district-tooltip__row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+}
+
+.district-tooltip__label {
+    color: #4a5568;
+}
+
+.district-tooltip__value {
+    color: #2d3748;
+    font-weight: 500;
+}
+
+.district-tooltip__total-row {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid #f0f0f0;
+    margin-top: 8px;
+}
+
+.district-tooltip__total-row .district-tooltip__label,
+.district-tooltip__total-row .district-tooltip__value {
+    font-weight: 600;
+}
+
+.bike-lanes-tooltip {
+    min-width: 300px;
+    max-width: 400px;
+}
+
+.bike-lanes-tooltip .district-tooltip__value {
+    word-wrap: break-word;
+    max-width: 200px;
+    text-align: right;
+}

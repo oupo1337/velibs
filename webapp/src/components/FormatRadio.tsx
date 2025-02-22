@@ -25,6 +25,7 @@ const FormatRadio : React.FC<FormatRadioProps> = ({format, setFormat}) => {
             <Divider sx={{ mb: 2 }} />
             <FormControl fullWidth>
                 <RadioGroup row value={format} onChange={handleChange}>
+                    <FormControlLabel value="none" control={<Radio />} label="Aucun" />
                     <FormControlLabel value="points" control={<Radio />} label="Points" />
                     <FormControlLabel value="heatmap" control={<Radio />} label="Heatmap" />
                     <FormControlLabel value="districts" control={<Radio />} label="Quartiers" />

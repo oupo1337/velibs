@@ -9,14 +9,14 @@ import (
 	"github.com/oupo1337/velibs/backend/infrastructure/postgres"
 )
 
-type BikeWays struct {
+type BikeLanes struct {
 	db *postgres.Database
 }
 
-func (b *BikeWays) FetchBikeways(c *gin.Context) {
-	data, err := b.db.FetchBikeways(c.Request.Context())
+func (b *BikeLanes) FetchBikeLanes(c *gin.Context) {
+	data, err := b.db.FetchBikeLanes(c.Request.Context())
 	if err != nil {
-		slog.Error("b.db.FetchBikeways error", slog.String("error", err.Error()))
+		slog.Error("b.db.FetchBikeLanes error", slog.String("error", err.Error()))
 		c.Status(http.StatusInternalServerError)
 		return
 	}
@@ -24,8 +24,8 @@ func (b *BikeWays) FetchBikeways(c *gin.Context) {
 	c.Data(http.StatusOK, "application/json", data)
 }
 
-func NewBikeWays(db *postgres.Database) *BikeWays {
-	return &BikeWays{
+func NewBikeLanes(db *postgres.Database) *BikeLanes {
+	return &BikeLanes{
 		db: db,
 	}
 }

@@ -22,13 +22,11 @@ interface MenuProps {
     format: string
     setFormat: React.Dispatch<React.SetStateAction<string>>
 
-    displayBikeways: boolean
-    setDisplayBikeways: React.Dispatch<React.SetStateAction<boolean>>
+    displayBikeLanes: boolean
+    setDisplayBikeLanes: React.Dispatch<React.SetStateAction<boolean>>
 }
-  
 
-
-const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVelibType, format, setFormat, displayBikeways, setDisplayBikeways }) => {
+const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVelibType, format, setFormat, displayBikeLanes, setDisplayBikeLanes }) => {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -42,7 +40,7 @@ const Menu: React.FC<MenuProps> = ({ timestamp, setTimestamp, velibType, setVeli
                         <DateSlider date={timestamp} setTimestamp={setTimestamp} />
                         <FormatRadio format={format} setFormat={setFormat} />
                         <VelibTypeRadio velibType={velibType} setVelibType={setVelibType} />
-                        <Check label={"Pistes cyclables"} checked={displayBikeways} setChecked={setDisplayBikeways} />
+                        <Check label={"Pistes cyclables"} checked={displayBikeLanes} setChecked={setDisplayBikeLanes} />
                     </div>
                 </div>
             </div>

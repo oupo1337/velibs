@@ -141,7 +141,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 radiusUnits: 'meters',
                 getFillColor: getScatterPlotColor,
                 getLineColor: getLineColor,
-                getLineWidth: (d: ClusterPointFeature) => d.properties.cluster ? 20 : 10,
+                getLineWidth: (d: ClusterPointFeature) => d.properties.cluster ? 40 : 20,
             }),
             new TextLayer({
                 id: 'text-layer',
@@ -161,6 +161,8 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 getTextAnchor: 'middle',
                 getAlignmentBaseline: 'center',
                 fontFamily: 'system-ui',
+                fadeInDuration: 100,
+                fadeOutDuration: 100
             }),
         ]
     }
