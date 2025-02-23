@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Outlet, useMatch, useNavigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { Toaster } from 'react-hot-toast';
 
 import Drawer from '@mui/material/Drawer';
 
@@ -43,6 +44,17 @@ const paperProps = {
     }
   }
 };
+
+const toastOptions = {
+  duration: 4000,
+  style: {
+    background: '#363636',
+    color: '#fff',
+  },
+  error: {
+    duration: 5000,
+  },
+}
 
 function App() {
   const queryClient = new QueryClient();
@@ -89,6 +101,7 @@ function App() {
         <Outlet />
       </Drawer>
 
+      <Toaster position="bottom-right" toastOptions={toastOptions} />
     </QueryClientProvider>
   );
 }

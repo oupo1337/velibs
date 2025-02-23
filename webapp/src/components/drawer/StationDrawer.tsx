@@ -14,7 +14,11 @@ import { DrawerError, DrawerLoader } from "./DrawerUtils";
 import StackedAreaChart from "../charts/StackedAreaChart";
 import DistributionChart from "../charts/DistributionChart";
 
-import { useStationsDistribution, useStationsInformation, useStationsTimeseries } from "../../hooks/Velib";
+import { 
+    useStationsDistribution,
+    useStationsInformation,
+    useStationsTimeseries
+} from "../../hooks/Hooks";
 
 interface StationLabelProps {
     stations: StationInformation[]

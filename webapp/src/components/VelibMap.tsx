@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { createSearchParams, useNavigate } from 'react-router-dom';
 import ReactDOMServer from 'react-dom/server';
 
@@ -9,15 +9,22 @@ import { PickingInfo, ViewStateChangeParameters } from '@deck.gl/core';
 import { GeoJsonLayer, PolygonLayer } from '@deck.gl/layers';
 import { HeatmapLayer } from '@deck.gl/aggregation-layers';
 
+import {
+    useBikeLanes,
+    useBoroughs,
+    useDistricts,
+    useStations
+} from '../hooks/Hooks.tsx';
+
 import ClusterLayer from "./layers/ClusterLayer";
 
 import StationTooltip from '../tooltips/StationTooltip';
 import DistrictTooltip from '../tooltips/DistrictTooltip';
 import BikeLanesTooltip from '../tooltips/BikeLanesTooltip.tsx';
 
-import type { BikeLanesGeoJSON, StationFeature, StationGeoJSON } from '../domain/Domain';
+import type { DistrictFeature } from '../domain/Domain';
 
-import { API_URL, MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
+import { MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
 
 import '../styles/Map.css';
 
@@ -38,13 +45,10 @@ interface VelibMapProps {
 
 const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes, velibType }) => {
     const navigate = useNavigate();
-
-    const [bikeLanes, setBikeLanes] = useState<BikeLanesGeoJSON>([]);
-    const [stations, setStations] = useState<StationGeoJSON>([]);
-    const [districts, setDistricts] = useState<StationGeoJSON>([]);
-    const [boroughs, setBoroughs] = useState<StationGeoJSON>([]);
-    const [min, setMin] = useState(0);
-    const [max, setMax] = useState(0);
+    const bikeLanes = useBikeLanes();
+    const stations = useStations(timestamp);
+    const { districts, districtsMin, districtsMax } = useDistricts(timestamp);
+    const { boroughs, boroughsMin, boroughsMax } = useBoroughs(timestamp);
 
     const [viewport, setViewport] = useState<ViewState>({
         longitude: 2.3522,
@@ -53,58 +57,6 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
         pitch: 0,
         bearing: 0
     });
-
-    useEffect(() => {
-        if (timestamp === undefined || format === 'districts') {
-            return
-        }
-
-        fetch(`${API_URL}/api/v1/stations.geojson?timestamp=${timestamp.toISOString()}`)
-            .then(response => response.json())
-            .then(data => setStations(data.features))
-            .catch(error => console.error(error));
-    }, [timestamp, format]);
-
-    useEffect(() => {
-        if (timestamp === undefined || format !== 'districts') {
-            return
-        }
-
-        fetch(`${API_URL}/api/v1/districts.geojson?timestamp=${timestamp.toISOString()}`)
-            .then(response => response.json())
-            .then(data => {
-                const velibCount = data.features.map((f: StationFeature) => f.properties.mechanical + f.properties.electric);
-
-                setMin(Math.min(...velibCount));
-                setMax(Math.max(...velibCount));
-                setDistricts(data.features);
-            })
-            .catch(error => console.error(error));
-    }, [timestamp, format]);
-
-    useEffect(() => {
-        if (timestamp === undefined || format !== 'boroughs') {
-            return
-        }
-
-        fetch(`${API_URL}/api/v1/boroughs.geojson?timestamp=${timestamp.toISOString()}`)
-            .then(response => response.json())
-            .then(data => {
-                const velibCount = data.features.map((f: StationFeature) => f.properties.mechanical + f.properties.electric);
-
-                setMin(Math.min(...velibCount));
-                setMax(Math.max(...velibCount));
-                setBoroughs(data.features);
-            })
-            .catch(error => console.error(error));
-    }, [timestamp, format]);
-
-    useEffect(() => {
-        fetch(`${API_URL}/api/v1/bikelanes.geojson`)
-            .then(response => response.json())
-            .then(data => setBikeLanes(data.features))
-            .catch(error => console.error(error));
-    }, []);
 
     const handleViewStateChange = ({viewState}: ViewStateChangeParameters) => {
         setViewport(viewState);
@@ -163,10 +115,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
         extruded: true,
         wireframe: true,
         lineWidthMinPixels: 1,
-        getPolygon: d => d.geometry.coordinates,
-        getElevation: d => (d.properties.mechanical + d.properties.electric) * 3,
-        getFillColor: d => {
-            const red = (d.properties.mechanical + d.properties.electric - min) * (255/(max-min));
+        getPolygon: (f: DistrictFeature) => f.geometry.coordinates,
+        getElevation: (f: DistrictFeature) => (f.properties.mechanical + f.properties.electric) * 3,
+        getFillColor: (f: DistrictFeature) => {
+            const red = (f.properties.mechanical + f.properties.electric - districtsMin) * (255/(districtsMax-districtsMin));
             return [red, 140, 0]
         },
         getLineWidth: 1,
@@ -188,10 +140,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
         extruded: true,
         wireframe: true,
         lineWidthMinPixels: 1,
-        getPolygon: d => d.geometry.coordinates,
-        getElevation: d => (d.properties.mechanical + d.properties.electric) * 3,
-        getFillColor: d => {
-            const red = (d.properties.mechanical + d.properties.electric - min) * (255/(max-min));
+        getPolygon: (f: DistrictFeature) => f.geometry.coordinates,
+        getElevation: (f: DistrictFeature) => (f.properties.mechanical + f.properties.electric) * 3,
+        getFillColor: (f: DistrictFeature) => {
+            const red = (f.properties.mechanical + f.properties.electric - boroughsMin) * (255/(boroughsMax-boroughsMin));
             return [red, 140, 0]
         },
         getLineWidth: 1,

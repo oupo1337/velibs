@@ -1,12 +1,12 @@
-import React, { useEffect, useState } from "react";
+import React from "react";
 
 import dayjs from 'dayjs'
 
+import Divider from "@mui/material/Divider";
 import Slider from "@mui/material/Slider";
 import Typography from "@mui/material/Typography";
 
-import { API_URL } from "../configuration/Configuration";
-import Divider from "@mui/material/Divider";
+import { useTimestamps } from '../hooks/Hooks';
 
 interface DateSliderProps {
     date : Date | undefined;
@@ -14,34 +14,11 @@ interface DateSliderProps {
 }
 
 const DateSlider: React.FC<DateSliderProps> = ({ date, setTimestamp }) => {
-    const [timestamps, setTimestamps] = useState<Date[]>([]);
-    const [value, setValue] = useState(0);
-
-    useEffect(() => {
-        fetch(`${API_URL}/api/v2/timestamps`)
-            .then(response => response.json())
-            .then(data => {
-                const interval = 10;
-                const max = new Date(data.max);
-                let timestamp = new Date(data.min);
-                
-                const timestamps : Date[] = [];
-                while (timestamp <= max) {
-                    timestamps.push(timestamp);
-                    timestamp = new Date(timestamp.getTime() + interval*60*1000);
-                }
-
-                setTimestamps(timestamps);
-                setValue(timestamps.length - 1);
-                setTimestamp(max);
-            })
-            .catch(error => console.error(error));
-    }, [setTimestamp]);
+    const { timestamps, currentIndex, setCurrentIndex } = useTimestamps(setTimestamp);
 
     const handleChange = (_ : Event, value : number | number[]) => {
         const newValue = value as number;
-
-        setValue(newValue);
+        setCurrentIndex(newValue);
         setTimestamp(timestamps[newValue]);
     }
 
@@ -53,7 +30,7 @@ const DateSlider: React.FC<DateSliderProps> = ({ date, setTimestamp }) => {
             <Divider sx={{ mb: 2 }} />
             <Typography>{dayjs(date).format('dddd D MMMM HH:mm')}</Typography>
             <Slider
-                value={value}
+                value={currentIndex}
                 onChange={handleChange}
                 step={1}
                 min={0}

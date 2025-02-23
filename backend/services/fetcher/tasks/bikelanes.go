@@ -56,12 +56,12 @@ func (b *BikeLanes) fetchBikeLanes(ctx context.Context) (domain.BikeLanesGeoJSON
 func (b *BikeLanes) UpdateBikeLanes(ctx context.Context) error {
 	slog.InfoContext(ctx, "updating Paris bike lanes")
 
-	bikeways, err := b.fetchBikeLanes(ctx)
+	bikeLanes, err := b.fetchBikeLanes(ctx)
 	if err != nil {
 		return fmt.Errorf("b.fetchBikeLanes error: %w", err)
 	}
 
-	if err := b.db.InsertBikeLanes(ctx, bikeways); err != nil {
+	if err := b.db.InsertBikeLanes(ctx, bikeLanes); err != nil {
 		return fmt.Errorf("b.db.InsertBikeLanes error: %w", err)
 	}
 	return nil
