@@ -9,6 +9,7 @@ import (
 	"net/http/httptrace"
 	"time"
 
+	"github.com/sethvargo/go-retry"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/codes"
 
@@ -38,19 +39,28 @@ func (s *Statuses) fetchStationsStatuses(ctx context.Context) ([]domain.StationS
 		return nil, fmt.Errorf("http.NewRequestWithContext error: %w", err)
 	}
 
-	response, err := s.client.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("client.Do error: %w", err)
-	}
-	defer func() {
-		if err := response.Body.Close(); err != nil {
-			slog.ErrorContext(ctx, "response.Body.Close error", slog.String("error", err.Error()))
-		}
-	}()
+	retryer := retry.NewFibonacci(1 * time.Second)
+	retryer = retry.WithJitter(100*time.Millisecond, retryer)
+	retryer = retry.WithMaxRetries(7, retryer)
 
 	var data StationStatusResponse
-	if err := json.NewDecoder(response.Body).Decode(&data); err != nil {
-		return nil, fmt.Errorf(" json.NewDecoder().Decode error: %w", err)
+	if err := retry.Do(ctx, retryer, func(ctx context.Context) error {
+		response, err := s.client.Do(req)
+		if err != nil {
+			return fmt.Errorf("client.Do error: %w", retry.RetryableError(err))
+		}
+		defer func() {
+			if err := response.Body.Close(); err != nil {
+				slog.ErrorContext(ctx, "response.Body.Close error", slog.String("error", err.Error()))
+			}
+		}()
+
+		if err := json.NewDecoder(response.Body).Decode(&data); err != nil {
+			return fmt.Errorf(" json.NewDecoder().Decode error: %w", retry.RetryableError(err))
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("retry.Do error: %w", err)
 	}
 	return data.Data.StationsStatuses, nil
 }

@@ -9,6 +9,7 @@ require (
 	github.com/jackc/pgx/v5 v5.7.2
 	github.com/paulmach/orb v0.11.1
 	github.com/robfig/cron v1.2.0
+	github.com/sethvargo/go-retry v0.3.0
 	go.opentelemetry.io/contrib/instrumentation/github.com/gin-gonic/gin/otelgin v0.59.0
 	go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace v0.59.0
 	go.opentelemetry.io/otel v1.34.0

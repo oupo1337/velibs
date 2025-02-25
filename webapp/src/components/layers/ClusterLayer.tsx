@@ -142,6 +142,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 getFillColor: getScatterPlotColor,
                 getLineColor: getLineColor,
                 getLineWidth: (d: ClusterPointFeature) => d.properties.cluster ? 40 : 20,
+                getCursor: () => 'pointer',
             }),
             new TextLayer({
                 id: 'text-layer',

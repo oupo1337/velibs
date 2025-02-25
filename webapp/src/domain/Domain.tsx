@@ -1,4 +1,4 @@
-import type { Feature, FeatureCollection, Geometry, Polygon} from 'geojson';
+import type { Feature, FeatureCollection, Geometry, Point, Polygon} from 'geojson';
 
 export interface Timeseries {
   date: Date
@@ -55,7 +55,7 @@ export interface BikeLanesProperties {
 export type BikeLanesFeature = Feature<Geometry, BikeLanesProperties>;
 export type BikeLanesGeoJSON = BikeLanesFeature[];
 
-export type StationFeature = Feature<Geometry, StationProperties>;
+export type StationFeature = Feature<Point, StationProperties>;
 export type StationGeoJSON = StationFeature[];
 
 export type DistrictFeature = Feature<Polygon, DistrictProperties>;

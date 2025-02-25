@@ -22,7 +22,7 @@ import StationTooltip from '../tooltips/StationTooltip';
 import DistrictTooltip from '../tooltips/DistrictTooltip';
 import BikeLanesTooltip from '../tooltips/BikeLanesTooltip.tsx';
 
-import type { DistrictFeature } from '../domain/Domain';
+import type { DistrictFeature, StationFeature } from '../domain/Domain';
 
 import { MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
 
@@ -68,8 +68,17 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
         visible: format === 'heatmap',
         data: stations,
         pickable: false,
-        getPosition: d => d.geometry.coordinates,
-        getWeight: d => (d.properties.mechanical + d.properties.electric) * 10,
+        getPosition: f => f.geometry.coordinates,
+        getWeight: (f: StationFeature) => {
+            switch (velibType) {
+                case 'mechanical':
+                    return f.properties.mechanical * 10;
+                case 'electric':
+                    return f.properties.electric * 10;
+                default:
+                    return f.properties.mechanical + f.properties.electric * 10;
+            }
+        },
         radiusPixels: 30,
         intensity: 1,
         threshold: 0.05,

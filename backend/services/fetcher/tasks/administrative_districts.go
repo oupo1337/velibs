@@ -10,6 +10,7 @@ import (
 	"net/http/httptrace"
 	"time"
 
+	"github.com/sethvargo/go-retry"
 	"go.opentelemetry.io/contrib/instrumentation/net/http/httptrace/otelhttptrace"
 	"go.opentelemetry.io/otel/codes"
 
@@ -30,25 +31,34 @@ func (a *AdministrativeDistricts) fetchAdministrativeDistricts(ctx context.Conte
 	if err != nil {
 		return domain.DistrictsGeoJSON{}, fmt.Errorf("NewRequestWithContext error: %w", err)
 	}
-
-	response, err := a.client.Do(req)
-	if err != nil {
-		return domain.DistrictsGeoJSON{}, fmt.Errorf("b.client.Do error: %w", err)
-	}
-	defer func() {
-		if err := response.Body.Close(); err != nil {
-			slog.Error("response.Body.Close error", slog.String("error", err.Error()))
-		}
-	}()
-
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		return domain.DistrictsGeoJSON{}, fmt.Errorf("io.ReadAll error: %w", err)
-	}
-
 	var data domain.DistrictsGeoJSON
-	if err := json.Unmarshal(body, &data); err != nil {
-		return domain.DistrictsGeoJSON{}, fmt.Errorf("json.NewDecoder().Decode error: %w", err)
+
+	retryer := retry.NewFibonacci(1 * time.Second)
+	retryer = retry.WithJitter(100*time.Millisecond, retryer)
+	retryer = retry.WithMaxRetries(7, retryer)
+
+	if err := retry.Do(ctx, retryer, func(ctx context.Context) error {
+		response, err := a.client.Do(req)
+		if err != nil {
+			return fmt.Errorf("b.client.Do error: %w", retry.RetryableError(err))
+		}
+		defer func() {
+			if err := response.Body.Close(); err != nil {
+				slog.Error("response.Body.Close error", slog.String("error", err.Error()))
+			}
+		}()
+
+		body, err := io.ReadAll(response.Body)
+		if err != nil {
+			return fmt.Errorf("io.ReadAll error: %w", retry.RetryableError(err))
+		}
+
+		if err := json.Unmarshal(body, &data); err != nil {
+			return fmt.Errorf("json.NewDecoder().Decode error: %w", retry.RetryableError(err))
+		}
+		return nil
+	}); err != nil {
+		return domain.DistrictsGeoJSON{}, fmt.Errorf("retry.Fibonacci error: %w", err)
 	}
 	return data, nil
 }
