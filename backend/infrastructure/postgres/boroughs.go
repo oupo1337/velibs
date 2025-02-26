@@ -26,9 +26,9 @@ func (db *Database) HasBoroughs(ctx context.Context) (bool, error) {
 
 func (db *Database) GetBoroughs(ctx context.Context, timestamp string) ([]byte, error) {
 	if timestamp == "" {
-		tmstp, err := db.FetchMaxTimestamp(ctx)
+		tmstp, err := db.maxVelibTimestamp(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("db.FetchMaxTimestamp error: %w", err)
+			return nil, fmt.Errorf("db.maxVelibTimestamp error: %w", err)
 		}
 		timestamp = tmstp
 	}
@@ -75,7 +75,9 @@ func (db *Database) InsertBoroughs(ctx context.Context, districts domain.Borough
 	}
 
 	results := db.conn.SendBatch(ctx, batch)
-	defer results.Close()
+	defer func() {
+		_ = results.Close()
+	}()
 
 	for range districts.Features {
 		if _, err := results.Exec(); err != nil {

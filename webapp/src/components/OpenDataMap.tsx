@@ -16,17 +16,19 @@ import {
     useStations
 } from '../hooks/Hooks.tsx';
 
-import ClusterLayer from "./layers/ClusterLayer";
+import ClusterLayer from "./layers/ClusterLayer.tsx";
 
-import StationTooltip from '../tooltips/StationTooltip';
-import DistrictTooltip from '../tooltips/DistrictTooltip';
+import StationTooltip from '../tooltips/StationTooltip.tsx';
+import DistrictTooltip from '../tooltips/DistrictTooltip.tsx';
 import BikeLanesTooltip from '../tooltips/BikeLanesTooltip.tsx';
 
-import type { DistrictFeature, StationFeature } from '../domain/Domain';
+import type { DistrictFeature, StationFeature } from '../domain/Domain.tsx';
 
-import { MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration';
+import { MAPBOX_ACCESS_TOKEN, MAP_STYLE } from '../configuration/Configuration.tsx';
 
 import '../styles/Map.css';
+import { useFreeFloatingBikes } from '../hooks/useFreeFloatingBikes.tsx';
+import FreeFloatingClusterLayer from './layers/FreeFloatingClusterLayer.tsx';
 
 interface ViewState {
     latitude: number;
@@ -41,12 +43,14 @@ interface VelibMapProps {
     format: string
     displayBikeLanes: boolean
     velibType: string
+    freeFloatingFormat: string
 }
 
-const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes, velibType }) => {
+const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes, velibType, freeFloatingFormat }) => {
     const navigate = useNavigate();
     const bikeLanes = useBikeLanes();
     const stations = useStations(timestamp);
+    const freeFloatingBikes = useFreeFloatingBikes(timestamp);
     const { districts, districtsMin, districtsMax } = useDistricts(timestamp);
     const { boroughs, boroughsMin, boroughsMax } = useBoroughs(timestamp);
 
@@ -64,7 +68,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
     };
 
     const heatmapLayer = new HeatmapLayer({
-        id: 'heatmap-layer',
+        id: 'velib-heatmap-layer',
         visible: format === 'heatmap',
         data: stations,
         pickable: false,
@@ -85,7 +89,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
     });
 
     const clusterLayer = new ClusterLayer({
-        id: 'cluster-layer',
+        id: 'velib-cluster-layer',
         visible: format === 'points',
         data: stations,
         zoom: viewport.zoom,
@@ -96,6 +100,14 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
 
             navigate({pathname: '/station', search: `?${createSearchParams({ ids })}`});
         },
+    });
+
+    const freeFloatingClusterLayer = new FreeFloatingClusterLayer({
+        id: 'free-floating-cluster-layer',
+        visible: freeFloatingFormat === 'points',
+        data: freeFloatingBikes,
+        zoom: viewport.zoom,
+        velibType: velibType,
     });
 
     const bikeLanesLayer = new GeoJsonLayer({
@@ -116,7 +128,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
 
     const districtsLayer = new PolygonLayer({
         visible: format === 'districts',
-        id: 'districts-layer',
+        id: 'velib-districts-layer',
         data: districts,
         pickable: true,
         stroked: true,
@@ -141,7 +153,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
 
     const boroughsLayer = new PolygonLayer({
         visible: format === 'boroughs',
-        id: 'boroughs-layer',
+        id: 'velib-boroughs-layer',
         data: boroughs,
         pickable: true,
         stroked: true,
@@ -170,10 +182,10 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
         }
 
         switch (info.layer.id) {
-            case 'districts-layer':
-            case 'boroughs-layer':
+            case 'velib-districts-layer':
+            case 'velib-boroughs-layer':
                 return { html: ReactDOMServer.renderToString(<DistrictTooltip info={info} />) };
-            case 'cluster-layer':
+            case 'velib-cluster-layer':
                 return { html: ReactDOMServer.renderToString(<StationTooltip info={info} />) };
             case 'bike-lanes-layer':
                 return { html: ReactDOMServer.renderToString(<BikeLanesTooltip info={info} />) };
@@ -187,7 +199,7 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
             initialViewState={viewport}
             onViewStateChange={handleViewStateChange}
             controller={true}
-            layers={[bikeLanesLayer, clusterLayer, heatmapLayer, districtsLayer, boroughsLayer]}
+            layers={[bikeLanesLayer, clusterLayer, heatmapLayer, districtsLayer, boroughsLayer, freeFloatingClusterLayer]}
             getTooltip={getTooltip}
         >
             <Map

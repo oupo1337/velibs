@@ -25,9 +25,9 @@ func (db *Database) HasAdministrativeDistricts(ctx context.Context) (bool, error
 
 func (db *Database) GetAdministrativeDistricts(ctx context.Context, timestamp string) ([]byte, error) {
 	if timestamp == "" {
-		tmstp, err := db.FetchMaxTimestamp(ctx)
+		tmstp, err := db.maxVelibTimestamp(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("db.FetchMaxTimestamp error: %w", err)
+			return nil, fmt.Errorf("db.maxVelibTimestamp error: %w", err)
 		}
 		timestamp = tmstp
 	}

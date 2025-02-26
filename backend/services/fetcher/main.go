@@ -34,8 +34,12 @@ func initDependencies() (dependencies, error) {
 	stations := tasks.NewStations(db)
 	statuses := tasks.NewStatuses(db)
 	bikeLanes := tasks.NewBikeLanes(db)
+	freeFloatingBikes := tasks.NewFreeFloatingBikes(db)
 
 	c := cronx.New()
+	if err := c.AddFunc("0 */10 * * * *", "update.FreeFloatingBikes", freeFloatingBikes.UpdateFreeFloatingBikes); err != nil {
+		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
+	}
 	if err := c.AddFunc("0 */10 * * * *", "update.Statuses", statuses.UpdateStatuses); err != nil {
 		return dependencies{}, fmt.Errorf("c.AddFunc error: %w", err)
 	}

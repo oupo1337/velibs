@@ -6,7 +6,7 @@ import { Toaster } from 'react-hot-toast';
 import Drawer from '@mui/material/Drawer';
 
 import Menu from './components/Menu';
-import VelibMap from './components/VelibMap';
+import VelibMap from './components/OpenDataMap';
 
 const transitionDuration = {
   enter: 300,
@@ -63,6 +63,7 @@ function App() {
 
   const [timestamp, setTimestamp] = useState<Date | undefined>();
   const [velibType, setVelibType] = useState('bikes');
+  const [freeFloatingFormat, setFreeFloatingFormat] = useState('none');
   const [format, setFormat] = useState('points');
   const [displayBikeLanes, setDisplayBikeLanes] = useState(false);
 
@@ -81,6 +82,8 @@ function App() {
         setFormat={setFormat}
         displayBikeLanes={displayBikeLanes}
         setDisplayBikeLanes={setDisplayBikeLanes}
+        freeFloatingFormat={freeFloatingFormat}
+        setFreeFloatingFormat={setFreeFloatingFormat}
       />
 
       <VelibMap
@@ -88,6 +91,7 @@ function App() {
         format={format}
         displayBikeLanes={displayBikeLanes}
         velibType={velibType}
+        freeFloatingFormat={freeFloatingFormat}
       />
 
       <Drawer 

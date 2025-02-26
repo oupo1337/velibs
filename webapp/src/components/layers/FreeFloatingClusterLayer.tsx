@@ -17,19 +17,33 @@ type ClusterPointFeature = PointFeature<ClusteredStationProperties>;
 function getScatterPlotColor(d: ClusterPointFeature): [number, number, number] {
     if (!d.properties.cluster) {
         const total = d.properties.mechanical + d.properties.electric;
-        if (total < 10) return [239, 68, 68];     // Red for very low capacity
-        if (total < 20) return [251, 146, 60];    // Orange for low capacity
-        if (total < 30) return [250, 204, 21];    // Yellow for medium capacity
-        if (total < 40) return [34, 197, 94];     // Green for good capacity
-        return [6, 182, 212];                     // Cyan for high capacity
+        if (total < 10) return [0, 180, 30];     // Light Lime
+        if (total < 20) return [0, 200, 33];     // Lime
+        if (total < 30) return [0, 220, 37];     // Official Lime green
+        if (total < 40) return [0, 240, 40];     // Bright Lime
+        return [0, 255, 43];                     // Brightest Lime
     }
 
     // For clusters
     const total = d.properties.total;
-    if (total < 50) return [99, 102, 241];       // Indigo for small clusters
-    if (total < 100) return [168, 85, 247];      // Purple for medium clusters
-    if (total < 200) return [236, 72, 153];      // Pink for large clusters
-    return [244, 63, 94];                        // Rose for very large clusters
+    if (total < 50) return [0, 150, 25];        // Darker Lime
+    if (total < 100) return [0, 130, 22];       // Even darker Lime
+    if (total < 200) return [0, 110, 18];       // Very dark Lime
+    return [0, 90, 15];                         // Deepest Lime
+}
+
+function getTextColor(d: ClusterPointFeature): [number, number, number] {
+    if (!d.properties.cluster) {
+        return [0, 70, 12];  // Dark green for individual stations
+    }
+    return [255, 255, 255];  // White for clusters
+}
+
+function getLineColor(d: ClusterPointFeature): [number, number, number] {
+    if (!d.properties.cluster) {
+        return [0, 70, 12];  // Dark green for individual stations
+    }
+    return [0, 150, 25];    // Darker Lime for clusters
 }
 
 function getText(d: ClusterPointFeature): string {
@@ -40,38 +54,12 @@ function getText(d: ClusterPointFeature): string {
     return value.toString();
 }
 
-function getTextColor(d: ClusterPointFeature): [number, number, number] {
-    if (!d.properties.cluster) {
-        return [0, 0, 0];
-    }
-    
-    // More contrasting text colors for clusters based on size
-    const total = d.properties.total;
-    if (total < 50) return [199, 210, 254];     // Stronger blue-white for small clusters
-    if (total < 100) return [216, 180, 254];    // Stronger purple-white for medium clusters
-    if (total < 200) return [251, 207, 232];    // Stronger pink-white for large clusters
-    return [254, 202, 202];                     // Stronger rose-white for very large clusters
-}
-
-function getLineColor(d: ClusterPointFeature): [number, number, number] {
-    if (!d.properties.cluster) {
-        return [0, 0, 0];
-    }
-    
-    // Matching stroke colors for clusters
-    const total = d.properties.total;
-    if (total < 50) return [67, 56, 202];      // Darker indigo for small clusters
-    if (total < 100) return [126, 34, 206];    // Darker purple for medium clusters
-    if (total < 200) return [190, 24, 93];     // Darker pink for large clusters
-    return [190, 18, 60];                      // Darker rose for very large clusters
-}
-
 interface ClusterLayerProps {
     zoom: number;
     velibType: string;
 }
 
-class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
+class FreeFloatingClusterLayer extends CompositeLayer<ClusterLayerProps> {
     shouldUpdateState({ changeFlags }: UpdateParameters<this>) {
         return changeFlags.somethingChanged;
     }
@@ -82,26 +70,11 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 radius: this.context.viewport.zoom * 3,
                 maxZoom: 14,
                 reduce: (accumulated, props) => {
-                    accumulated.name = [...accumulated.name, ...props.name];
-                    accumulated.station_id = [...accumulated.station_id, ...props.station_id];
                     accumulated.total += props.total;
-                    accumulated.mechanical += props.mechanical;
-                    accumulated.electric += props.electric;
                 },
-                map: (props) => {
-                    let total = props.mechanical + props.electric;
-                    if (this.props.velibType ==='mechanical') {
-                        total = props.mechanical;
-                    } else if (this.props.velibType ==='electric') {
-                        total = props.electric;
-                    }
-
+                map: () => {
                     return {
-                        name: [props.name],
-                        station_id: [props.station_id],
-                        total: total,
-                        mechanical: props.mechanical,
-                        electric: props.electric,
+                        total: 1,
                     }
                 },
             });
@@ -119,7 +92,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
 
         return [
             new ScatterplotLayer({
-                id: 'velib-scatter-plot-layer',
+                id: 'free-floating-scatter-plot-layer',
                 data: data,
                 pickable: true,
                 stroked: true,
@@ -145,7 +118,7 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 getCursor: () => 'pointer',
             }),
             new TextLayer({
-                id: 'velib-text-layer',
+                id: 'free-floating-text-layer',
                 data: data,
                 pickable: true,
                 getPosition: (d: ClusterPointFeature) => d.geometry.coordinates as [number, number],
@@ -169,6 +142,6 @@ class ClusterLayer extends CompositeLayer<ClusterLayerProps> {
     }
 }
 
-ClusterLayer.layerName = 'cluster-layer';
+FreeFloatingClusterLayer.layerName = 'free-floating-cluster-layer';
 
-export default ClusterLayer;
+export default FreeFloatingClusterLayer;

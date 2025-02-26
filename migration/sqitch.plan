@@ -7,3 +7,4 @@
 004_boroughs 2024-01-28T18:42:25Z chris <chris@DESKTOP-S4P2T51> # Add boroughs data
 005_add_geo_indexes 2024-02-09T10:28:35Z chris <chris@DESKTOP-S4P2T51> # Add geo indexes on stations, boroughs and districts table
 006_bikelanes 2025-02-21T10:28:35Z chris <chris@DESKTOP-S4P2T51> # Add new bike lanes table
+007_free_floating_bikes 2025-02-26T12:23:35Z chris <chris@DESKTOP-S4P2T51> # Add free floating bikes table
