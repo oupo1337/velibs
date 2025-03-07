@@ -52,6 +52,16 @@ export interface BikeLanesProperties {
   vitesse_maximale_autorisee: string
 }
 
+export interface FreeFloatingBikeProperties {
+  bike_id: string
+  is_reserved: boolean
+  is_disabled: boolean
+  current_range_meters: number
+  vehicle_type_id: string
+  last_reported: string
+  vehicle_type: string
+}
+
 export type BikeLanesFeature = Feature<Geometry, BikeLanesProperties>;
 export type BikeLanesGeoJSON = BikeLanesFeature[];
 
@@ -60,3 +70,6 @@ export type StationGeoJSON = StationFeature[];
 
 export type DistrictFeature = Feature<Polygon, DistrictProperties>;
 export type DistrictFeatureCollection = FeatureCollection<Polygon, DistrictProperties>
+
+export type FreeFloatingBikeFeature = Feature<Point, FreeFloatingBikeProperties>;
+export type FreeFloatingBikeGeoJSON = FreeFloatingBikeFeature[];

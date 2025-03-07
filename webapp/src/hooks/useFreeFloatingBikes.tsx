@@ -3,11 +3,11 @@ import axios from 'axios';
 
 import { API_URL } from '../configuration/Configuration';
 
-import { StationGeoJSON } from '../domain/Domain';
+import { FreeFloatingBikeGeoJSON } from '../domain/Domain';
 import toaster from '../toaster/Toaster';
 
 export const useFreeFloatingBikes = (timestamp: Date | undefined) => {
-    const [freeFloatingBikes, setFreeFloatingBikes] = useState<StationGeoJSON>([]);
+    const [freeFloatingBikes, setFreeFloatingBikes] = useState<FreeFloatingBikeGeoJSON>([]);
 
     useEffect(() => {
         if (timestamp === undefined) {

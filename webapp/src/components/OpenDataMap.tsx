@@ -107,7 +107,6 @@ const VelibMap: React.FC<VelibMapProps> = ({ timestamp, format, displayBikeLanes
         visible: freeFloatingFormat === 'points',
         data: freeFloatingBikes,
         zoom: viewport.zoom,
-        velibType: velibType,
     });
 
     const bikeLanesLayer = new GeoJsonLayer({

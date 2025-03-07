@@ -3,11 +3,10 @@ import { ScatterplotLayer, TextLayer } from '@deck.gl/layers';
 import { UpdateParameters } from "deck.gl";
 import Supercluster, { PointFeature } from 'supercluster';
 
-import { StationProperties } from '../../domain/Domain';
+import { FreeFloatingBikeProperties } from '../../domain/Domain';
 import Bounds from '../../domain/Paris';
 
-
-interface ClusteredStationProperties extends StationProperties {
+interface ClusteredStationProperties extends FreeFloatingBikeProperties {
     cluster: boolean;
     total: number;
 }
@@ -15,17 +14,20 @@ interface ClusteredStationProperties extends StationProperties {
 type ClusterPointFeature = PointFeature<ClusteredStationProperties>;
 
 function getScatterPlotColor(d: ClusterPointFeature): [number, number, number] {
+    const total = d.properties.total;
+
     if (!d.properties.cluster) {
-        const total = d.properties.mechanical + d.properties.electric;
-        if (total < 10) return [0, 180, 30];     // Light Lime
-        if (total < 20) return [0, 200, 33];     // Lime
-        if (total < 30) return [0, 220, 37];     // Official Lime green
-        if (total < 40) return [0, 240, 40];     // Bright Lime
-        return [0, 255, 43];                     // Brightest Lime
+        // For individual bikes, use battery level to determine color
+        const batteryLevel = d.properties.current_range_meters / 95885;
+        // Color gradient from red (low battery) to green (high battery)
+        return [
+            Math.round(255 * (1 - batteryLevel)), // Red component decreases as battery increases
+            Math.round(255 * batteryLevel),       // Green component increases as battery increases
+            0                                     // No blue component
+        ];
     }
 
     // For clusters
-    const total = d.properties.total;
     if (total < 50) return [0, 150, 25];        // Darker Lime
     if (total < 100) return [0, 130, 22];       // Even darker Lime
     if (total < 200) return [0, 110, 18];       // Very dark Lime
@@ -49,14 +51,19 @@ function getLineColor(d: ClusterPointFeature): [number, number, number] {
 function getText(d: ClusterPointFeature): string {
     if (d.properties.cluster)
         return d.properties.total.toString();
+    return '';
+}
 
-    const value = d.properties.mechanical + d.properties.electric;
-    return value.toString();
+function getFillOpacity(d: ClusterPointFeature): number {
+    if (!d.properties.cluster) {
+        // For individual bikes, use battery level to determine fill opacity
+        return d.properties.current_range_meters / 95885;
+    }
+    return 1; // Full opacity for clusters
 }
 
 interface ClusterLayerProps {
     zoom: number;
-    velibType: string;
 }
 
 class FreeFloatingClusterLayer extends CompositeLayer<ClusterLayerProps> {
@@ -71,10 +78,12 @@ class FreeFloatingClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 maxZoom: 14,
                 reduce: (accumulated, props) => {
                     accumulated.total += props.total;
+                    accumulated.current_range_meters += props.current_range_meters;
                 },
-                map: () => {
+                map: (props) => {
                     return {
                         total: 1,
+                        current_range_meters: props.current_range_meters,
                     }
                 },
             });
@@ -98,17 +107,7 @@ class FreeFloatingClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 stroked: true,
                 getPosition: (d: ClusterPointFeature) => d.geometry.coordinates as [number, number, number],
                 getRadius: (d: ClusterPointFeature): number => {
-                    let value = d.properties.total;
-                    if (!d.properties.cluster) {
-                        if (this.props.velibType === 'mechanical') {
-                            value = d.properties.mechanical;
-                        } else if (this.props.velibType === 'electric') {
-                            value = d.properties.electric;
-                        } else {
-                            value = d.properties.mechanical + d.properties.electric;
-                        }
-                    }
-                    return ((value + 20) * 5) / this.context.viewport.zoom;
+                    return ((d.properties.total + 20) * 5) / this.context.viewport.zoom;
                 },
                 radiusScale: 6,
                 radiusUnits: 'meters',
@@ -116,6 +115,8 @@ class FreeFloatingClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 getLineColor: getLineColor,
                 getLineWidth: (d: ClusterPointFeature) => d.properties.cluster ? 40 : 20,
                 getCursor: () => 'pointer',
+                opacity: 1,
+                getFillOpacity: getFillOpacity,
             }),
             new TextLayer({
                 id: 'free-floating-text-layer',
@@ -125,11 +126,7 @@ class FreeFloatingClusterLayer extends CompositeLayer<ClusterLayerProps> {
                 getText: getText,
                 getColor: getTextColor,
                 getSize: (d: ClusterPointFeature): number => {
-                    let value = d.properties.total;
-                    if (!d.properties.cluster) {
-                        value = d.properties.mechanical + d.properties.electric;
-                    }
-                    return Math.min(Math.max(value, 20), 30);
+                    return Math.min(Math.max(d.properties.total, 20), 30);
                 },
                 getAngle: 0,
                 getTextAnchor: 'middle',
